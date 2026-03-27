@@ -35,3 +35,4 @@ gcp-key*.json
 .idea/
 __pycache__/
 *.pyc
+documentation/
