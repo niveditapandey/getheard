@@ -80,7 +80,7 @@ from src.core.research_project import (
     create_project, generate_questions, get_project, list_projects,
     RESEARCH_TYPES, INDUSTRIES, LANGUAGE_NAMES, VALID_QUESTION_COUNTS,
 )
-from src.storage.transcript import TranscriptManager, TRANSCRIPTS_DIR
+from src.storage.transcript import TranscriptManager
 from src.voice.pipeline import VoiceInterviewPipeline
 from src.web.app_agentic import router as agentic_router
 from src.web.app_panel import router as panel_router
@@ -306,15 +306,24 @@ async def get_live_transcript(session_id: str):
 
 @app.get("/api/transcript-file/{filename}")
 async def get_transcript_file(filename: str):
-    """Load a saved transcript JSON file for the dashboard."""
-    filepath = TRANSCRIPTS_DIR / filename
-    if not filepath.exists():
-        raise HTTPException(404, "Transcript file not found")
-    try:
-        data = json.loads(filepath.read_text(encoding="utf-8"))
-        return data
-    except Exception as e:
-        raise HTTPException(500, str(e))
+    """Load a saved transcript by session_id (filename without .json) from Firestore."""
+    # filename may be like "2026-03-27_sess_xyz789_en.json" — extract session_id portion
+    session_id = filename.replace(".json", "")
+    # Try loading directly by session_id first, then by extracting middle part
+    data = transcript_manager.load(session_id)
+    if data is None:
+        # Try extracting session_id from filename format: date_sessid_lang.json
+        parts = session_id.split("_")
+        if len(parts) >= 2:
+            # session_id is typically "sess_xyz789" — find it in parts
+            for i, p in enumerate(parts):
+                if p == "sess" and i + 1 < len(parts):
+                    session_id = f"sess_{parts[i+1]}"
+                    data = transcript_manager.load(session_id)
+                    break
+    if data is None:
+        raise HTTPException(404, "Transcript not found")
+    return data
 
 
 @app.get("/api/transcripts")
