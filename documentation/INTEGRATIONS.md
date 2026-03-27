@@ -109,8 +109,8 @@ def should_use_sarvam(self, language_code: str) -> bool:
 **SDK:** `razorpay` Python package
 
 ```env
-RAZORPAY_KEY_ID=rzp_live_SG70K7NZsGvuj0
-RAZORPAY_KEY_SECRET=ZtcVjIMQSYBCSZ5DU6kDOjTU
+RAZORPAY_KEY_ID=rzp_live_YOUR_KEY_ID
+RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_SECRET
 ```
 
 **Flow:**
@@ -169,7 +169,7 @@ STRIPE_SECRET_KEY=sk_live_...
 **API:** REST via `httpx`
 
 ```env
-RESEND_API_KEY=re_bVAthYrA_FX6vyuxznbwqAQGsEW6J7mT4
+RESEND_API_KEY=re_YOUR_RESEND_API_KEY
 RESEND_FROM_EMAIL=hello@getheard.space
 ```
 
@@ -199,7 +199,7 @@ await send_email(
 **Domain verification check:**
 ```bash
 curl https://api.resend.com/domains/44ace173-7e2c-4028-b25c-18022833d4b6 \
-  -H "Authorization: Bearer re_bVAthYrA_..."
+  -H "Authorization: Bearer re_YOUR_RESEND_API_KEY"
 ```
 
 ---
@@ -211,7 +211,7 @@ curl https://api.resend.com/domains/44ace173-7e2c-4028-b25c-18022833d4b6 \
 ```env
 WHATSAPP_PHONE_NUMBER_ID=985230514675305
 WHATSAPP_BUSINESS_ID=2332652903923836
-WHATSAPP_ACCESS_TOKEN=EAANDZA6ZCSSjoBRBu...   # 60-day token, refresh before expiry
+WHATSAPP_ACCESS_TOKEN=YOUR_WHATSAPP_ACCESS_TOKEN   # 60-day token, refresh before expiry
 ```
 
 **API:** `https://graph.facebook.com/v19.0/{phone_number_id}/messages`

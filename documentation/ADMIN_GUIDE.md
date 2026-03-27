@@ -249,7 +249,7 @@ The Meta WhatsApp access token expires every 60 days. Before it expires:
 ### Check Resend Domain Status
 ```bash
 curl https://api.resend.com/domains/44ace173-7e2c-4028-b25c-18022833d4b6 \
-  -H "Authorization: Bearer re_bVAthYrA_FX6vyuxznbwqAQGsEW6J7mT4"
+  -H "Authorization: Bearer re_YOUR_RESEND_API_KEY"
 ```
 
 ### Send a Test Email
