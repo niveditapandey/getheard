@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project – GetHeard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+  nav { background: #1a202c; padding: 0 24px; display: flex; align-items: center; gap: 8px; height: 56px; }
+  nav a { color: #a0aec0; text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 6px; transition: background .2s; }
+  nav a:hover, nav a.active { background: #2d3748; color: #fff; }
+  .nav-brand { color: #fff; font-weight: 700; font-size: 16px; margin-right: 16px; }
+
+  .page { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+
+  /* HEADER */
+  .proj-header { background: linear-gradient(135deg, #2b6cb0, #4299e1); color: #fff; border-radius: 14px;
+    padding: 28px 32px; margin-bottom: 28px; }
+  .proj-header .breadcrumb { font-size: 13px; opacity: .75; margin-bottom: 10px; }
+  .proj-header .breadcrumb a { color: inherit; text-decoration: none; opacity: .8; }
+  .proj-header .breadcrumb a:hover { opacity: 1; }
+  .proj-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .proj-header .sub { font-size: 14px; opacity: .8; }
+  .proj-header .header-meta { display: flex; gap: 20px; margin-top: 16px; font-size: 13px; flex-wrap: wrap; }
+  .proj-header .header-meta span { background: rgba(255,255,255,.15); padding: 4px 12px; border-radius: 20px; }
+
+  /* ACTION BAR */
+  .action-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+  .btn { padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+    border: none; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; text-decoration: none; }
+  .btn-primary { background: #4299e1; color: #fff; }
+  .btn-primary:hover { background: #3182ce; }
+  .btn-success { background: #38a169; color: #fff; }
+  .btn-success:hover { background: #2f855a; }
+  .btn-outline { background: #fff; color: #4a5568; border: 1.5px solid #cbd5e0; }
+  .btn-outline:hover { border-color: #4299e1; color: #4299e1; }
+  .btn-danger { background: #fff; color: #e53e3e; border: 1.5px solid #fed7d7; }
+  .btn-danger:hover { background: #fff5f5; }
+
+  /* SECTIONS */
+  .section { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+  .section-header { padding: 18px 24px; border-bottom: 1px solid #f0f4f8; display: flex;
+    justify-content: space-between; align-items: center; }
+  .section-header h2 { font-size: 16px; font-weight: 700; }
+  .section-body { padding: 20px 24px; }
+
+  /* STATS ROW */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 20px; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 16px 20px; flex: 1;
+    border: 1px solid #e2e8f0; text-align: center; }
+  .stat-card .val { font-size: 28px; font-weight: 700; color: #4299e1; }
+  .stat-card .lbl { font-size: 12px; color: #718096; margin-top: 4px; }
+
+  /* QUESTIONS */
+  .question-list { display: flex; flex-direction: column; gap: 12px; }
+  .q-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+  .q-card .q-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .q-num { width: 28px; height: 28px; background: #ebf8ff; color: #2b6cb0; border-radius: 50%;
+    font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .q-type { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    background: #f0fff4; color: #276749; text-transform: capitalize; }
+  .q-card .main { font-size: 15px; font-weight: 500; line-height: 1.5; color: #2d3748; }
+  .q-card .probe { font-size: 13px; color: #718096; margin-top: 6px; font-style: italic; }
+  .q-card .probe::before { content: 'Follow-up: '; font-style: normal; font-weight: 600; color: #a0aec0; }
+  .q-card .intent { font-size: 12px; color: #a0aec0; margin-top: 4px; }
+  .q-card .intent::before { content: '→ Intent: '; font-weight: 600; }
+
+  /* TRANSCRIPTS */
+  .transcript-list { display: flex; flex-direction: column; gap: 8px; }
+  .t-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+    border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+  .t-row .t-info { display: flex; gap: 12px; align-items: center; }
+  .t-row .t-lang { background: #ebf8ff; color: #2b6cb0; padding: 2px 8px; border-radius: 10px;
+    font-size: 12px; font-weight: 600; }
+  .t-row a { color: #4299e1; font-size: 13px; text-decoration: none; }
+
+  /* REPORT SECTION */
+  .report-cta { text-align: center; padding: 32px; }
+  .report-cta p { color: #718096; margin-bottom: 16px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100;
+    align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 14px; padding: 28px; max-width: 600px; width: 100%; max-height: 85vh;
+    overflow-y: auto; }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .modal .form-group { margin-bottom: 14px; }
+  .modal label { display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 5px; }
+  .modal input, .modal select { width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e0;
+    border-radius: 8px; font-size: 14px; outline: none; }
+  .modal input:focus, .modal select:focus { border-color: #4299e1; }
+  .modal .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .modal .close-btn { position: absolute; top: 14px; right: 18px; background: none; border: none;
+    font-size: 22px; cursor: pointer; color: #718096; }
+
+  .tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag { background: #f0f4f8; color: #4a5568; font-size: 12px; padding: 4px 10px; border-radius: 12px; }
+
+  .empty-msg { color: #a0aec0; font-size: 14px; text-align: center; padding: 20px; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #fff;
+    border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) { .stats-row { flex-direction: column; } .action-bar { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">GetHeard</span>
+  <a href="/">Voice Interview</a>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/projects" class="active">Projects</a>
+</nav>
+
+<div class="page" id="page" style="display:none">
+
+  <div class="proj-header">
+    <div class="breadcrumb"><a href="/projects">← Projects</a></div>
+    <h1 id="projName">Loading…</h1>
+    <div class="sub" id="projObjective"></div>
+    <div class="header-meta" id="headerMeta"></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="val" id="statQ">–</div><div class="lbl">Questions</div></div>
+    <div class="stat-card"><div class="val" id="statI">–</div><div class="lbl">Interviews Run</div></div>
+    <div class="stat-card"><div class="val" id="statR">–</div><div class="lbl">Reports</div></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="openLaunchModal()">
+      🎙️ Launch Interview
+    </button>
+    <button class="btn btn-success" id="btnReport" onclick="generateReport()">
+      📊 Generate Report
+    </button>
+    <a href="/projects/new" class="btn btn-outline">+ New Project</a>
+  </div>
+
+  <!-- Questions -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Interview Questions</h2>
+      <div id="qCount" style="font-size:13px;color:#718096"></div>
+    </div>
+    <div class="section-body">
+      <div class="question-list" id="questionList"></div>
+    </div>
+  </div>
+
+  <!-- Transcripts -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Interview Transcripts</h2>
+      <span id="transcriptCount" style="font-size:13px;color:#718096"></span>
+    </div>
+    <div class="section-body">
+      <div class="transcript-list" id="transcriptList"></div>
+    </div>
+  </div>
+
+  <!-- Reports -->
+  <div class="section">
+    <div class="section-header"><h2>Reports</h2></div>
+    <div class="section-body" id="reportsBody">
+      <div class="empty-msg">No reports generated yet. Run some interviews first, then generate a report.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Launch Interview Modal -->
+<div class="modal-overlay" id="launchModal">
+  <div class="modal">
+    <h3>Launch Interview</h3>
+    <p style="color:#718096;font-size:14px;margin-bottom:18px">
+      Opens the voice interview pre-loaded with this project's questions.
+    </p>
+    <div class="form-group">
+      <label>Interview Language</label>
+      <select id="launchLang">
+        <option value="en">🇬🇧 English</option>
+        <option value="hi">🇮🇳 Hindi</option>
+        <option value="id">🇮🇩 Indonesian</option>
+        <option value="fil">🇵🇭 Filipino</option>
+        <option value="th">🇹🇭 Thai</option>
+        <option value="vi">🇻🇳 Vietnamese</option>
+        <option value="ko">🇰🇷 Korean</option>
+        <option value="ja">🇯🇵 Japanese</option>
+        <option value="zh">🇨🇳 Mandarin</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeLaunchModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="doLaunch()">Open Interview →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANG_FLAGS = { en:'🇬🇧', hi:'🇮🇳', id:'🇮🇩', fil:'🇵🇭', th:'🇹🇭', vi:'🇻🇳', ko:'🇰🇷', ja:'🇯🇵', zh:'🇨🇳' };
+const LANG_NAMES = { en:'English', hi:'Hindi', id:'Indonesian', fil:'Filipino', th:'Thai', vi:'Vietnamese', ko:'Korean', ja:'Japanese', zh:'Mandarin' };
+const RESEARCH_LABELS = { cx:'Customer Experience', ux:'User Experience', brand:'Brand Perception',
+  product:'Product Feedback', nps:'NPS Deep-Dive', employee:'Employee Satisfaction', market:'Market Research', custom:'Custom' };
+const TYPE_COLORS = { opening:'#ebf8ff', experience:'#f0fff4', emotional:'#faf5ff',
+  satisfaction:'#fffaf0', improvement:'#fff5f0', closing:'#f7fafc' };
+const TYPE_TEXT = { opening:'#2b6cb0', experience:'#276749', emotional:'#1e3c72',
+  satisfaction:'#b7791f', improvement:'#c05621', closing:'#4a5568' };
+
+// Extract project ID from URL path: /projects/{id}
+const projectId = (() => {
+  const match = location.pathname.match(/\/projects\/([a-zA-Z0-9_-]+)\/?$/);
+  return match ? match[1] : null;
+})();
+let project = null;
+let linkedTranscripts = [];
+let allReports = [];
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+async function load() {
+  if (!projectId) {
+    document.getElementById('page').style.display = '';
+    document.getElementById('projName').textContent = 'No project ID in URL';
+    document.getElementById('projObjective').textContent = 'Open this page from /projects or click a project card.';
+    return;
+  }
+  const [projRes, transcRes, repsRes] = await Promise.all([
+    fetch(`/api/projects/${projectId}`),
+    fetch('/api/transcripts'),
+    fetch('/api/reports'),
+  ]);
+  project = await projRes.json();
+  const { transcripts } = await transcRes.json();
+  const { reports } = await repsRes.json();
+
+  // filter transcripts linked to this project
+  linkedTranscripts = transcripts.filter(t => t.project_id === projectId || (t.metadata && t.metadata.project_id === projectId));
+  allReports = reports;
+
+  renderHeader();
+  renderStats(reports.length);
+  renderQuestions();
+  renderTranscripts(transcripts);
+  renderReports(reports);
+
+  document.getElementById('launchLang').value = project.language || 'en';
+  document.getElementById('page').style.display = '';
+}
+
+function renderHeader() {
+  document.title = `${project.name} – GetHeard`;
+  document.getElementById('projName').textContent = project.name;
+  document.getElementById('projObjective').textContent = project.objective || '';
+  document.getElementById('headerMeta').innerHTML = [
+    `<span>${LANG_FLAGS[project.language] || '🌐'} ${LANG_NAMES[project.language] || project.language}</span>`,
+    `<span>${RESEARCH_LABELS[project.research_type] || project.research_type}</span>`,
+    `<span>🏭 ${project.industry || ''}</span>`,
+    `<span>👥 ${project.audience || ''}</span>`,
+    `<span>📅 ${formatDate(project.created_at)}</span>`,
+  ].join('');
+}
+
+function renderStats(reportCount) {
+  document.getElementById('statQ').textContent = (project.questions || []).length;
+  document.getElementById('statI').textContent = (project.sessions || []).length;
+  document.getElementById('statR').textContent = reportCount;
+}
+
+function renderQuestions() {
+  const qs = project.questions || [];
+  document.getElementById('qCount').textContent = `${qs.length} questions`;
+  const list = document.getElementById('questionList');
+  if (!qs.length) {
+    list.innerHTML = '<div class="empty-msg">No questions found.</div>';
+    return;
+  }
+  list.innerHTML = qs.map((q, i) => {
+    const type = q.type || 'question';
+    const bg = TYPE_COLORS[type] || '#f7fafc';
+    const tx = TYPE_TEXT[type] || '#4a5568';
+    return `
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-num">${q.number || i+1}</div>
+          <div class="q-type" style="background:${bg};color:${tx}">${type}</div>
+        </div>
+        <div class="main">${escHtml(q.main || '')}</div>
+        ${q.probe ? `<div class="probe">${escHtml(q.probe)}</div>` : ''}
+        ${q.intent ? `<div class="intent">${escHtml(q.intent)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTranscripts(all) {
+  // Show all transcripts and flag if linked to this project
+  // Also show any transcript whose session_id is in project.sessions
+  const sessions = new Set(project.sessions || []);
+  const relevant = all.filter(t => sessions.has(t.session_id) || linkedTranscripts.includes(t));
+  const list = document.getElementById('transcriptList');
+  document.getElementById('transcriptCount').textContent = relevant.length ? `${relevant.length} found` : '';
+
+  if (!relevant.length) {
+    list.innerHTML = '<div class="empty-msg">No interviews recorded yet. Launch an interview to get started.</div>';
+    return;
+  }
+  list.innerHTML = relevant.map(t => `
+    <div class="t-row">
+      <div class="t-info">
+        <span class="t-lang">${LANG_FLAGS[t.language_code] || '🌐'} ${LANG_NAMES[t.language_code] || t.language_code}</span>
+        <span>${formatDate(t.created_at || t.started_at)}</span>
+        <span style="color:#a0aec0;font-size:12px">${t.session_id || ''}</span>
+      </div>
+      <a href="#" onclick="viewTranscript('${escHtml(t.file || '')}'); return false;">View →</a>
+    </div>
+  `).join('');
+}
+
+function renderReports(reports) {
+  const body = document.getElementById('reportsBody');
+  if (!reports.length) return; // keep the empty message
+  body.innerHTML = reports.map(r => `
+    <div class="t-row">
+      <div class="t-info">
+        <span style="font-weight:600">${escHtml(r.project_name)}</span>
+        <span style="color:#a0aec0;font-size:12px">${formatDate(r.generated_at)}</span>
+        <span style="color:#718096;font-size:12px">${r.total_transcripts} interviews</span>
+      </div>
+      <a href="/report/${r.report_id}">Open Report →</a>
+    </div>
+  `).join('');
+}
+
+// ── Launch Modal ──────────────────────────────────────────────────────────────
+function openLaunchModal() { document.getElementById('launchModal').classList.add('open'); }
+function closeLaunchModal() { document.getElementById('launchModal').classList.remove('open'); }
+function doLaunch() {
+  const lang = document.getElementById('launchLang').value;
+  window.open(`/?project_id=${projectId}&language=${lang}`, '_blank');
+  closeLaunchModal();
+}
+
+// ── Report Generation ─────────────────────────────────────────────────────────
+async function generateReport() {
+  const btn = document.getElementById('btnReport');
+
+  // Get transcripts linked to this project
+  const res = await fetch('/api/transcripts');
+  const { transcripts } = await res.json();
+  const sessions = new Set(project.sessions || []);
+  const relevant = transcripts.filter(t => sessions.has(t.session_id));
+
+  if (!relevant.length) {
+    alert('No interviews found for this project. Run some interviews first.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+  try {
+    const r = await fetch('/api/reports/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_id: projectId,
+        transcript_files: relevant.map(t => t.file),
+        project_name: project.name,
+        research_type: project.research_type,
+        objective: project.objective,
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Report generation failed');
+    window.location.href = `/report/${data.report_id}`;
+  } catch (e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '📊 Generate Report';
+  }
+}
+
+async function viewTranscript(filename) {
+  if (!filename) return;
+  const res = await fetch(`/api/transcript-file/${filename}`);
+  const data = await res.json();
+  const conv = data.conversation || [];
+  const text = conv.map(m =>
+    `${m.speaker === 'interviewer' ? '🤖 ALEX' : '👤 YOU'}: ${m.text || m.content || ''}`
+  ).join('\n\n');
+  alert(text || 'Empty transcript');
+}
+
+// Close modal on overlay click
+document.getElementById('launchModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeLaunchModal();
+});
+
+load().catch(e => {
+  document.getElementById('page').style.display = '';
+  document.getElementById('projName').textContent = 'Error loading project';
+  document.getElementById('projObjective').textContent = e.message;
+});
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ Supports all SEA languages + Indian languages.
 """
 
 from google.cloud import texttospeech_v1 as texttospeech
+from google.api_core.client_options import ClientOptions
 import logging
 from typing import Optional
 
@@ -37,7 +38,9 @@ class GoogleCloudTTS:
             language_code: Language code (e.g., 'en', 'id', 'fil')
         """
         try:
-            self.client = texttospeech.TextToSpeechClient()
+            self.client = texttospeech.TextToSpeechClient(
+                client_options=ClientOptions(quota_project_id=settings.gcp_project_id)
+            )
             self.language_code = language_code
             self.voice_config = self.VOICE_CONFIGS.get(
                 language_code, 

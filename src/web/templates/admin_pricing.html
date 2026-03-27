@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing Config — GetHeard Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --muted:      #8fa3c8;
+      --white:      #ffffff;
+      --success:    #16a34a;
+      --warning:    #d97706;
+      --danger:     #dc2626;
+      --sidebar-w:  220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white); color: #1a2540; min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--navy-dark); min-height: 100vh;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px; font-size: 1.3rem; font-weight: 800; color: var(--white);
+      letter-spacing: -0.02em; border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-decoration: none; display: block;
+    }
+    .sidebar-logo span { color: var(--blue-light); }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
+    .nav-section-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: rgba(255,255,255,0.3); padding: 10px 20px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: rgba(255,255,255,0.65); font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; border-left: 3px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s; cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); text-decoration: none; }
+    .nav-item.active {
+      background: rgba(79,172,254,0.14); color: var(--white);
+      border-left-color: var(--blue-light); font-weight: 600;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-admin { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-bottom: 2px; }
+    .sidebar-admin strong { display: block; color: rgba(255,255,255,0.7); font-size: 0.8rem; }
+    .hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      color: var(--navy); font-size: 1.4rem; padding: 4px;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ── MAIN ── */
+    .app-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      background: var(--white); border-bottom: 1px solid rgba(30,60,114,0.08);
+      padding: 0 36px; height: 64px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .page-content { padding: 32px 36px 120px; flex: 1; }
+
+    /* Two-col layout */
+    .admin-grid {
+      display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start;
+      max-width: 1100px;
+    }
+    .admin-left { min-width: 0; }
+
+    /* Section card */
+    .section-card {
+      background: var(--white); border-radius: 14px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08); border: 1px solid rgba(30,60,114,0.07);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 18px;
+      padding-bottom: 12px; border-bottom: 1px solid rgba(30,60,114,0.07);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* Editable table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    thead th {
+      padding: 8px 12px; text-align: left; font-size: 0.68rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid rgba(30,60,114,0.1); white-space: nowrap;
+    }
+    tbody td {
+      padding: 9px 12px; border-bottom: 1px solid rgba(30,60,114,0.06); color: #334155;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(30,60,114,0.02); }
+
+    /* Inline edit input */
+    .edit-input {
+      padding: 5px 9px; border: 1.5px solid rgba(30,60,114,0.2); border-radius: 6px;
+      font-size: 0.85rem; font-family: inherit; color: #1a2540; width: 110px; outline: none;
+    }
+    .edit-input:focus { border-color: var(--navy); }
+    .price-cell {
+      cursor: pointer; color: var(--navy); font-weight: 600;
+      padding: 4px 8px; border-radius: 5px; border: 1.5px solid transparent;
+      display: inline-block; min-width: 90px;
+    }
+    .price-cell:hover { border-color: rgba(30,60,114,0.2); background: var(--off-white); }
+
+    /* Buttons */
+    .btn-sm {
+      padding: 5px 12px; border: none; border-radius: 6px; cursor: pointer;
+      font-size: 0.75rem; font-weight: 600; font-family: inherit; transition: background 0.15s;
+    }
+    .btn-add { background: rgba(30,60,114,0.08); color: var(--navy); }
+    .btn-add:hover { background: rgba(30,60,114,0.15); }
+    .btn-del { background: #fee2e2; color: var(--danger); }
+    .btn-del:hover { background: #fca5a5; }
+    .btn-save-inline { background: #dcfce7; color: var(--success); }
+    .btn-save-inline:hover { background: #86efac; }
+
+    /* Form inputs */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 10px 0; border-bottom: 1px solid rgba(30,60,114,0.06);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label { font-size: 0.875rem; color: #334155; }
+    .setting-input {
+      padding: 7px 10px; border: 1.5px solid rgba(30,60,114,0.2); border-radius: 7px;
+      font-size: 0.875rem; font-family: inherit; color: #1a2540; width: 130px; outline: none;
+      text-align: right;
+    }
+    .setting-input:focus { border-color: var(--navy); }
+
+    /* Sticky save bar */
+    .save-bar {
+      position: fixed; bottom: 0; left: var(--sidebar-w); right: 0;
+      background: var(--white); border-top: 1px solid rgba(30,60,114,0.1);
+      padding: 14px 36px; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .save-bar-left { font-size: 0.78rem; color: var(--muted); }
+    .btn-save-main {
+      background: var(--navy); color: var(--white); border: none;
+      padding: 10px 28px; border-radius: 9px; font-size: 0.9rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-save-main:hover { background: var(--navy-dark); }
+    .btn-save-main:disabled { background: var(--muted); cursor: not-allowed; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed; top: 20px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    }
+    .toast {
+      background: var(--navy); color: var(--white); padding: 11px 18px;
+      border-radius: 10px; font-size: 0.875rem; font-weight: 600;
+      box-shadow: 0 4px 16px rgba(30,60,114,0.25); animation: toastIn 0.25s ease;
+      max-width: 320px;
+    }
+    @keyframes toastIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── CALCULATOR (right sticky) ── */
+    .calc-card {
+      background: var(--white); border-radius: 14px; padding: 22px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08); border: 1px solid rgba(30,60,114,0.07);
+      position: sticky; top: 80px;
+    }
+    .calc-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .calc-field { margin-bottom: 12px; }
+    .calc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 5px; display: block; }
+    .calc-input, .calc-select {
+      width: 100%; padding: 8px 10px; border: 1.5px solid rgba(30,60,114,0.15);
+      border-radius: 7px; font-size: 0.85rem; font-family: inherit; color: #1a2540; outline: none;
+    }
+    .calc-input:focus, .calc-select:focus { border-color: var(--navy); }
+    .calc-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; font-size: 0.85rem; color: #334155;
+    }
+    .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #cbd5e1; border-radius: 99px; transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px;
+      background: var(--white); border-radius: 50%; transition: transform 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--navy); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    .btn-calc {
+      width: 100%; padding: 10px; background: var(--navy); color: var(--white);
+      border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; margin-top: 4px;
+      transition: background 0.15s;
+    }
+    .btn-calc:hover { background: var(--navy-dark); }
+    .calc-result {
+      margin-top: 14px; padding: 14px; background: var(--off-white);
+      border-radius: 9px; display: none;
+    }
+    .calc-result.show { display: block; }
+    .calc-result-row { display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; font-size: 0.82rem; color: #334155; }
+    .calc-result-total { font-size: 1.15rem; font-weight: 800; color: var(--navy); }
+    .calc-divider { border: none; border-top: 1px solid rgba(30,60,114,0.1); margin: 8px 0; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon {
+      width: 18px; height: 18px; border: 2px solid rgba(30,60,114,0.15);
+      border-top-color: var(--navy); border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .app-main { margin-left: 0; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .topbar { padding: 0 20px; }
+      .page-content { padding: 20px 16px 120px; }
+      .admin-grid { grid-template-columns: 1fr; }
+      .save-bar { left: 0; padding: 12px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ADMIN SIDEBAR -->
+  <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+    <a href="/admin" class="sidebar-logo">Get<span>Heard</span></a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Admin</div>
+      <a href="/admin" class="nav-item">
+        <span class="nav-icon">&#9783;</span> Overview
+      </a>
+      <a href="/admin/studies" class="nav-item">
+        <span class="nav-icon">&#128202;</span> Studies
+      </a>
+      <a href="/admin/panel" class="nav-item">
+        <span class="nav-icon">&#128101;</span> Panel
+      </a>
+      <a href="/admin/pricing" class="nav-item active">
+        <span class="nav-icon">&#128176;</span> Pricing
+      </a>
+      <a href="/admin/reports" class="nav-item">
+        <span class="nav-icon">&#128196;</span> Reports
+      </a>
+      <div class="nav-section-label">System</div>
+      <a href="/admin/clients" class="nav-item">
+        <span class="nav-icon">&#128188;</span> Clients
+      </a>
+      <a href="/admin/settings" class="nav-item">
+        <span class="nav-icon">&#9881;</span> Settings
+      </a>
+      <a href="/admin/logout" class="nav-item" style="margin-top:4px;">
+        <span class="nav-icon">&#8592;</span> Log Out
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-admin">Admin<strong>GetHeard HQ</strong></div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">&#9776;</button>
+        <div class="topbar-title">Pricing Configuration</div>
+      </div>
+      <span id="topbarStatus" style="font-size:0.78rem;color:var(--muted);"></span>
+    </header>
+
+    <div class="page-content">
+      <div class="admin-grid">
+        <div class="admin-left">
+
+          <!-- SECTION 1: Base Prices -->
+          <div class="section-card">
+            <div class="section-title">
+              Base Prices by Study Type
+              <span id="basePricesStatus" style="font-size:0.72rem;color:var(--muted);font-weight:400;"></span>
+            </div>
+            <table id="basePricesTable">
+              <thead>
+                <tr>
+                  <th>Study Type</th>
+                  <th>Base Price (&#8377;)</th>
+                  <th>Edit</th>
+                </tr>
+              </thead>
+              <tbody id="basePricesTbody">
+                <tr><td colspan="3" style="padding:16px;color:var(--muted);text-align:center;"><span class="spin-icon"></span> Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SECTION 2: Panel Size Multipliers -->
+          <div class="section-card">
+            <div class="section-title">
+              Panel Size Multipliers
+              <button class="btn-sm btn-add" onclick="addMultiplierRow()">&#43; Add Tier</button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Min Respondents</th>
+                  <th>Max Respondents</th>
+                  <th>Multiplier</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="multipliersTbody">
+                <tr><td colspan="4" style="padding:16px;color:var(--muted);text-align:center;"><span class="spin-icon"></span> Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SECTION 3: Recruitment Fees -->
+          <div class="section-card">
+            <div class="section-title">Recruitment Fees</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+              <div>
+                <label class="calc-label">From DB per respondent (&#8377;)</label>
+                <input type="number" class="setting-input" id="recruitFeeDB" value="1499" style="width:100%;text-align:left;" onchange="markDirty()" />
+              </div>
+              <div>
+                <label class="calc-label">Targeted base per respondent (&#8377;)</label>
+                <input type="number" class="setting-input" id="recruitFeeTargeted" value="2999" style="width:100%;text-align:left;" onchange="markDirty()" />
+              </div>
+            </div>
+
+            <div class="section-title" style="font-size:0.82rem;margin-bottom:12px;padding-top:0;">
+              Market Multipliers
+            </div>
+            <table>
+              <thead>
+                <tr><th>Country Code</th><th>Multiplier</th><th>Edit</th></tr>
+              </thead>
+              <tbody id="marketTbody">
+                <tr><td colspan="3" style="padding:16px;color:var(--muted);text-align:center;"><span class="spin-icon"></span></td></tr>
+              </tbody>
+            </table>
+
+            <div class="section-title" style="font-size:0.82rem;margin:20px 0 12px;padding-top:0;">
+              Industry Multipliers
+            </div>
+            <table>
+              <thead>
+                <tr><th>Industry</th><th>Multiplier</th><th>Edit</th></tr>
+              </thead>
+              <tbody id="industryTbody">
+                <tr><td colspan="3" style="padding:16px;color:var(--muted);text-align:center;"><span class="spin-icon"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SECTION 4: Other Settings -->
+          <div class="section-card">
+            <div class="section-title">Other Settings</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Urgency premium (%)</div>
+                <div style="font-size:0.72rem;color:var(--muted);">Applied when client requests faster delivery</div>
+              </div>
+              <input type="number" class="setting-input" id="urgencyPct" value="25" onchange="markDirty()" />
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Default currency</div>
+                <div style="font-size:0.72rem;color:var(--muted);">ISO 4217 currency code</div>
+              </div>
+              <input type="text" class="setting-input" id="defaultCurrency" value="INR" onchange="markDirty()" />
+            </div>
+          </div>
+
+        </div><!-- end admin-left -->
+
+        <!-- RIGHT: Calculator -->
+        <div>
+          <div class="calc-card">
+            <div class="calc-title">&#127919; Pricing Calculator</div>
+            <p style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Test your pricing formula with a sample quote.</p>
+
+            <div class="calc-field">
+              <label class="calc-label">Study Type</label>
+              <select class="calc-select" id="calcType">
+                <option value="nps_csat">NPS / CSAT</option>
+                <option value="feature_feedback">Feature Feedback</option>
+                <option value="pain_points">Customer Pain Points</option>
+                <option value="custom">Custom Research</option>
+              </select>
+            </div>
+            <div class="calc-field">
+              <label class="calc-label">Panel Size</label>
+              <input type="number" class="calc-input" id="calcSize" value="20" min="1" max="200" />
+            </div>
+            <div class="calc-field">
+              <label class="calc-label">Panel Source</label>
+              <select class="calc-select" id="calcSource">
+                <option value="csv">Client uploads CSV</option>
+                <option value="panel">GetHeard panel</option>
+                <option value="targeted">Targeted</option>
+              </select>
+            </div>
+            <div class="calc-field">
+              <label class="calc-label">Market</label>
+              <select class="calc-select" id="calcMarket">
+                <option value="IN">India (IN)</option>
+                <option value="SG">Singapore (SG)</option>
+                <option value="ID">Indonesia (ID)</option>
+                <option value="TH">Thailand (TH)</option>
+                <option value="VN">Vietnam (VN)</option>
+                <option value="JP">Japan (JP)</option>
+                <option value="KR">Korea (KR)</option>
+                <option value="CN">China (CN)</option>
+                <option value="AU">Australia (AU)</option>
+                <option value="OT">Other</option>
+              </select>
+            </div>
+            <div class="calc-field">
+              <label class="calc-label">Industry</label>
+              <select class="calc-select" id="calcIndustry">
+                <option value="technology">Technology</option>
+                <option value="finance">Finance</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="ecommerce">E-Commerce</option>
+                <option value="fmcg">FMCG</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="calc-field">
+              <label class="calc-label">Respondent Incentive (&#8377;)</label>
+              <input type="number" class="calc-input" id="calcIncentive" value="0" min="0" max="500" step="50" />
+            </div>
+            <div class="calc-toggle-row">
+              <span>Urgency (+<span id="calcUrgencyPctLabel">25</span>%)</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="calcUrgency" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <button class="btn-calc" onclick="runCalculator()">Calculate Quote</button>
+
+            <div class="calc-result" id="calcResult">
+              <div class="calc-result-row"><span>Study fee</span><span id="cr-study">—</span></div>
+              <div class="calc-result-row"><span>Recruitment fee</span><span id="cr-recruit">—</span></div>
+              <div class="calc-result-row"><span>Respondent incentive</span><span id="cr-incentive">—</span></div>
+              <div class="calc-result-row"><span>Urgency premium</span><span id="cr-urgency">—</span></div>
+              <hr class="calc-divider" />
+              <div class="calc-result-row">
+                <span style="font-weight:700;color:var(--navy);">TOTAL</span>
+                <span class="calc-result-total" id="cr-total">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end admin-grid -->
+    </div>
+
+    <!-- Sticky Save Bar -->
+    <div class="save-bar">
+      <div class="save-bar-left" id="lastUpdatedLabel">Loading config&hellip;</div>
+      <button class="btn-save-main" id="saveBtn" onclick="saveAll()">Save All Changes</button>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    let config = {
+      base_prices: {
+        nps_csat: 7999,
+        feature_feedback: 11999,
+        pain_points: 14999,
+        custom: 16999,
+      },
+      multipliers: [
+        { min: 5, max: 15, multiplier: 1.0 },
+        { min: 16, max: 30, multiplier: 1.1 },
+        { min: 31, max: 50, multiplier: 1.2 },
+        { min: 51, max: 100, multiplier: 1.4 },
+      ],
+      recruitment: {
+        from_db: 1499,
+        targeted_base: 2999,
+      },
+      market_multipliers: {
+        IN: 1.0, SG: 1.5, ID: 1.2, TH: 1.2, VN: 1.15,
+        JP: 1.8, KR: 1.7, CN: 1.6, AU: 1.6, OT: 1.3,
+      },
+      industry_multipliers: {
+        Technology: 1.0, Finance: 1.2, Healthcare: 1.3,
+        'E-Commerce': 1.0, FMCG: 1.1, Other: 1.0,
+      },
+      urgency_pct: 25,
+      currency: 'INR',
+      last_updated: null,
+    };
+    let isDirty = false;
+
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    function esc(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function fmt(n) {
+      if (n == null || isNaN(Number(n))) return '—';
+      return '\u20B9' + Number(n).toLocaleString('en-IN');
+    }
+    function fmtMult(n) { return Number(n).toFixed(2) + 'x'; }
+
+    function showToast(msg, duration = 3500) {
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), duration);
+    }
+
+    function markDirty() { isDirty = true; }
+
+    // ── Base Prices ──
+    const TYPE_NAMES = {
+      nps_csat: 'NPS / CSAT',
+      feature_feedback: 'Feature Feedback',
+      pain_points: 'Customer Pain Points',
+      custom: 'Custom Research',
+    };
+
+    function renderBasePrices() {
+      const tbody = document.getElementById('basePricesTbody');
+      tbody.innerHTML = Object.entries(config.base_prices).map(([key, price]) => `
+        <tr>
+          <td>${esc(TYPE_NAMES[key] || key)}</td>
+          <td>
+            <span class="price-cell" id="price-display-${esc(key)}" onclick="startEditPrice('${esc(key)}')">${fmt(price)}</span>
+            <input type="number" class="edit-input" id="price-input-${esc(key)}"
+              style="display:none;" value="${price}"
+              onkeydown="if(event.key==='Enter')savePrice('${esc(key)}');if(event.key==='Escape')cancelEditPrice('${esc(key)}')"
+              onblur="savePrice('${esc(key)}')" />
+          </td>
+          <td>
+            <button class="btn-sm btn-add" onclick="startEditPrice('${esc(key)}')">Edit</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function startEditPrice(key) {
+      document.getElementById(`price-display-${key}`).style.display = 'none';
+      const inp = document.getElementById(`price-input-${key}`);
+      inp.style.display = 'inline-block';
+      inp.focus();
+      inp.select();
+    }
+    function cancelEditPrice(key) {
+      document.getElementById(`price-input-${key}`).style.display = 'none';
+      document.getElementById(`price-display-${key}`).style.display = 'inline-block';
+    }
+    function savePrice(key) {
+      const inp = document.getElementById(`price-input-${key}`);
+      const val = parseInt(inp.value);
+      if (!isNaN(val) && val > 0) {
+        config.base_prices[key] = val;
+        markDirty();
+      }
+      cancelEditPrice(key);
+      renderBasePrices();
+    }
+
+    // ── Multipliers ──
+    function renderMultipliers() {
+      const tbody = document.getElementById('multipliersTbody');
+      tbody.innerHTML = config.multipliers.map((row, i) => `
+        <tr>
+          <td><input type="number" class="edit-input" value="${row.min}" onchange="config.multipliers[${i}].min=parseInt(this.value);markDirty()" /></td>
+          <td><input type="number" class="edit-input" value="${row.max}" onchange="config.multipliers[${i}].max=parseInt(this.value);markDirty()" /></td>
+          <td><input type="number" class="edit-input" step="0.05" value="${row.multiplier}" onchange="config.multipliers[${i}].multiplier=parseFloat(this.value);markDirty()" /></td>
+          <td><button class="btn-sm btn-del" onclick="deleteMultiplierRow(${i})">Delete</button></td>
+        </tr>`).join('');
+    }
+
+    function addMultiplierRow() {
+      config.multipliers.push({ min: 0, max: 0, multiplier: 1.0 });
+      markDirty();
+      renderMultipliers();
+    }
+    function deleteMultiplierRow(i) {
+      config.multipliers.splice(i, 1);
+      markDirty();
+      renderMultipliers();
+    }
+
+    // ── Market Multipliers ──
+    function renderMarket() {
+      const tbody = document.getElementById('marketTbody');
+      tbody.innerHTML = Object.entries(config.market_multipliers).map(([code, mult]) => `
+        <tr>
+          <td style="font-weight:600;">${esc(code)}</td>
+          <td>
+            <span class="price-cell" id="mkt-display-${esc(code)}" onclick="startEditMkt('${esc(code)}')">${fmtMult(mult)}</span>
+            <input type="number" class="edit-input" id="mkt-input-${esc(code)}" step="0.05"
+              style="display:none;" value="${mult}"
+              onkeydown="if(event.key==='Enter')saveMkt('${esc(code)}');if(event.key==='Escape')cancelEditMkt('${esc(code)}')"
+              onblur="saveMkt('${esc(code)}')" />
+          </td>
+          <td><button class="btn-sm btn-add" onclick="startEditMkt('${esc(code)}')">Edit</button></td>
+        </tr>`).join('');
+    }
+    function startEditMkt(code) {
+      document.getElementById(`mkt-display-${code}`).style.display = 'none';
+      const inp = document.getElementById(`mkt-input-${code}`);
+      inp.style.display = 'inline-block'; inp.focus(); inp.select();
+    }
+    function cancelEditMkt(code) {
+      document.getElementById(`mkt-input-${code}`).style.display = 'none';
+      document.getElementById(`mkt-display-${code}`).style.display = 'inline-block';
+    }
+    function saveMkt(code) {
+      const inp = document.getElementById(`mkt-input-${code}`);
+      const val = parseFloat(inp.value);
+      if (!isNaN(val) && val > 0) { config.market_multipliers[code] = val; markDirty(); }
+      cancelEditMkt(code);
+      renderMarket();
+    }
+
+    // ── Industry Multipliers ──
+    function renderIndustry() {
+      const tbody = document.getElementById('industryTbody');
+      tbody.innerHTML = Object.entries(config.industry_multipliers).map(([ind, mult]) => `
+        <tr>
+          <td style="font-weight:500;">${esc(ind)}</td>
+          <td>
+            <span class="price-cell" id="ind-display-${esc(ind)}" onclick="startEditInd('${esc(ind)}')">${fmtMult(mult)}</span>
+            <input type="number" class="edit-input" id="ind-input-${esc(ind)}" step="0.05"
+              style="display:none;" value="${mult}"
+              onkeydown="if(event.key==='Enter')saveInd('${esc(ind)}');if(event.key==='Escape')cancelEditInd('${esc(ind)}')"
+              onblur="saveInd('${esc(ind)}')" />
+          </td>
+          <td><button class="btn-sm btn-add" onclick="startEditInd('${esc(ind)}')">Edit</button></td>
+        </tr>`).join('');
+    }
+    function startEditInd(ind) {
+      document.getElementById(`ind-display-${ind}`).style.display = 'none';
+      const inp = document.getElementById(`ind-input-${ind}`);
+      inp.style.display = 'inline-block'; inp.focus(); inp.select();
+    }
+    function cancelEditInd(ind) {
+      document.getElementById(`ind-input-${ind}`).style.display = 'none';
+      document.getElementById(`ind-display-${ind}`).style.display = 'inline-block';
+    }
+    function saveInd(ind) {
+      const inp = document.getElementById(`ind-input-${ind}`);
+      const val = parseFloat(inp.value);
+      if (!isNaN(val) && val > 0) { config.industry_multipliers[ind] = val; markDirty(); }
+      cancelEditInd(ind);
+      renderIndustry();
+    }
+
+    // ── Build full config from form ──
+    function buildConfig() {
+      return {
+        base_prices: { ...config.base_prices },
+        multipliers: config.multipliers,
+        recruitment: {
+          from_db: parseInt(document.getElementById('recruitFeeDB').value) || 1499,
+          targeted_base: parseInt(document.getElementById('recruitFeeTargeted').value) || 2999,
+        },
+        market_multipliers: { ...config.market_multipliers },
+        industry_multipliers: { ...config.industry_multipliers },
+        urgency_pct: parseInt(document.getElementById('urgencyPct').value) || 25,
+        currency: document.getElementById('defaultCurrency').value || 'INR',
+      };
+    }
+
+    // ── Save all ──
+    async function saveAll() {
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving\u2026';
+      const payload = buildConfig();
+      try {
+        const res = await fetch('/api/admin/pricing', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const ts = new Date().toLocaleString();
+        document.getElementById('lastUpdatedLabel').textContent = `Last updated: ${ts}`;
+        isDirty = false;
+        showToast('Pricing saved successfully.');
+      } catch(err) {
+        showToast('Failed to save. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save All Changes';
+      }
+    }
+
+    // ── Load config ──
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/admin/pricing');
+        if (!res.ok) throw new Error('not ok');
+        const data = await res.json();
+        if (data.base_prices) config.base_prices = data.base_prices;
+        if (data.multipliers) config.multipliers = data.multipliers;
+        if (data.recruitment) {
+          document.getElementById('recruitFeeDB').value = data.recruitment.from_db || 1499;
+          document.getElementById('recruitFeeTargeted').value = data.recruitment.targeted_base || 2999;
+        }
+        if (data.market_multipliers) config.market_multipliers = data.market_multipliers;
+        if (data.industry_multipliers) config.industry_multipliers = data.industry_multipliers;
+        if (data.urgency_pct) document.getElementById('urgencyPct').value = data.urgency_pct;
+        if (data.currency) document.getElementById('defaultCurrency').value = data.currency;
+        if (data.last_updated) {
+          document.getElementById('lastUpdatedLabel').textContent =
+            'Last updated: ' + new Date(data.last_updated).toLocaleString();
+        } else {
+          document.getElementById('lastUpdatedLabel').textContent = 'No saved config yet';
+        }
+      } catch(e) {
+        document.getElementById('lastUpdatedLabel').textContent = 'Using default config';
+      }
+      renderBasePrices();
+      renderMultipliers();
+      renderMarket();
+      renderIndustry();
+      document.getElementById('calcUrgencyPctLabel').textContent =
+        document.getElementById('urgencyPct').value || '25';
+    }
+
+    // ── Calculator ──
+    async function runCalculator() {
+      const type = document.getElementById('calcType').value;
+      const size = parseInt(document.getElementById('calcSize').value) || 20;
+      const source = document.getElementById('calcSource').value;
+      const market = document.getElementById('calcMarket').value;
+      const industry = document.getElementById('calcIndustry').value;
+      const incentive = parseInt(document.getElementById('calcIncentive').value) || 0;
+      const urgency = document.getElementById('calcUrgency').checked;
+      const urgencyPct = parseInt(document.getElementById('urgencyPct').value) || 25;
+
+      // Try API first, fall back to local formula
+      try {
+        const res = await fetch('/api/admin/pricing/compute', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ study_type: type, panel_size: size, panel_source: source, market, industry, respondent_incentive: incentive, urgency })
+        });
+        if (res.ok) {
+          const d = await res.json();
+          showCalcResult(d);
+          return;
+        }
+      } catch(e) {}
+
+      // Local compute
+      const basePrice = config.base_prices[type] || 7999;
+      let mult = 1.0;
+      for (const row of config.multipliers) {
+        if (size >= row.min && size <= row.max) { mult = row.multiplier; break; }
+      }
+      const studyFee = Math.round(basePrice * mult);
+      let recruitFee = 0;
+      if (source === 'panel') recruitFee = (config.recruitment.from_db || 1499) * size;
+      if (source === 'targeted') recruitFee = (config.recruitment.targeted_base || 2999) * size;
+      const mktMult = config.market_multipliers[market] || 1.0;
+      const indMult = config.industry_multipliers[industry] || 1.0;
+      const incentiveTotal = incentive * size;
+      let subtotal = (studyFee + recruitFee) * mktMult * indMult + incentiveTotal;
+      const urgencyFee = urgency ? Math.round(subtotal * urgencyPct / 100) : 0;
+      const total = Math.round(subtotal + urgencyFee);
+      showCalcResult({
+        study_fee: studyFee,
+        recruitment_fee: recruitFee,
+        respondent_incentive: incentiveTotal,
+        urgency_premium: urgencyFee,
+        total
+      });
+    }
+
+    function showCalcResult(d) {
+      const result = document.getElementById('calcResult');
+      result.classList.add('show');
+      document.getElementById('cr-study').textContent = d.study_fee ? fmt(d.study_fee) : '—';
+      document.getElementById('cr-recruit').textContent = d.recruitment_fee ? fmt(d.recruitment_fee) : '—';
+      document.getElementById('cr-incentive').textContent = d.respondent_incentive ? fmt(d.respondent_incentive) : '—';
+      document.getElementById('cr-urgency').textContent = d.urgency_premium ? fmt(d.urgency_premium) : '—';
+      document.getElementById('cr-total').textContent = d.total ? fmt(d.total) : '—';
+    }
+
+    // Boot
+    loadConfig();
+  </script>
+</body>
+</html>

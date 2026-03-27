@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --white:      #ffffff;
+      --muted:      #8fa3c8;
+      --danger:     #dc2626;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--navy-dark) 0%, #1a3460 40%, #1e4080 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      color: #1a2540;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .wordmark {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .wordmark a {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .wordmark a span { color: var(--blue-light); }
+    .wordmark p {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 40px 40px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    @media (max-width: 480px) {
+      .login-card { padding: 28px 20px 24px; }
+    }
+
+    .card-header {
+      margin-bottom: 28px;
+    }
+    .card-header h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .card-header p {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .label-row label { margin-bottom: 0; }
+    .forgot-link {
+      font-size: 0.8rem;
+      color: var(--blue);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid #c5d2e8;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      color: #1a2540;
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(30,60,114,0.12);
+    }
+    input::placeholder { color: var(--muted); }
+    input.invalid { border-color: var(--danger); }
+
+    .password-wrapper { position: relative; }
+    .password-wrapper input { padding-right: 44px; }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      font-size: 0.85rem;
+      transition: color 0.15s;
+    }
+    .password-toggle:hover { color: var(--navy); }
+
+    .field-error {
+      font-size: 0.78rem;
+      color: var(--danger);
+      margin-top: 4px;
+      display: none;
+    }
+    .field-error.visible { display: block; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 9px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+    }
+    .btn-submit:hover {
+      background: var(--navy-dark);
+      box-shadow: 0 6px 20px rgba(30,60,114,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e8edf5;
+      margin: 24px 0;
+    }
+
+    .signup-link {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .signup-link a {
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .signup-link a:hover { text-decoration: underline; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+
+    <div class="wordmark">
+      <a href="/"><b>Get</b><span>Heard</span></a>
+      <p>Research client portal</p>
+    </div>
+
+    <div class="login-card">
+      <div class="card-header">
+        <h1>Welcome back</h1>
+        <p>Log in to your GetHeard account.</p>
+      </div>
+
+      <div id="error-banner" class="alert-error" style="display:none;">
+        <span>&#9888;</span>
+        <span id="error-message">Invalid email or password. Please try again.</span>
+      </div>
+
+      <form id="login-form" method="POST" action="/listen/login" novalidate>
+
+        <div class="form-group">
+          <label for="email">Work email</label>
+          <input type="email" id="email" name="email"
+                 placeholder="jane@company.com"
+                 required autocomplete="email" autofocus />
+          <div class="field-error" id="err-email">Please enter a valid email address.</div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="password">Password</label>
+            <a href="/listen/forgot-password" class="forgot-link">Forgot password?</a>
+          </div>
+          <div class="password-wrapper">
+            <input type="password" id="password" name="password"
+                   placeholder="Enter your password"
+                   required autocomplete="current-password" />
+            <button type="button" class="password-toggle"
+                    aria-label="Toggle password visibility"
+                    onclick="togglePwd()">&#128065;</button>
+          </div>
+          <div class="field-error" id="err-pwd">Please enter your password.</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">Log In</button>
+
+      </form>
+
+      <hr class="divider" />
+      <p class="signup-link">New here? <a href="/listen/signup">Create an account &rarr;</a></p>
+    </div>
+
+  </div>
+
+  <script>
+    // Show error from URL query param
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === '1') {
+      document.getElementById('error-banner').style.display = 'flex';
+    }
+
+    function togglePwd() {
+      const inp = document.getElementById('password');
+      const btn = document.querySelector('.password-toggle');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '&#128584;';
+      } else {
+        inp.type = 'password';
+        btn.innerHTML = '&#128065;';
+      }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      let valid = true;
+
+      const email = document.getElementById('email');
+      const errEmail = document.getElementById('err-email');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+        email.classList.add('invalid');
+        errEmail.classList.add('visible');
+        valid = false;
+        e.preventDefault();
+      } else {
+        email.classList.remove('invalid');
+        errEmail.classList.remove('visible');
+      }
+
+      const pwd = document.getElementById('password');
+      const errPwd = document.getElementById('err-pwd');
+      if (pwd.value.length < 1) {
+        pwd.classList.add('invalid');
+        errPwd.classList.add('visible');
+        valid = false;
+        e.preventDefault();
+      } else {
+        pwd.classList.remove('invalid');
+        errPwd.classList.remove('visible');
+      }
+
+      if (valid) {
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Logging in&hellip;';
+      }
+    });
+
+    ['email', 'password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        this.classList.remove('invalid');
+        document.getElementById('error-banner').style.display = 'none';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --white:      #ffffff;
+      --muted:      #8fa3c8;
+      --success:    #16a34a;
+      --warning:    #d97706;
+      --danger:     #dc2626;
+      --sidebar-w:  220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white);
+      color: #1a2540;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy-dark);
+      min-height: 100vh;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-logo a {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .sidebar-logo a span { color: var(--blue-light); }
+    .admin-pill {
+      display: inline-block;
+      background: rgba(79,172,254,0.15);
+      color: var(--blue-light);
+      border: 1px solid rgba(79,172,254,0.25);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
+    .nav-section-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+      padding: 10px 20px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-item.active {
+      background: rgba(79,172,254,0.14);
+      color: var(--white);
+      border-left-color: var(--blue-light);
+      font-weight: 600;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ── MAIN ── */
+    .app-main {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+    }
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid rgba(30,60,114,0.08);
+      padding: 0 36px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .refresh-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    .refresh-text {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .page-content { padding: 32px 36px; }
+
+    /* ── STATS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 750px)  { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 20px;
+      box-shadow: 0 2px 10px rgba(30,60,114,0.07);
+      border-top: 3px solid var(--navy);
+      border: 1px solid rgba(30,60,114,0.06);
+      border-top: 3px solid var(--navy);
+    }
+    .stat-card:nth-child(2) { border-top-color: var(--blue); }
+    .stat-card:nth-child(3) { border-top-color: var(--blue-light); }
+    .stat-card:nth-child(4) { border-top-color: var(--success); }
+    .stat-card:nth-child(5) { border-top-color: var(--warning); }
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-lbl {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+    }
+
+    /* ── SECTION CARD ── */
+    .section-card {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(30,60,114,0.07);
+      border: 1px solid rgba(30,60,114,0.06);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .section-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(30,60,114,0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .section-link {
+      font-size: 0.8rem;
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .section-link:hover { text-decoration: underline; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    thead { background: var(--off-white); }
+    thead th {
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      border-bottom: 1px solid rgba(30,60,114,0.07);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(30,60,114,0.05);
+      color: #334155;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(30,60,114,0.02); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.69rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .badge-active       { background: #dcfce7; color: var(--success); }
+    .badge-pending      { background: #f1f5f9; color: #64748b; }
+    .badge-briefing,
+    .badge-pricing,
+    .badge-panel_building,
+    .badge-analysis,
+    .badge-inprogress   { background: #dbeafe; color: var(--blue); }
+    .badge-interviewing { background: #dcfce7; color: var(--success); }
+    .badge-completed    { background: #dcfce7; color: var(--success); }
+    .badge-cancelled    { background: #fee2e2; color: var(--danger); }
+
+    .btn-view {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 12px;
+      background: rgba(30,60,114,0.06);
+      color: var(--navy);
+      border: 1px solid rgba(30,60,114,0.13);
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .btn-view:hover {
+      background: var(--navy);
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    /* ── PANEL BREAKDOWN ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+    .panel-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px;
+    }
+    .panel-label {
+      font-size: 0.8rem;
+      color: #475569;
+      width: 100px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar-wrap {
+      flex: 1;
+      background: var(--off-white);
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--blue-light) 100%);
+      transition: width 0.6s ease;
+    }
+    .panel-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      width: 32px;
+      text-align: right;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ── EMPTY / SPINNER ── */
+    .spinner-cell {
+      padding: 44px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon {
+      width: 26px; height: 26px;
+      border: 3px solid rgba(30,60,114,0.1);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 10px;
+    }
+    .empty-row td {
+      text-align: center;
+      padding: 36px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* ── PRICING LINK ── */
+    .pricing-block {
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+      border-radius: 14px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .pricing-block-text h3 { font-size: 1rem; color: var(--white); margin-bottom: 4px; }
+    .pricing-block-text p  { font-size: 0.82rem; color: rgba(255,255,255,0.6); }
+    .btn-pricing {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--blue-light);
+      color: var(--white);
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.18s;
+    }
+    .btn-pricing:hover { background: var(--accent); text-decoration: none; color: var(--white); }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .app-main { margin-left: 0; }
+      .topbar   { padding: 0 16px; }
+      .page-content { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <div class="sidebar-logo">
+      <a href="/admin"><b>Get</b><span>Heard</span></a>
+      <div class="admin-pill">Admin</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Dashboard</div>
+      <a href="/admin" class="nav-item active">
+        <span class="nav-icon">&#9783;</span> Overview
+      </a>
+      <div class="nav-section-label">Manage</div>
+      <a href="/admin/clients" class="nav-item">
+        <span class="nav-icon">&#127970;</span> Clients
+      </a>
+      <a href="/admin/studies" class="nav-item">
+        <span class="nav-icon">&#128202;</span> Studies
+      </a>
+      <a href="/admin/respondents" class="nav-item">
+        <span class="nav-icon">&#128101;</span> Respondents
+      </a>
+      <div class="nav-section-label">Finance</div>
+      <a href="/admin/pricing" class="nav-item">
+        <span class="nav-icon">&#128176;</span> Pricing
+      </a>
+      <a href="/admin/payouts" class="nav-item">
+        <span class="nav-icon">&#128184;</span> Payouts
+      </a>
+      <div class="nav-section-label">System</div>
+      <a href="/admin/settings" class="nav-item">
+        <span class="nav-icon">&#9881;</span> Settings
+      </a>
+      <a href="/admin/logout" class="nav-item">
+        <span class="nav-icon">&#8592;</span> Log Out
+      </a>
+    </nav>
+    <div class="sidebar-footer">GetHeard Admin v1.0</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="app-main">
+
+    <header class="topbar">
+      <div class="topbar-title">Admin Dashboard</div>
+      <div class="topbar-right">
+        <div class="refresh-dot" title="Auto-refreshing every 30s"></div>
+        <span class="refresh-text" id="last-refresh">Refreshing…</span>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- STATS -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-val" id="s-clients">—</div>
+          <div class="stat-lbl">Total Clients</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="s-active-studies">—</div>
+          <div class="stat-lbl">Active Studies</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="s-respondents">—</div>
+          <div class="stat-lbl">Total Respondents</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="s-completed-month">—</div>
+          <div class="stat-lbl">Completed This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="s-revenue">—</div>
+          <div class="stat-lbl">Revenue This Month (INR)</div>
+        </div>
+      </div>
+
+      <!-- PRICING PANEL LINK -->
+      <div class="pricing-block">
+        <div class="pricing-block-text">
+          <h3>Pricing Configuration</h3>
+          <p>Set per-study pricing, respondent rates, and enterprise tiers.</p>
+        </div>
+        <a href="/admin/pricing" class="btn-pricing">Manage Pricing &rarr;</a>
+      </div>
+
+      <!-- RECENT CLIENTS -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Recent Clients</span>
+          <a href="/admin/clients" class="section-link">View all &rarr;</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Country</th>
+                <th style="text-align:center;">Studies</th>
+                <th>Joined</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="clients-tbody">
+              <tr><td colspan="6" style="padding:40px;text-align:center;">
+                <div class="spin-icon" style="margin:0 auto 8px;"></div>
+                <span style="color:var(--muted);font-size:0.82rem;">Loading clients…</span>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ACTIVE STUDIES -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Active Studies</span>
+          <a href="/admin/studies" class="section-link">View all &rarr;</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Study Name</th>
+                <th>Status</th>
+                <th style="text-align:center;">Respondents</th>
+                <th>Started</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="studies-tbody">
+              <tr><td colspan="6" style="padding:40px;text-align:center;">
+                <div class="spin-icon" style="margin:0 auto 8px;"></div>
+                <span style="color:var(--muted);font-size:0.82rem;">Loading studies…</span>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL BREAKDOWN -->
+      <div class="two-col">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-title">Panel by Language</span>
+          </div>
+          <div id="panel-lang-body" style="padding: 8px 0;">
+            <div class="spinner-cell">
+              <div class="spin-icon"></div>
+              Loading…
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-title">Panel by Country</span>
+          </div>
+          <div id="panel-country-body" style="padding: 8px 0;">
+            <div class="spinner-cell">
+              <div class="spin-icon"></div>
+              Loading…
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const LANG_NAMES = {
+      en:'English', hi:'Hindi', id:'Indonesian', fil:'Filipino',
+      th:'Thai', vi:'Vietnamese', ko:'Korean', ja:'Japanese', zh:'Mandarin'
+    };
+
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      try { return new Date(iso).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }); }
+      catch(e) { return iso; }
+    }
+
+    function fmtINR(n) {
+      if (!n && n !== 0) return '—';
+      return '₹' + Number(n).toLocaleString('en-IN');
+    }
+
+    function statusBadge(raw) {
+      const s = (raw || 'pending').toLowerCase().replace(/\s+/g,'_');
+      const labels = {
+        pending:'Pending', briefing:'Briefing', pricing:'Pricing',
+        panel_building:'Panel Building', interviewing:'Interviewing',
+        analysis:'Analysis', completed:'Completed', cancelled:'Cancelled',
+        active:'Active',
+      };
+      const label = labels[s] || (s.charAt(0).toUpperCase()+s.slice(1));
+      return `<span class="badge badge-${esc(s)}">${esc(label)}</span>`;
+    }
+
+    async function loadAll() {
+      try {
+        const [statsRes, panelRes, clientsRes, studiesRes] = await Promise.allSettled([
+          fetch('/api/admin/stats').then(r => r.json()),
+          fetch('/api/respondents/stats').then(r => r.json()),
+          fetch('/api/admin/clients').then(r => r.json()),
+          fetch('/api/admin/studies').then(r => r.json()),
+        ]);
+
+        // Stats
+        if (statsRes.status === 'fulfilled') {
+          const s = statsRes.value;
+          document.getElementById('s-clients').textContent        = s.total_clients        ?? s.clients        ?? '—';
+          document.getElementById('s-active-studies').textContent  = s.active_studies       ?? '—';
+          document.getElementById('s-respondents').textContent     = s.total_respondents    ?? s.respondents    ?? '—';
+          document.getElementById('s-completed-month').textContent = s.completed_this_month ?? s.completed_month ?? '—';
+          document.getElementById('s-revenue').textContent         = fmtINR(s.revenue_this_month ?? s.revenue_month);
+        }
+
+        // Panel by language & country
+        if (panelRes.status === 'fulfilled') {
+          renderBarChart('panel-lang-body',   panelRes.value.by_language, LANG_NAMES);
+          renderBarChart('panel-country-body', panelRes.value.by_country, {});
+        }
+
+        // Clients table
+        if (clientsRes.status === 'fulfilled') {
+          const clients = clientsRes.value.clients || clientsRes.value || [];
+          renderClients(clients.slice(0, 10));
+        }
+
+        // Studies table
+        if (studiesRes.status === 'fulfilled') {
+          const studies = studiesRes.value.studies || studiesRes.value || [];
+          renderStudies(studies.slice(0, 10));
+        }
+
+        // Update refresh time
+        document.getElementById('last-refresh').textContent =
+          'Last updated: ' + new Date().toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+
+      } catch(e) {
+        console.error('Dashboard load error:', e);
+      }
+    }
+
+    function renderBarChart(containerId, data, nameMap) {
+      const container = document.getElementById(containerId);
+      if (!data || !Object.keys(data).length) {
+        container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.82rem;">No data yet</div>';
+        return;
+      }
+      const entries = Object.entries(data).sort((a,b) => b[1]-a[1]).slice(0, 12);
+      const max = entries[0][1] || 1;
+      container.innerHTML = entries.map(([key, count]) => {
+        const label = nameMap[key] || key;
+        const pct   = Math.round((count / max) * 100);
+        return `<div class="panel-row">
+          <span class="panel-label" title="${esc(label)}">${esc(label)}</span>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <span class="panel-count">${count}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function renderClients(clients) {
+      const tbody = document.getElementById('clients-tbody');
+      if (!clients.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No clients yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = clients.map(c => {
+        const id = c.id || c.client_id || '';
+        return `<tr>
+          <td><span style="font-weight:600;">${esc(c.name || c.full_name || '—')}</span></td>
+          <td style="color:var(--muted);">${esc(c.company || '—')}</td>
+          <td>${esc(c.country || '—')}</td>
+          <td style="text-align:center;">${c.study_count ?? c.studies ?? '0'}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">${fmtDate(c.created_at || c.joined_at)}</td>
+          <td><a href="/admin/clients/${encodeURIComponent(id)}" class="btn-view">View</a></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderStudies(studies) {
+      const tbody = document.getElementById('studies-tbody');
+      if (!studies.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No active studies</td></tr>';
+        return;
+      }
+      tbody.innerHTML = studies.map(s => {
+        const id = s.id || s.project_id || '';
+        return `<tr>
+          <td style="color:var(--muted);font-size:0.82rem;">${esc(s.client_name || s.client || '—')}</td>
+          <td><span style="font-weight:600;">${esc(s.name || s.project_name || '—')}</span></td>
+          <td>${statusBadge(s.status)}</td>
+          <td style="text-align:center;">${s.respondent_count ?? s.respondents ?? '—'}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">${fmtDate(s.started_at || s.created_at)}</td>
+          <td><a href="/admin/studies/${encodeURIComponent(id)}" class="btn-view">View</a></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Boot + auto-refresh every 30 seconds
+    loadAll();
+    setInterval(loadAll, 30000);
+  </script>
+</body>
+</html>

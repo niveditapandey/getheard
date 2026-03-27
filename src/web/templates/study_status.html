@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Status — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --muted:      #8fa3c8;
+      --white:      #ffffff;
+      --success:    #16a34a;
+      --warning:    #d97706;
+      --danger:     #dc2626;
+      --sidebar-w:  220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white); color: #1a2540; min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--navy-dark); min-height: 100vh;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px; font-size: 1.3rem; font-weight: 800; color: var(--white);
+      letter-spacing: -0.02em; border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-decoration: none; display: block;
+    }
+    .sidebar-logo span { color: var(--blue-light); }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
+    .nav-section-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: rgba(255,255,255,0.3); padding: 10px 20px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: rgba(255,255,255,0.65); font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; border-left: 3px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s; cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); text-decoration: none; }
+    .nav-item.active {
+      background: rgba(79,172,254,0.14); color: var(--white);
+      border-left-color: var(--blue-light); font-weight: 600;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-company { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+    .sidebar-company strong {
+      display: block; color: rgba(255,255,255,0.8); font-size: 0.82rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      color: var(--navy); font-size: 1.4rem; padding: 4px;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ── MAIN ── */
+    .app-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      background: var(--white); border-bottom: 1px solid rgba(30,60,114,0.08);
+      padding: 0 36px; height: 64px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .page-content { padding: 32px 36px; flex: 1; }
+    .centered { max-width: 900px; margin: 0 auto; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px; font-size: 0.7rem;
+      font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap;
+    }
+    .badge::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; flex-shrink: 0;
+    }
+    .badge-briefing, .badge-pricing, .badge-timeline_estimate,
+    .badge-awaiting_payment, .badge-panel_building, .badge-panel_approval,
+    .badge-analysis { background: #dbeafe; color: var(--blue); }
+    .badge-interviewing { background: #dcfce7; color: var(--success); }
+    .badge-completed { background: #dcfce7; color: var(--success); }
+    .badge-cancelled { background: #fee2e2; color: var(--danger); }
+
+    /* Study header */
+    .study-header {
+      background: var(--white); border-radius: 14px; padding: 20px 24px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08); border: 1px solid rgba(30,60,114,0.07);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .study-header-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .study-header-name { font-size: 1.15rem; font-weight: 700; color: var(--navy); }
+    .study-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Buttons */
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border: 1.5px solid var(--navy); border-radius: 8px;
+      color: var(--navy); background: transparent; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+    }
+    .btn-outline:hover { background: var(--navy); color: var(--white); text-decoration: none; }
+    .btn-navy {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border: none; border-radius: 8px;
+      color: var(--white); background: var(--navy); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .btn-navy:hover { background: var(--navy-dark); }
+
+    /* Pipeline stepper */
+    .pipeline-card {
+      background: var(--white); border-radius: 14px; padding: 28px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08); border: 1px solid rgba(30,60,114,0.07);
+      margin-bottom: 24px;
+    }
+    .pipeline-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 24px; }
+
+    .pipeline-step {
+      display: flex; gap: 16px; position: relative; padding-bottom: 28px;
+    }
+    .pipeline-step:last-child { padding-bottom: 0; }
+    .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+    .step-icon-circle {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; flex-shrink: 0;
+      background: var(--off-white); border: 2px solid rgba(30,60,114,0.12);
+    }
+    .pipeline-step.done .step-icon-circle { background: var(--navy); border-color: var(--navy); }
+    .pipeline-step.active .step-icon-circle { background: var(--blue-light); border-color: var(--blue-light); }
+    .pipeline-step.pending .step-icon-circle { background: var(--off-white); border-color: rgba(30,60,114,0.12); }
+    .step-connector {
+      width: 2px; flex: 1; background: rgba(30,60,114,0.1); margin: 4px 0;
+    }
+    .pipeline-step.done .step-connector { background: var(--navy); }
+    .pipeline-step:last-child .step-connector { display: none; }
+
+    .step-body { flex: 1; padding-top: 6px; }
+    .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+    .step-name { font-size: 0.9rem; font-weight: 600; color: #1a2540; }
+    .step-chip {
+      padding: 2px 9px; border-radius: 999px; font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .chip-pending { background: #f1f5f9; color: #64748b; }
+    .chip-active { background: #dbeafe; color: var(--blue); }
+    .chip-completed { background: #dcfce7; color: var(--success); }
+    .step-timestamp { font-size: 0.72rem; color: var(--muted); }
+    .step-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+    .step-action { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Panel approval expanded */
+    .panel-approval-section {
+      margin-top: 14px; background: var(--off-white); border-radius: 10px; padding: 16px;
+    }
+    .panel-table-wrap { overflow-x: auto; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    thead th {
+      padding: 8px 12px; text-align: left; font-size: 0.68rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid rgba(30,60,114,0.1); white-space: nowrap;
+    }
+    tbody td {
+      padding: 9px 12px; border-bottom: 1px solid rgba(30,60,114,0.06); color: #334155;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(30,60,114,0.025); }
+    .fit-score { font-weight: 700; color: var(--navy); }
+    .flag-badge { display: inline-block; padding: 1px 7px; border-radius: 5px; font-size: 0.68rem; background: #fee2e2; color: var(--danger); }
+    .change-request-area { margin-top: 12px; }
+    .change-textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid rgba(30,60,114,0.15);
+      border-radius: 8px; font-family: inherit; font-size: 0.82rem; resize: vertical;
+      outline: none; min-height: 70px;
+    }
+    .change-textarea:focus { border-color: var(--navy); }
+
+    /* Report section */
+    .report-preview {
+      background: var(--off-white); border-radius: 10px; padding: 20px;
+      margin-top: 14px; border: 1px solid rgba(30,60,114,0.08);
+    }
+    .report-preview-title { font-size: 0.875rem; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+    .report-preview-excerpt { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+    .report-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed; top: 20px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    }
+    .toast {
+      background: var(--navy); color: var(--white); padding: 12px 18px;
+      border-radius: 10px; font-size: 0.875rem; font-weight: 600;
+      box-shadow: 0 4px 20px rgba(30,60,114,0.3);
+      animation: toastIn 0.3s ease; pointer-events: auto;
+      max-width: 320px;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(-8px) scale(0.95); }
+    }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon {
+      width: 18px; height: 18px; border: 2px solid rgba(30,60,114,0.15);
+      border-top-color: var(--navy); border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: inline-block;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .app-main { margin-left: 0; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .topbar { padding: 0 20px; }
+      .page-content { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a href="/listen" class="sidebar-logo">Get<span>Heard</span></a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/listen" class="nav-item">
+        <span class="nav-icon">&#9783;</span> Dashboard
+      </a>
+      <a href="/listen/studies" class="nav-item active">
+        <span class="nav-icon">&#128202;</span> My Studies
+      </a>
+      <a href="/listen/panel" class="nav-item">
+        <span class="nav-icon">&#128101;</span> Panel
+      </a>
+      <a href="/listen/reports" class="nav-item">
+        <span class="nav-icon">&#128196;</span> Reports
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a href="/listen/billing" class="nav-item">
+        <span class="nav-icon">&#128179;</span> Billing
+      </a>
+      <a href="/listen/settings" class="nav-item">
+        <span class="nav-icon">&#9881;</span> Settings
+      </a>
+      <a href="/listen/logout" class="nav-item" style="margin-top:4px;">
+        <span class="nav-icon">&#8592;</span> Log Out
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-company">Logged in as <strong id="sidebar-company-name">—</strong></div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">&#9776;</button>
+        <div class="topbar-title">Study Status</div>
+      </div>
+      <a href="/listen/studies" style="font-size:0.8rem;color:var(--muted);text-decoration:none;">&#8592; All Studies</a>
+    </header>
+
+    <div class="page-content">
+      <div class="centered">
+
+        <!-- Study Header -->
+        <div class="study-header">
+          <div class="study-header-info">
+            <div class="study-header-name" id="studyName">Loading&hellip;</div>
+            <span class="badge" id="typeBadge" style="background:var(--off-white);color:var(--blue);">—</span>
+            <span class="badge" id="statusBadge">—</span>
+          </div>
+          <div class="study-header-actions">
+            <button class="btn-outline" id="downloadReportBtn" style="display:none;" onclick="downloadReport()">
+              &#11015; Download Report
+            </button>
+            <button class="btn-outline" id="shareReportBtn" style="display:none;" onclick="shareReport()">
+              &#128279; Share Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="pipeline-card">
+          <div class="pipeline-title">Study Progress</div>
+          <div id="pipelineSteps">
+            <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.85rem;padding:8px 0;">
+              <span class="spin-icon"></span> Loading progress&hellip;
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const pathParts = window.location.pathname.split('/');
+    const projectId = pathParts[pathParts.indexOf('study') + 1] || '';
+    let lastStatus = null;
+    let studyData = {};
+
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    function esc(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      try { return new Date(iso).toLocaleString(undefined, {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+      catch(e) { return iso; }
+    }
+
+    // ── Toast ──
+    function showToast(msg, duration = 4000) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.animation = 'toastOut 0.25s ease forwards';
+        setTimeout(() => el.remove(), 260);
+      }, duration);
+    }
+
+    // ── Status badge HTML ──
+    const STATUS_LABELS = {
+      briefing:'Briefing', pricing:'Pricing', timeline_estimate:'Timeline Estimate',
+      awaiting_payment:'Awaiting Payment', panel_building:'Panel Building',
+      panel_approval:'Panel Approval', interviewing:'Interviewing',
+      analysis:'Analysis', completed:'Completed', cancelled:'Cancelled'
+    };
+    const STATUS_MILESTONE = {
+      pricing:'Brief collected!', timeline_estimate:'Pricing confirmed!',
+      awaiting_payment:'Timeline set!', panel_building:'Payment received!',
+      panel_approval:'Panel built!', interviewing:'Panel approved!',
+      analysis:'Interviews complete!', completed:'Report ready!'
+    };
+
+    function statusBadgeHTML(raw) {
+      const s = (raw||'pending').toLowerCase().replace(/\s+/g,'_');
+      const label = STATUS_LABELS[s] || (s.charAt(0).toUpperCase()+s.slice(1));
+      return `<span class="badge badge-${esc(s)}">${esc(label)}</span>`;
+    }
+
+    function chipHTML(state) {
+      const map = { pending:'chip-pending pending', active:'chip-active active', completed:'chip-completed completed' };
+      const labels = { pending:'Pending', active:'In Progress', completed:'Done' };
+      const cls = map[state] || 'chip-pending pending';
+      const lbl = labels[state] || state;
+      return `<span class="step-chip ${cls}">${lbl}</span>`;
+    }
+
+    // ── Compute step states from overall status ──
+    function computeStepStates(status) {
+      const order = [
+        'briefing','pricing','timeline_estimate','awaiting_payment',
+        'panel_building','panel_approval','interviewing','analysis','completed'
+      ];
+      const idx = order.indexOf(status);
+      return order.map((s, i) => {
+        if (i < idx) return 'completed';
+        if (i === idx) return 'active';
+        return 'pending';
+      });
+    }
+
+    // ── Step definitions ──
+    const STEPS = [
+      { icon:'📋', name:'Brief Collection', desc:'Your study requirements have been captured.' },
+      { icon:'💰', name:'Pricing', desc:'Quote generated based on your study parameters.' },
+      { icon:'⏱', name:'Timeline Estimate', desc:'AI has estimated your delivery schedule.' },
+      { icon:'💳', name:'Payment', desc:'Payment received and confirmed.' },
+      { icon:'👥', name:'Panel Building', desc:'Recruiting and screening respondents for your study.' },
+      { icon:'✅', name:'Panel Approval', desc:'Review and approve the shortlisted respondents.' },
+      { icon:'🎙', name:'Interviews', desc:'AI-powered interviews are being conducted.' },
+      { icon:'📊', name:'Analysis', desc:'Extracting insights and themes from interviews.' },
+      { icon:'📄', name:'Report', desc:'Your research report is ready.' },
+    ];
+
+    // ── Render pipeline ──
+    function renderPipeline(data) {
+      const status = (data.status || '').toLowerCase().replace(/\s+/g,'_');
+      const states = computeStepStates(status);
+      const panelId = data.panel_id || '';
+      const reportId = data.report_id || '';
+      const interviewsCompleted = data.interviews_completed || 0;
+      const panelSize = data.panel_size || 0;
+      const panelRespondents = data.panel_respondents || [];
+      const timestamps = data.timestamps || {};
+
+      const stepsHTML = STEPS.map((step, i) => {
+        const state = states[i] || 'pending';
+        const pipelineClass = state === 'completed' ? 'done' : state === 'active' ? 'active' : 'pending';
+        const ts = timestamps[step.name.toLowerCase().replace(/ /g,'_')] || '';
+
+        let extraHTML = '';
+
+        // Panel Approval expanded section (index 5)
+        if (i === 5 && state === 'active') {
+          let tableRows = '';
+          if (panelRespondents.length) {
+            tableRows = panelRespondents.map(r => `
+              <tr>
+                <td>${esc(r.name || r.name_partial || '—')}</td>
+                <td>${esc(r.phone || '—')}</td>
+                <td>${esc(r.language || '—')}</td>
+                <td>${esc(r.city || '—')}</td>
+                <td>${esc(r.age || '—')}</td>
+                <td class="fit-score">${r.fit_score != null ? r.fit_score + '/10' : '—'}</td>
+                <td>${r.flags ? `<span class="flag-badge">${esc(r.flags)}</span>` : '—'}</td>
+              </tr>`).join('');
+          } else {
+            tableRows = `<tr><td colspan="7" style="color:var(--muted);padding:16px;text-align:center;">Panel data loading&hellip;</td></tr>`;
+          }
+          extraHTML = `
+            <div class="panel-approval-section">
+              <div class="panel-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th><th>Phone</th><th>Language</th>
+                      <th>City</th><th>Age</th><th>Fit Score</th><th>Flags</th>
+                    </tr>
+                  </thead>
+                  <tbody>${tableRows}</tbody>
+                </table>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                <button class="btn-navy" onclick="approvePanel('${esc(panelId)}')">&#10003; Approve Panel</button>
+                <button class="btn-outline" onclick="toggleChangeRequest()">Request Changes</button>
+              </div>
+              <div class="change-request-area" id="changeRequestArea" style="display:none;">
+                <textarea class="change-textarea" id="changeRequestText" placeholder="Describe the changes you need (e.g. more respondents from Mumbai, younger age group)&hellip;"></textarea>
+                <div style="margin-top:8px;display:flex;gap:8px;">
+                  <button class="btn-navy" onclick="sendChangeRequest('${esc(panelId)}')">Send Request</button>
+                  <button class="btn-outline" onclick="toggleChangeRequest()">Cancel</button>
+                </div>
+              </div>
+            </div>`;
+        }
+
+        // Interviews progress (index 6)
+        if (i === 6 && state === 'active') {
+          const progressDesc = panelSize ? `${interviewsCompleted} of ${panelSize} interviews completed` : 'Interviews in progress';
+          extraHTML = `<div class="step-desc" style="margin-top:6px;">${esc(progressDesc)}</div>`;
+        }
+
+        // Report section (index 8)
+        if (i === 8 && state === 'completed' && reportId) {
+          extraHTML = `
+            <div class="report-preview" id="reportPreview">
+              <div class="report-preview-title">Report ready</div>
+              <div class="report-preview-excerpt" id="reportExcerpt">Loading report summary&hellip;</div>
+              <div class="report-actions">
+                <a href="/report/${esc(reportId)}" class="btn-navy">View Full Report</a>
+                <button class="btn-outline" onclick="downloadPDF('${esc(reportId)}')">&#11015; Download PDF</button>
+                <button class="btn-outline" onclick="shareReport()">&#128279; Share Link</button>
+              </div>
+            </div>`;
+        }
+
+        // Step action buttons
+        let actionHTML = '';
+        if (i === 5 && state === 'active') {
+          // Already handled inline in extraHTML
+        }
+
+        return `
+          <div class="pipeline-step ${pipelineClass}">
+            <div class="step-left">
+              <div class="step-icon-circle">${step.icon}</div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-head">
+                <span class="step-name">${esc(step.name)}</span>
+                ${chipHTML(state)}
+                ${ts ? `<span class="step-timestamp">${esc(fmtDate(ts))}</span>` : ''}
+              </div>
+              <div class="step-desc">${esc(step.desc)}</div>
+              ${extraHTML}
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('pipelineSteps').innerHTML = stepsHTML;
+
+      // Load report excerpt if completed
+      if (status === 'completed' && data.report_id) {
+        loadReportPreview(data.report_id);
+      }
+    }
+
+    async function loadReportPreview(reportId) {
+      try {
+        const res = await fetch(`/api/reports/${encodeURIComponent(reportId)}`);
+        if (!res.ok) return;
+        const d = await res.json();
+        const el = document.getElementById('reportExcerpt');
+        if (el) el.textContent = d.summary || d.excerpt || 'Your full report is ready to view.';
+      } catch(e) {}
+    }
+
+    // ── Panel actions ──
+    async function approvePanel(panelId) {
+      if (!panelId) { alert('Panel ID not available.'); return; }
+      try {
+        const res = await fetch(`/panel/api/${encodeURIComponent(panelId)}/confirm`, {
+          method: 'POST', headers: {'Content-Type':'application/json'}
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        showToast('Panel approved! Interviews will begin shortly.');
+        pollStatus();
+      } catch(e) {
+        alert('Failed to approve panel. Please try again.');
+      }
+    }
+
+    function toggleChangeRequest() {
+      const area = document.getElementById('changeRequestArea');
+      if (area) area.style.display = area.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function sendChangeRequest(panelId) {
+      const text = document.getElementById('changeRequestText')?.value?.trim();
+      if (!text) { alert('Please describe the changes you need.'); return; }
+      try {
+        await fetch(`/panel/api/${encodeURIComponent(panelId)}/change_request`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ note: text })
+        });
+        showToast('Change request sent. We\'ll update the panel soon.');
+        toggleChangeRequest();
+      } catch(e) {
+        alert('Failed to send request. Please try again.');
+      }
+    }
+
+    // ── Report actions ──
+    function downloadReport() {
+      if (!studyData.report_id) return;
+      downloadPDF(studyData.report_id);
+    }
+
+    function downloadPDF(reportId) {
+      // Placeholder: show coming soon
+      showToast('PDF download coming soon! Contact hello@getheard.space for now.');
+    }
+
+    function shareReport() {
+      const reportId = studyData.report_id;
+      if (!reportId) return;
+      const url = `https://getheard.space/report/${reportId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Share link copied to clipboard!');
+      }).catch(() => {
+        prompt('Copy this link:', url);
+      });
+    }
+
+    // ── Fetch & update status ──
+    async function pollStatus() {
+      try {
+        const res = await fetch(`/api/client/study/${encodeURIComponent(projectId)}/status`);
+        if (!res.ok) throw new Error('not ok');
+        const data = await res.json();
+        studyData = data;
+
+        const status = (data.status||'').toLowerCase().replace(/\s+/g,'_');
+
+        // Update header
+        document.getElementById('studyName').textContent = data.study_name || data.name || 'Your Study';
+        document.getElementById('typeBadge').textContent = data.study_type || data.research_type || 'Survey';
+        document.getElementById('statusBadge').outerHTML = statusBadgeHTML(status);
+
+        // Show/hide report buttons
+        if (status === 'completed') {
+          document.getElementById('downloadReportBtn').style.display = 'inline-flex';
+          document.getElementById('shareReportBtn').style.display = 'inline-flex';
+        }
+
+        // Detect status change → toast
+        if (lastStatus && lastStatus !== status && STATUS_MILESTONE[status]) {
+          showToast('✅ ' + STATUS_MILESTONE[status]);
+        }
+        lastStatus = status;
+
+        // Render pipeline
+        renderPipeline(data);
+
+      } catch(e) {}
+    }
+
+    // Boot
+    pollStatus();
+    setInterval(pollStatus, 10000);
+  </script>
+</body>
+</html>

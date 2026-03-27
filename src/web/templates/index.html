@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GetHeard – Voice Interview Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #1e3c72;
+      --brand-dark: #152d56;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --text: #1e1b4b;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 16px;
+      --shadow: 0 8px 32px rgba(30,60,114,.12);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 620px;
+      padding: 40px;
+    }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 32px; }
+    .logo { font-size: 2.4rem; }
+    h1 { font-size: 1.75rem; color: var(--text); margin-bottom: 4px; }
+    .tagline { color: var(--muted); font-size: .9rem; }
+
+    /* ── Language picker ── */
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .lang-btn {
+      border: 2px solid var(--border);
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 10px 8px;
+      cursor: pointer;
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all .2s;
+      text-align: center;
+    }
+    .lang-btn:hover { border-color: var(--brand); background: #eaf0f9; }
+    .lang-btn.active {
+      border-color: var(--brand);
+      background: #dce8f5;
+      color: var(--brand-dark);
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-weight: 500;
+      font-size: .9rem;
+      transition: background .3s, color .3s;
+    }
+    .status-bar.idle    { background: #f3f4f6; color: var(--muted); }
+    .status-bar.ready   { background: #f0fdf4; color: #16a34a; }
+    .status-bar.listening{ background: #fff7ed; color: #ea580c; }
+    .status-bar.thinking{ background: #eff6ff; color: #2563eb; }
+    .status-bar.speaking{ background: #eaf0f9; color: #1e3c72; }
+    .status-bar.done    { background: #f0fdf4; color: #15803d; }
+    .status-bar.error   { background: #fef2f2; color: var(--danger); }
+
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .dot.pulse { animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Controls ── */
+    .controls { display: flex; gap: 12px; margin-bottom: 28px; }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-dark); transform: translateY(-1px); }
+    .btn-record  { background: #fee2e2; color: var(--danger); }
+    .btn-record:hover:not(:disabled) { background: #fca5a5; }
+    .btn-record.recording { background: var(--danger); color: #fff; animation: rec-pulse 1s infinite; }
+    @keyframes rec-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
+    .btn-stop { background: #f3f4f6; color: var(--muted); }
+    .btn-stop:hover:not(:disabled) { background: #e5e7eb; }
+
+    /* ── Provider badge ── */
+    .provider-badges {
+      display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .badge {
+      font-size: .72rem; font-weight: 600; padding: 4px 10px;
+      border-radius: 999px; background: #dce8f5; color: var(--brand-dark);
+    }
+
+    /* ── Transcript ── */
+    .transcript-section { display: none; }
+    .transcript-section h3 {
+      font-size: 1rem; color: var(--muted); font-weight: 600;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .messages {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: .88rem;
+      line-height: 1.5;
+      max-width: 90%;
+    }
+    .msg.interviewer {
+      background: #dce8f5; color: var(--brand-dark);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg.respondent {
+      background: #dcfce7; color: #15803d;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-label {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      opacity: .65; margin-bottom: 3px;
+    }
+    .msg-text { word-break: break-word; }
+
+    /* Scrollbar */
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <div class="header">
+    <div class="logo">🎙️</div>
+    <h1>GetHeard</h1>
+    <p class="tagline">AI-powered voice research interviews · 9 Asian languages</p>
+  </div>
+
+  <!-- Language selection -->
+  <div class="lang-grid" id="langGrid">
+    <button class="lang-btn active" data-lang="en"  onclick="selectLang('en')">🇬🇧 English</button>
+    <button class="lang-btn"        data-lang="hi"  onclick="selectLang('hi')">🇮🇳 Hindi</button>
+    <button class="lang-btn"        data-lang="id"  onclick="selectLang('id')">🇮🇩 Indonesian</button>
+    <button class="lang-btn"        data-lang="fil" onclick="selectLang('fil')">🇵🇭 Filipino</button>
+    <button class="lang-btn"        data-lang="th"  onclick="selectLang('th')">🇹🇭 Thai</button>
+    <button class="lang-btn"        data-lang="vi"  onclick="selectLang('vi')">🇻🇳 Vietnamese</button>
+    <button class="lang-btn"        data-lang="ko"  onclick="selectLang('ko')">🇰🇷 Korean</button>
+    <button class="lang-btn"        data-lang="ja"  onclick="selectLang('ja')">🇯🇵 Japanese</button>
+    <button class="lang-btn"        data-lang="zh"  onclick="selectLang('zh')">🇨🇳 Mandarin</button>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar idle" id="statusBar">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Select a language and start the interview</span>
+  </div>
+
+  <!-- Provider info (shown after session starts) -->
+  <div class="provider-badges" id="providerBadges" style="display:none;"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-primary" id="btnStart" onclick="startInterview()">▶ Start Interview</button>
+    <button class="btn btn-record"  id="btnRecord" onclick="toggleRecord()" disabled>🎤 Hold to Record</button>
+    <button class="btn btn-stop"    id="btnStop"   onclick="resetSession()" disabled>✕ End</button>
+  </div>
+
+  <!-- Transcript -->
+  <div class="transcript-section" id="transcriptSection">
+    <h3>💬 Conversation</h3>
+    <div class="messages" id="messages"></div>
+  </div>
+
+</div>
+
+<!-- Hidden audio element for playback -->
+<audio id="audioPlayer" style="display:none;"></audio>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let selectedLang = 'en';
+  let sessionId    = null;
+  let projectId    = null;
+  let mediaRecorder= null;
+  let audioChunks  = [];
+  let isRecording  = false;
+  let isProcessing = false;
+
+  // ── Read URL params (project_id, language) ─────────────────────────────────
+  (function initFromUrl() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('language')) selectLang(p.get('language'));
+    if (p.get('project_id')) {
+      projectId = p.get('project_id');
+      // Show project banner
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#ebf8ff;border:1px solid #bee3f8;border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#2b6cb0;display:flex;align-items:center;gap:8px;';
+      banner.innerHTML = `📋 <strong>Project interview</strong> — custom questions loaded &nbsp;<a href="/projects/${projectId}" style="color:#2b6cb0;font-size:12px">← back to project</a>`;
+      document.querySelector('.card').insertBefore(banner, document.querySelector('.lang-grid'));
+    }
+  })();
+
+  // ── Language selection ─────────────────────────────────────────────────────
+  function selectLang(lang) {
+    if (sessionId) return; // lock during interview
+    selectedLang = lang;
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+  }
+
+  // ── Hourglass animation ─────────────────────────────────────────────────────
+  const HG = ['⏳', '⌛'];
+  let _hgTimer = null, _hgIdx = 0;
+  function startHourglass(label) {
+    stopHourglass();
+    _hgIdx = 0;
+    setStatus('thinking', HG[0] + ' ' + label + '…');
+    _hgTimer = setInterval(() => {
+      _hgIdx = (_hgIdx + 1) % HG.length;
+      const cur = document.getElementById('statusText').textContent.replace(/^[⏳⌛]\s/, '');
+      setStatus('thinking', HG[_hgIdx] + ' ' + cur);
+    }, 800);
+  }
+  function stopHourglass() {
+    if (_hgTimer) { clearInterval(_hgTimer); _hgTimer = null; }
+  }
+
+  // ── Status helpers ─────────────────────────────────────────────────────────
+  function setStatus(state, text) {
+    const bar  = document.getElementById('statusBar');
+    const dot  = document.getElementById('statusDot');
+    const span = document.getElementById('statusText');
+    bar.className  = 'status-bar ' + state;
+    span.textContent = text;
+    dot.className  = 'dot' + (['listening','thinking','speaking'].includes(state) ? ' pulse' : '');
+  }
+
+  // ── Message display ────────────────────────────────────────────────────────
+  function addMessage(role, text) {
+    const sec  = document.getElementById('transcriptSection');
+    const msgs = document.getElementById('messages');
+    sec.style.display = 'block';
+    const el = document.createElement('div');
+    el.className = 'msg ' + (role === 'interviewer' ? 'interviewer' : 'respondent');
+    el.innerHTML = `
+      <div class="msg-label">${role === 'interviewer' ? '🤖 Alex' : '👤 You'}</div>
+      <div class="msg-text">${escHtml(text)}</div>`;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function escHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Audio playback ─────────────────────────────────────────────────────────
+  function playAudio(base64mp3) {
+    return new Promise(resolve => {
+      const player = document.getElementById('audioPlayer');
+      player.src = 'data:audio/mp3;base64,' + base64mp3;
+      player.onended = resolve;
+      player.onerror = resolve; // resolve even on error so flow continues
+      player.play().catch(() => resolve());
+    });
+  }
+
+  // ── Start interview ────────────────────────────────────────────────────────
+  async function startInterview() {
+    setStatus('thinking', 'Starting interview…');
+    document.getElementById('btnStart').disabled = true;
+
+    try {
+      const startUrl = `/api/start?language=${selectedLang}${projectId ? `&project_id=${projectId}` : ''}`;
+      const res = await fetch(startUrl, { method: 'POST' });
+      if (!res.ok) throw new Error((await res.json()).detail || 'Server error');
+      const data = await res.json();
+
+      sessionId = data.session_id;
+
+      // Show provider badges
+      const badges = document.getElementById('providerBadges');
+      badges.style.display = 'flex';
+      badges.innerHTML = `
+        <span class="badge">Session: ${data.session_id}</span>
+        <span class="badge">STT: ${data.provider_info.stt_provider}</span>
+        <span class="badge">TTS: ${data.provider_info.tts_provider}</span>`;
+
+      // Lock language selection
+      document.querySelectorAll('.lang-btn').forEach(b => b.disabled = true);
+      document.getElementById('btnStop').disabled = false;
+
+      setStatus('speaking', 'Alex is greeting you…');
+      // Extract and show greeting text from conversation
+      const history = await fetchHistory();
+      if (history.length > 0) addMessage('interviewer', history[0].text);
+
+      await playAudio(data.greeting_audio_b64);
+
+      setStatus('ready', 'Your turn — click 🎤 and speak');
+      document.getElementById('btnRecord').disabled = false;
+
+    } catch (err) {
+      setStatus('error', 'Error: ' + err.message);
+      document.getElementById('btnStart').disabled = false;
+      console.error(err);
+    }
+  }
+
+  async function fetchHistory() {
+    if (!sessionId) return [];
+    try {
+      const r = await fetch(`/api/transcript/${sessionId}`);
+      if (!r.ok) return [];
+      const d = await r.json();
+      return d.conversation || [];
+    } catch { return []; }
+  }
+
+  // ── Recording ──────────────────────────────────────────────────────────────
+  async function toggleRecord() {
+    if (isProcessing) return;
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+
+      // Prefer WebM/Opus (best browser support); fall back to whatever is available
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : '';
+
+      mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => { stream.getTracks().forEach(t => t.stop()); submitAudio(); };
+
+      mediaRecorder.start(100); // collect chunks every 100 ms
+      isRecording = true;
+
+      // Auto-stop at 5 min (hard cap); server handles long audio via long_running_recognize
+      const autoStopTimer = setTimeout(() => {
+        if (isRecording) {
+          setStatus('listening', 'Maximum recording length reached — processing…');
+          stopRecording();
+        }
+      }, 300000);
+      mediaRecorder.addEventListener('stop', () => clearTimeout(autoStopTimer), { once: true });
+
+      const btn = document.getElementById('btnRecord');
+      btn.textContent = '⏹ Stop Recording';
+      btn.classList.add('recording');
+
+      // Speaking timer — updates every second
+      let recStart = Date.now();
+      const recTimer = setInterval(() => {
+        const secs = Math.floor((Date.now() - recStart) / 1000);
+        const m = Math.floor(secs / 60), s = secs % 60;
+        const ts = m > 0 ? `${m}m ${s}s` : `${s}s`;
+        const hint = secs < 90 ? 'aim for 1–2 min' : secs < 120 ? '✓ good length' : '⚠ wrapping up?';
+        setStatus('listening', `🎙 Recording ${ts} — ${hint} — click ⏹ when done`);
+      }, 1000);
+      mediaRecorder.addEventListener('stop', () => clearInterval(recTimer), { once: true });
+
+    } catch (err) {
+      setStatus('error', 'Microphone access denied: ' + err.message);
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      isRecording = false;
+      const btn = document.getElementById('btnRecord');
+      btn.textContent = '🎤 Hold to Record';
+      btn.classList.remove('recording');
+      btn.disabled = true;
+    }
+  }
+
+  // ── Submit audio to server ─────────────────────────────────────────────────
+  async function submitAudio() {
+    if (!audioChunks.length || !sessionId) return;
+    isProcessing = true;
+    startHourglass('Transcribing and thinking');
+
+    const mimeType = mediaRecorder.mimeType || 'audio/webm';
+    const blob = new Blob(audioChunks, { type: mimeType });
+
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    formData.append('audio', blob, 'recording.webm');
+
+    try {
+      const res = await fetch('/api/respond', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Server error');
+      }
+      const data = await res.json();
+
+      // Show user transcript
+      if (data.transcript) addMessage('respondent', data.transcript);
+
+      // Get and show AI response text (load fresh history)
+      const history = await fetchHistory();
+      const lastAI = [...history].reverse().find(m => m.speaker === 'interviewer');
+      if (lastAI) addMessage('interviewer', lastAI.text);
+
+      if (data.is_complete) {
+        setStatus('done', 'Interview complete — thank you!');
+        document.getElementById('btnRecord').disabled = true;
+        await playAudio(data.response_audio_b64);
+        return;
+      }
+
+      stopHourglass();
+      setStatus('speaking', 'Alex is responding…');
+      await playAudio(data.response_audio_b64);
+
+      setStatus('ready', 'Your turn — click 🎤 and speak');
+      document.getElementById('btnRecord').disabled = false;
+
+    } catch (err) {
+      stopHourglass();
+      setStatus('error', 'Error: ' + err.message);
+      document.getElementById('btnRecord').disabled = false;
+      console.error(err);
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  // ── Reset ──────────────────────────────────────────────────────────────────
+  async function resetSession() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    // Force-save whatever was recorded before clearing
+    if (sessionId) {
+      try { await fetch(`/api/end/${sessionId}`, { method: 'POST' }); } catch(e) {}
+    }
+    sessionId    = null;
+    isRecording  = false;
+    isProcessing = false;
+    audioChunks  = [];
+
+    document.getElementById('btnStart').disabled   = false;
+    document.getElementById('btnRecord').disabled  = true;
+    document.getElementById('btnStop').disabled    = true;
+    document.getElementById('btnRecord').textContent = '🎤 Hold to Record';
+    document.getElementById('btnRecord').classList.remove('recording');
+    document.getElementById('messages').innerHTML  = '';
+    document.getElementById('transcriptSection').style.display = 'none';
+    document.getElementById('providerBadges').style.display = 'none';
+    document.querySelectorAll('.lang-btn').forEach(b => b.disabled = false);
+
+    setStatus('idle', 'Select a language and start the interview');
+  }
+</script>
+</body>
+</html>

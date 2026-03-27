@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GetHeard — Agentic Platform</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  nav { background: #1a202c; padding: 0 24px; display: flex; align-items: center; gap: 8px; height: 56px; border-bottom: 1px solid #2d3748; }
+  .nav-brand { color: #fff; font-weight: 800; font-size: 16px; margin-right: 12px; }
+  .nav-badge { background: #553c9a; color: #e9d8fd; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  nav a { color: #a0aec0; text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 6px; }
+  nav a:hover { background: #2d3748; color: #fff; }
+
+  .hero { text-align: center; padding: 72px 24px 48px; }
+  .hero h1 { font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
+  .hero p { font-size: 18px; color: #718096; max-width: 560px; margin: 0 auto 36px; line-height: 1.6; }
+
+  .pipeline { display: flex; justify-content: center; gap: 0; margin-bottom: 64px; flex-wrap: wrap; }
+  .stage { background: #1a202c; border: 1px solid #2d3748; padding: 20px 24px; text-align: center; flex: 1; min-width: 160px; max-width: 200px; position: relative; }
+  .stage:not(:last-child)::after { content: '→'; position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: #4a5568; font-size: 20px; z-index: 1; }
+  .stage:first-child { border-radius: 12px 0 0 12px; }
+  .stage:last-child { border-radius: 0 12px 12px 0; }
+  .stage .icon { font-size: 28px; margin-bottom: 8px; }
+  .stage .label { font-size: 12px; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stage .name { font-size: 15px; font-weight: 600; color: #e2e8f0; }
+  .stage .desc { font-size: 11px; color: #718096; margin-top: 4px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto 48px; padding: 0 24px; }
+  .card { background: #1a202c; border: 1px solid #2d3748; border-radius: 14px; padding: 24px; cursor: pointer; transition: border-color .2s, transform .2s; text-decoration: none; color: inherit; display: block; }
+  .card:hover { border-color: #667eea; transform: translateY(-2px); }
+  .card .card-icon { font-size: 32px; margin-bottom: 12px; }
+  .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .card p { font-size: 14px; color: #718096; line-height: 1.5; margin-bottom: 14px; }
+  .card .card-cta { font-size: 13px; color: #667eea; font-weight: 600; }
+  .card.primary { border-color: #553c9a; background: linear-gradient(135deg, #1a1a2e, #16213e); }
+  .card.primary:hover { border-color: #667eea; }
+
+  .vs-section { text-align: center; max-width: 800px; margin: 0 auto 64px; padding: 0 24px; }
+  .vs-section h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: #e2e8f0; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; }
+  .compare-col { background: #1a202c; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; }
+  .compare-col h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .compare-col.old h4 { color: #fc8181; }
+  .compare-col.new h4 { color: #68d391; }
+  .compare-col ul { list-style: none; }
+  .compare-col ul li { font-size: 13px; color: #a0aec0; padding: 5px 0; padding-left: 20px; position: relative; }
+  .compare-col ul li::before { position: absolute; left: 0; }
+  .compare-col.old ul li::before { content: '✗'; color: #fc8181; }
+  .compare-col.new ul li::before { content: '✓'; color: #68d391; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 28px; }
+    .pipeline { flex-direction: column; align-items: center; }
+    .stage:not(:last-child)::after { content: '↓'; right: auto; top: auto; bottom: -14px; left: 50%; transform: translateX(-50%); }
+    .stage { border-radius: 12px !important; width: 100%; max-width: 100%; }
+    .compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">GetHeard</span>
+  <span class="nav-badge">AGENTIC v2</span>
+  <a href="/agent">Home</a>
+  <a href="/agent/brief">Brief Agent</a>
+  <a href="/agent/api/projects" target="_blank">Projects API</a>
+  <a href="/" style="margin-left:auto">← Classic Version</a>
+</nav>
+
+<div class="hero">
+  <h1>GetHeard Agentic</h1>
+  <p>Four AI agents working together to take research from brief to report — each with memory, tools, and autonomous decision-making.</p>
+</div>
+
+<div class="pipeline">
+  <div class="stage">
+    <div class="icon">🗣️</div>
+    <div class="label">Agent 1</div>
+    <div class="name">Brief Agent</div>
+    <div class="desc">Conversational intake</div>
+  </div>
+  <div class="stage">
+    <div class="icon">🎨</div>
+    <div class="label">Agent 2</div>
+    <div class="name">Designer Agent</div>
+    <div class="desc">Generate + self-review questions</div>
+  </div>
+  <div class="stage">
+    <div class="icon">🎙️</div>
+    <div class="label">Agent 3</div>
+    <div class="name">Interview Agent</div>
+    <div class="desc">Contextual probing decisions</div>
+  </div>
+  <div class="stage">
+    <div class="icon">📊</div>
+    <div class="label">Agent 4</div>
+    <div class="name">Analysis Agent</div>
+    <div class="desc">4-pass transcript analysis</div>
+  </div>
+</div>
+
+<div class="cards">
+  <a href="/agent/brief" class="card primary">
+    <div class="card-icon">🗣️</div>
+    <h3>Start a Research Brief</h3>
+    <p>Chat with Alex, our research consultant agent. One question at a time — no forms, no dropdowns.</p>
+    <div class="card-cta">Open Brief Agent →</div>
+  </a>
+
+  <a href="/agent/api/projects" target="_blank" class="card">
+    <div class="card-icon">📁</div>
+    <h3>View Projects</h3>
+    <p>Browse projects created by the DesignerAgent, including question review history and quality metadata.</p>
+    <div class="card-cta">View Projects →</div>
+  </a>
+
+  <a href="/agent/api/reports" target="_blank" class="card">
+    <div class="card-icon">📊</div>
+    <h3>Agentic Reports</h3>
+    <p>Reports generated by the 4-pass AnalysisAgent, with per-transcript extraction and cross-transcript synthesis.</p>
+    <div class="card-cta">View Reports →</div>
+  </a>
+</div>
+
+<div class="vs-section">
+  <h2>What changed vs. the classic version</h2>
+  <div class="compare">
+    <div class="compare-col old">
+      <h4>Classic (v1) — One-shot LLM calls</h4>
+      <ul>
+        <li>Web form to enter research brief</li>
+        <li>Single Gemini call generates all questions</li>
+        <li>No quality review of questions</li>
+        <li>State machine decides when to probe</li>
+        <li>Single Gemini call generates full report</li>
+        <li>No self-critique of analysis</li>
+      </ul>
+    </div>
+    <div class="compare-col new">
+      <h4>Agentic (v2) — Tool-calling loops</h4>
+      <ul>
+        <li>BriefAgent chats with client to collect brief</li>
+        <li>DesignerAgent generates then self-reviews questions</li>
+        <li>Iterative revision until quality bar is met</li>
+        <li>InterviewAgent decides to probe based on answer quality</li>
+        <li>AnalysisAgent runs 4 passes: extract → synthesize → write → critique</li>
+        <li>Self-critique patches weak sections before finalising</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

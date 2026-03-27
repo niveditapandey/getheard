@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Profile – GetHeard</title>
+<style>
+  :root {
+    --navy: #1e3c72;
+    --navy-dark: #152d56;
+    --blue: #2a5298;
+    --blue-light: #4facfe;
+    --accent: #60a5fa;
+    --off-white: #e8edf5;
+    --muted: #8fa3c8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--off-white);
+    color: #1a202c;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* ── TOP NAV ── */
+  .top-nav {
+    background: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 6px rgba(30,60,114,.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .back-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--off-white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    flex-shrink: 0;
+  }
+  .nav-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    flex: 1;
+  }
+
+  /* ── CONTAINER ── */
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  /* ── AVATAR / HERO ── */
+  .profile-hero {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 20px 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 6px rgba(30,60,114,.06);
+  }
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--blue-light));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .profile-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .profile-phone {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .profile-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--off-white);
+  }
+  .meta-stat { text-align: center; }
+  .meta-stat .val {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--navy);
+  }
+  .meta-stat .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(30,60,114,.06);
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 14px;
+  }
+
+  /* ── INFO ROWS ── */
+  .info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--off-white);
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--off-white);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .info-content { flex: 1; }
+  .info-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-bottom: 2px;
+  }
+  .info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a202c;
+  }
+  .info-value.placeholder {
+    color: var(--muted);
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  /* ── INTERESTS TAGS ── */
+  .tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .tag {
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: capitalize;
+  }
+  .tag.empty {
+    background: var(--off-white);
+    color: var(--muted);
+  }
+
+  /* ── LANGUAGE FLAG ── */
+  .lang-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lang-flag { font-size: 22px; }
+  .lang-name { font-size: 15px; font-weight: 600; }
+
+  /* ── NOTIFICATION PREFS ── */
+  .notif-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--off-white);
+  }
+  .notif-row:last-child { border-bottom: none; }
+  .notif-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a202c;
+  }
+  .notif-icon { font-size: 18px; }
+  .notif-status {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .notif-on  { background: #d1fae5; color: #065f46; }
+  .notif-off { background: var(--off-white); color: var(--muted); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .3px;
+    text-align: center;
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--navy);
+    border: 2px solid var(--navy);
+  }
+  .btn-outline:hover { background: var(--off-white); }
+  .btn-rewards {
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    border: none;
+    margin-bottom: 12px;
+    display: block;
+    text-decoration: none;
+  }
+  .btn-rewards:hover { background: linear-gradient(135deg, var(--navy-dark), var(--navy)); }
+
+  /* ── LOADING SKELETON ── */
+  .loading-pulse {
+    background: linear-gradient(90deg, var(--off-white) 25%, #d1daea 50%, var(--off-white) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+    height: 16px;
+    display: inline-block;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1a202c;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 1000;
+    transition: transform .3s ease;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── ERROR STATE ── */
+  .error-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+  .error-state .emoji { font-size: 40px; margin-bottom: 12px; }
+  .error-state p { font-size: 15px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <button class="back-btn" onclick="history.back()" title="Back">&#8592;</button>
+  <span class="nav-title">My Profile</span>
+</nav>
+
+<div class="container" id="mainContainer">
+
+  <!-- Loading placeholder while data fetches -->
+  <div class="profile-hero" id="profileHero">
+    <div class="avatar" id="avatarEl">?</div>
+    <div class="profile-name loading-pulse" style="width:60%;margin:0 auto 6px;" id="nameEl">&nbsp;</div>
+    <div class="profile-phone loading-pulse" style="width:40%;margin:0 auto 16px;" id="phoneEl">&nbsp;</div>
+    <div class="profile-meta" id="metaEl">
+      <div class="meta-stat">
+        <div class="val loading-pulse" style="width:40px;" id="studiesVal">&nbsp;</div>
+        <div class="lbl">Studies</div>
+      </div>
+      <div class="meta-stat">
+        <div class="val loading-pulse" style="width:60px;" id="pointsVal">&nbsp;</div>
+        <div class="lbl">Points</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAILS CARD -->
+  <div class="section-card" id="detailsCard">
+    <div class="section-title">About you</div>
+    <div class="info-row">
+      <div class="info-icon">&#127968;</div>
+      <div class="info-content">
+        <div class="info-label">City</div>
+        <div class="info-value" id="cityEl"><span class="loading-pulse" style="width:80px;">&nbsp;</span></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">&#127757;</div>
+      <div class="info-content">
+        <div class="info-label">Country</div>
+        <div class="info-value" id="countryEl"><span class="loading-pulse" style="width:100px;">&nbsp;</span></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">&#128483;&#65039;</div>
+      <div class="info-content">
+        <div class="info-label">Language</div>
+        <div class="info-value" id="langEl"><span class="loading-pulse" style="width:90px;">&nbsp;</span></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">&#128100;</div>
+      <div class="info-content">
+        <div class="info-label">Age range</div>
+        <div class="info-value" id="ageEl"><span class="loading-pulse" style="width:60px;">&nbsp;</span></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">&#9889;</div>
+      <div class="info-content">
+        <div class="info-label">Gender</div>
+        <div class="info-value" id="genderEl"><span class="loading-pulse" style="width:70px;">&nbsp;</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERESTS CARD -->
+  <div class="section-card">
+    <div class="section-title">Interests</div>
+    <div class="tags-wrap" id="interestsTags">
+      <span class="loading-pulse" style="width:70px;height:26px;border-radius:20px;">&nbsp;</span>
+      <span class="loading-pulse" style="width:90px;height:26px;border-radius:20px;">&nbsp;</span>
+      <span class="loading-pulse" style="width:60px;height:26px;border-radius:20px;">&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS CARD -->
+  <div class="section-card">
+    <div class="section-title">Notification preferences</div>
+    <div class="notif-row">
+      <span class="notif-label"><span class="notif-icon">&#128241;</span> WhatsApp</span>
+      <span class="notif-status" id="notifWhatsapp">—</span>
+    </div>
+    <div class="notif-row">
+      <span class="notif-label"><span class="notif-icon">&#128140;</span> Email</span>
+      <span class="notif-status" id="notifEmail">—</span>
+    </div>
+    <div class="notif-row">
+      <span class="notif-label"><span class="notif-icon">&#128172;</span> SMS</span>
+      <span class="notif-status" id="notifSms">—</span>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <a class="btn btn-rewards" id="rewardsLink" href="#">View Rewards & Redeem Points</a>
+  <button class="btn btn-outline" onclick="showEditToast()">Edit Profile</button>
+
+</div><!-- /container -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Language info ─────────────────────────────────────────────────────────────
+const LANG_FLAGS = {
+  en: { flag: '&#127482;&#127480;', name: 'English' },
+  hi: { flag: '&#127470;&#127475;', name: 'Hindi' },
+  id: { flag: '&#127470;&#127465;', name: 'Bahasa Indonesia' },
+  fil: { flag: '&#127477;&#127469;', name: 'Filipino' },
+  th: { flag: '&#127481;&#127469;', name: 'Thai' },
+  vi: { flag: '&#127483;&#127475;', name: 'Vietnamese' },
+  ko: { flag: '&#127472;&#127479;', name: 'Korean' },
+  ja: { flag: '&#127471;&#127477;', name: 'Japanese' },
+  zh: { flag: '&#127464;&#127475;', name: 'Chinese' },
+};
+
+const GENDER_LABELS = {
+  male: 'Male', female: 'Female', non_binary: 'Non-binary',
+  prefer_not_to_say: 'Prefer not to say', other: 'Other',
+};
+
+// ── Load respondent by phone (from URL) ───────────────────────────────────────
+const phone = location.pathname.split('/').pop();
+
+window.addEventListener('DOMContentLoaded', async () => {
+  // First try to find respondent by phone via search, then render
+  try {
+    // Look up respondent by listing and matching phone (URL contains phone)
+    const res = await fetch(`/api/respondents?limit=1`);
+    // We actually need to search; try direct lookup pattern
+    await loadByPhone(phone);
+  } catch {
+    showError();
+  }
+});
+
+async function loadByPhone(phoneOrId) {
+  // Try direct ID lookup first, then search by listing
+  let respondent = null;
+
+  // Try as direct respondent_id
+  try {
+    const r = await fetch(`/api/respondents/${phoneOrId}`);
+    if (r.ok) {
+      respondent = await r.json();
+    }
+  } catch { /* not an ID */ }
+
+  // If not found, search by phone in listing
+  if (!respondent) {
+    try {
+      const r = await fetch(`/api/respondents`);
+      if (r.ok) {
+        const data = await r.json();
+        const clean = phoneOrId.replace(/\D/g, '');
+        respondent = (data.respondents || []).find(r => {
+          const rp = (r.phone || '').replace(/\D/g, '');
+          return rp.endsWith(clean) || rp === clean;
+        });
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (!respondent) {
+    showError();
+    return;
+  }
+
+  renderProfile(respondent);
+}
+
+function renderProfile(r) {
+  // Avatar initials
+  const initials = (r.name || '?').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  document.getElementById('avatarEl').textContent = initials;
+
+  // Name
+  document.getElementById('nameEl').textContent = r.name || 'Unknown';
+  document.getElementById('nameEl').className = 'profile-name';
+
+  // Phone (masked)
+  const phone = r.phone || '';
+  const masked = phone.length > 6
+    ? phone.slice(0, phone.startsWith('+') ? 3 : 2) + ' ****' + phone.slice(-4)
+    : phone;
+  document.getElementById('phoneEl').textContent = masked || 'No phone';
+  document.getElementById('phoneEl').className = 'profile-phone';
+
+  // Stats
+  document.getElementById('studiesVal').textContent = r.interviews_completed || 0;
+  document.getElementById('studiesVal').className = 'val';
+  // Points — fetch separately
+  fetchPoints(r.respondent_id);
+
+  // City
+  setInfoVal('cityEl', r.city, 'Not provided');
+  // Country
+  setInfoVal('countryEl', r.country, 'Not provided');
+  // Language
+  const langInfo = LANG_FLAGS[r.language] || { flag: '', name: r.language || 'Not set' };
+  document.getElementById('langEl').innerHTML =
+    `<span class="lang-row"><span class="lang-flag">${langInfo.flag}</span><span class="lang-name">${langInfo.name}</span></span>`;
+  // Age
+  setInfoVal('ageEl', r.age_range, 'Not provided');
+  // Gender
+  setInfoVal('genderEl', GENDER_LABELS[r.gender] || r.gender, 'Not provided');
+
+  // Interests
+  const interests = r.interests || [];
+  const tagsEl = document.getElementById('interestsTags');
+  if (interests.length === 0) {
+    tagsEl.innerHTML = '<span class="tag empty">No interests added yet</span>';
+  } else {
+    tagsEl.innerHTML = interests.map(i =>
+      `<span class="tag">${escHtml(i)}</span>`
+    ).join('');
+  }
+
+  // Notification prefs (inferred from data fields)
+  const hasWhatsapp = !!r.whatsapp_number;
+  const hasEmail = !!r.email;
+  setNotif('notifWhatsapp', hasWhatsapp);
+  setNotif('notifEmail', hasEmail);
+  setNotif('notifSms', false); // SMS not tracked yet
+
+  // Rewards link
+  document.getElementById('rewardsLink').href = `/join/rewards/${r.respondent_id}`;
+}
+
+async function fetchPoints(respondentId) {
+  try {
+    const r = await fetch(`/api/respondents/${respondentId}/points`);
+    if (r.ok) {
+      const data = await r.json();
+      const el = document.getElementById('pointsVal');
+      el.textContent = (data.lifetime_earned || 0).toLocaleString() + ' pts';
+      el.className = 'val';
+    }
+  } catch { /* ignore */ }
+}
+
+function setInfoVal(id, val, placeholder) {
+  const el = document.getElementById(id);
+  if (val) {
+    el.textContent = val;
+    el.className = 'info-value';
+  } else {
+    el.textContent = placeholder;
+    el.className = 'info-value placeholder';
+  }
+}
+
+function setNotif(id, enabled) {
+  const el = document.getElementById(id);
+  el.textContent = enabled ? 'On' : 'Off';
+  el.className = `notif-status ${enabled ? 'notif-on' : 'notif-off'}`;
+}
+
+function showError() {
+  document.getElementById('mainContainer').innerHTML = `
+    <div class="error-state">
+      <div class="emoji">&#128577;</div>
+      <p>Could not load your profile.<br>Please try again or contact support.</p>
+    </div>`;
+}
+
+function showEditToast() {
+  showToast('Profile editing coming soon!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

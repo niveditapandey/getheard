@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">Join the Panel — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --white:      #ffffff;
+      --muted:      #8fa3c8;
+      --danger:     #dc2626;
+      --success:    #16a34a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white);
+      color: #1a2540;
+      padding: 0 0 60px;
+      min-height: 100vh;
+    }
+
+    /* ── TOP ── */
+    .page-top {
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .page-logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .page-logo span { color: var(--blue-light); }
+    .page-top h1 {
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .page-top p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-bar {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .lang-opt {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+      background: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .lang-opt:hover, .lang-opt.active {
+      background: rgba(255,255,255,0.15);
+      color: var(--white);
+    }
+
+    /* ── FORM WRAPPER ── */
+    .form-wrap {
+      max-width: 660px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+
+    /* ── SECTION CARD ── */
+    .form-section {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
+      border: 1px solid rgba(30,60,114,0.07);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 480px) { .form-section { padding: 20px 16px; } }
+
+    .section-heading {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(30,60,114,0.07);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── FORM FIELDS ── */
+    .form-group { margin-bottom: 16px; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+
+    label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 5px;
+    }
+    label .req { color: var(--danger); margin-left: 2px; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 2px solid #c5d2e8;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: #1a2540;
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(30,60,114,0.1);
+    }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238fa3c8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 34px;
+      cursor: pointer;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+
+    /* Phone input with country code */
+    .phone-row {
+      display: flex;
+      gap: 8px;
+    }
+    .phone-row select { width: 130px; flex-shrink: 0; }
+    .phone-row input  { flex: 1; }
+
+    /* Checkbox groups */
+    .check-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+    .check-group:last-child { margin-bottom: 0; }
+    .check-group input[type="checkbox"] {
+      width: 17px; height: 17px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      accent-color: var(--navy);
+      cursor: pointer;
+    }
+    .check-label {
+      font-size: 0.875rem;
+      color: #334155;
+      line-height: 1.4;
+    }
+    .check-label a { color: var(--blue); }
+
+    /* Interests checkboxes grid */
+    .interests-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 16px;
+    }
+    @media (max-width: 400px) { .interests-grid { grid-template-columns: 1fr; } }
+
+    /* Optional collapsible */
+    .optional-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      margin-bottom: 16px;
+    }
+    .optional-toggle:hover { color: var(--navy); }
+    .optional-arrow { transition: transform 0.2s; display: inline-block; }
+    .optional-arrow.open { transform: rotate(90deg); }
+    .optional-body { display: none; }
+    .optional-body.visible { display: block; }
+
+    /* Notification checkboxes */
+    .notif-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* Privacy note */
+    .privacy-note {
+      background: rgba(30,60,114,0.04);
+      border: 1px solid rgba(30,60,114,0.1);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.5;
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .privacy-note .lock { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+    }
+    .btn-submit:hover {
+      background: var(--navy-dark);
+      box-shadow: 0 8px 24px rgba(30,60,114,0.28);
+      transform: translateY(-1px);
+    }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Success state */
+    .success-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(30,60,114,0.1);
+      padding: 52px 36px;
+      text-align: center;
+      display: none;
+    }
+    .success-card.visible { display: block; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 20px; }
+    .success-card h2 { color: var(--navy); margin-bottom: 10px; }
+    .success-card p { color: #64748b; font-size: 0.95rem; margin-bottom: 6px; }
+    .success-points {
+      background: rgba(22,163,74,0.08);
+      border: 1px solid rgba(22,163,74,0.2);
+      color: var(--success);
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 10px 18px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: 16px;
+    }
+
+    /* Alert */
+    .alert-error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert-error.visible { display: block; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <div class="page-top">
+    <a href="/" class="page-logo">Get<span>Heard</span></a>
+    <h1 id="t-page-heading">Join the Research Panel</h1>
+    <p id="t-page-sub">Takes 3 minutes. Earn rewards for sharing your opinion.</p>
+
+    <!-- Language Bar -->
+    <div class="lang-bar">
+      <button class="lang-opt active" data-lang="en">EN — English</button>
+      <button class="lang-opt" data-lang="hi">हि — हिन्दी</button>
+      <button class="lang-opt" data-lang="id">ID — Bahasa</button>
+      <button class="lang-opt" data-lang="th">ไท — ภาษาไทย</button>
+      <button class="lang-opt" data-lang="vi">VI — Tiếng Việt</button>
+      <button class="lang-opt" data-lang="zh">中 — 中文</button>
+    </div>
+  </div>
+
+  <!-- FORM WRAP -->
+  <div class="form-wrap">
+
+    <div id="alert-error" class="alert-error"></div>
+
+    <form id="enroll-form" novalidate>
+
+      <!-- SECTION 1 — Basic Info -->
+      <div class="form-section">
+        <div class="section-heading">
+          <div class="section-num">1</div>
+          <span id="t-s1-title">Basic Information</span>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-name">Full Name <span class="req">*</span></label>
+          <input type="text" name="full_name" id="f-name"
+                 placeholder="Jane Smith" required autocomplete="name" />
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-phone">Phone Number <span class="req">*</span></label>
+          <div class="phone-row">
+            <select name="phone_code" id="f-phone-code">
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+62">🇮🇩 +62</option>
+              <option value="+66">🇹🇭 +66</option>
+              <option value="+84">🇻🇳 +84</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+82">🇰🇷 +82</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+63">🇵🇭 +63</option>
+              <option value="+60">🇲🇾 +60</option>
+              <option value="other">Other</option>
+            </select>
+            <input type="tel" name="phone" id="f-phone"
+                   placeholder="98765 43210" required autocomplete="tel" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-whatsapp">WhatsApp Number</label>
+          <div class="check-group" style="margin-bottom: 8px;">
+            <input type="checkbox" id="wa-same" onchange="copyPhone('wa')" />
+            <span class="check-label" id="t-wa-same">Same as phone number</span>
+          </div>
+          <div class="phone-row">
+            <select name="whatsapp_code" id="f-wa-code">
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+62">🇮🇩 +62</option>
+              <option value="+66">🇹🇭 +66</option>
+              <option value="+84">🇻🇳 +84</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+82">🇰🇷 +82</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+63">🇵🇭 +63</option>
+              <option value="+60">🇲🇾 +60</option>
+              <option value="other">Other</option>
+            </select>
+            <input type="tel" name="whatsapp" id="f-whatsapp" placeholder="98765 43210" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-voice">Voice Call Number</label>
+          <div class="check-group" style="margin-bottom: 8px;">
+            <input type="checkbox" id="voice-same" onchange="copyPhone('voice')" />
+            <span class="check-label" id="t-voice-same">Same as phone number</span>
+          </div>
+          <div class="phone-row">
+            <select name="voice_code" id="f-voice-code">
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+62">🇮🇩 +62</option>
+              <option value="+66">🇹🇭 +66</option>
+              <option value="+84">🇻🇳 +84</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+82">🇰🇷 +82</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+63">🇵🇭 +63</option>
+              <option value="+60">🇲🇾 +60</option>
+              <option value="other">Other</option>
+            </select>
+            <input type="tel" name="voice_number" id="f-voice" placeholder="98765 43210" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-email">Email Address</label>
+          <input type="email" name="email" id="f-email"
+                 placeholder="jane@example.com" autocomplete="email" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label id="t-lbl-pref-lang">Preferred Language <span class="req">*</span></label>
+            <select name="preferred_language" id="f-pref-lang" required>
+              <option value="" disabled selected id="t-sel-lang">Select language</option>
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="id">Bahasa Indonesia</option>
+              <option value="th">ภาษาไทย</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="zh">中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="fil">Filipino</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="t-lbl-city">City</label>
+            <input type="text" name="city" id="f-city" placeholder="Mumbai" autocomplete="address-level2" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-country">Country <span class="req">*</span></label>
+          <select name="country" id="f-country" required>
+            <option value="" disabled selected id="t-sel-country">Select country</option>
+            <option value="IN">India</option>
+            <option value="SG">Singapore</option>
+            <option value="ID">Indonesia</option>
+            <option value="TH">Thailand</option>
+            <option value="VN">Vietnam</option>
+            <option value="PH">Philippines</option>
+            <option value="MY">Malaysia</option>
+            <option value="JP">Japan</option>
+            <option value="KR">South Korea</option>
+            <option value="CN">China</option>
+            <option value="AU">Australia</option>
+            <option value="OT">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SECTION 2 — About You -->
+      <div class="form-section">
+        <div class="section-heading">
+          <div class="section-num">2</div>
+          <span id="t-s2-title">About You</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label id="t-lbl-age">Age Range <span class="req">*</span></label>
+            <select name="age_range" id="f-age" required>
+              <option value="" disabled selected id="t-sel-age">Select age range</option>
+              <option value="18-24">18–24</option>
+              <option value="25-34">25–34</option>
+              <option value="35-44">35–44</option>
+              <option value="45-54">45–54</option>
+              <option value="55+">55+</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="t-lbl-gender">Gender</label>
+            <select name="gender" id="f-gender">
+              <option value="" disabled selected id="t-sel-gender">Prefer not to say</option>
+              <option value="male" id="t-gender-m">Male</option>
+              <option value="female" id="t-gender-f">Female</option>
+              <option value="nonbinary" id="t-gender-nb">Non-binary</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label id="t-lbl-marital">Marital Status</label>
+            <select name="marital_status" id="f-marital">
+              <option value="" disabled selected>Select</option>
+              <option value="single">Single</option>
+              <option value="married">Married</option>
+              <option value="separated">Separated</option>
+              <option value="divorced">Divorced</option>
+              <option value="widowed">Widowed</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="t-lbl-occupation">Occupation / Job Title</label>
+            <input type="text" name="occupation" id="f-occupation" placeholder="e.g. Software Engineer" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-interests">Interests (select all that apply)</label>
+          <div class="interests-grid" id="interests-grid">
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="fintech" />
+              <span class="check-label" id="i-fintech">Fintech</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="ecommerce" />
+              <span class="check-label" id="i-ecom">E-commerce</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="food_beverage" />
+              <span class="check-label" id="i-fnb">Food &amp; Beverage</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="travel" />
+              <span class="check-label" id="i-travel">Travel</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="healthcare" />
+              <span class="check-label" id="i-health">Healthcare</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="education" />
+              <span class="check-label" id="i-edu">Education</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="technology" />
+              <span class="check-label" id="i-tech">Technology</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="real_estate" />
+              <span class="check-label" id="i-realestate">Real Estate</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="insurance" />
+              <span class="check-label" id="i-insurance">Insurance</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="interests" value="gaming" />
+              <span class="check-label" id="i-gaming">Gaming</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3 — Optional -->
+      <div class="form-section">
+        <button type="button" class="optional-toggle" id="optional-toggle" onclick="toggleOptional()">
+          <span class="optional-arrow" id="opt-arrow">&#9654;</span>
+          <span id="t-opt-label">Optional — helps us match you better</span>
+        </button>
+        <div class="optional-body" id="optional-body">
+          <div class="form-group">
+            <label id="t-lbl-orientation">Sexual Orientation</label>
+            <select name="sexual_orientation" id="f-orientation">
+              <option value="prefer_not" selected>Prefer not to say</option>
+              <option value="heterosexual">Heterosexual / Straight</option>
+              <option value="homosexual">Homosexual / Gay / Lesbian</option>
+              <option value="bisexual">Bisexual</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="t-lbl-medical">Medical Conditions</label>
+            <textarea name="medical_conditions" id="f-medical"
+                      placeholder="e.g. diabetes, hypertension — helps us find relevant health studies"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4 — Consent -->
+      <div class="form-section">
+        <div class="section-heading">
+          <div class="section-num">4</div>
+          <span id="t-s4-title">Notifications &amp; Consent</span>
+        </div>
+
+        <div class="form-group">
+          <label id="t-lbl-notif">How would you like to be notified?</label>
+          <div class="notif-row">
+            <label class="check-group">
+              <input type="checkbox" name="notify_whatsapp" value="whatsapp" checked />
+              <span class="check-label">WhatsApp</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="notify_email" value="email" />
+              <span class="check-label">Email</span>
+            </label>
+            <label class="check-group">
+              <input type="checkbox" name="notify_sms" value="sms" />
+              <span class="check-label">SMS</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="check-group" style="cursor:pointer;">
+            <input type="checkbox" id="f-consent" name="consent" required />
+            <span class="check-label" id="t-consent-text">
+              I agree to be contacted for market research studies and understand I will be compensated for my participation. <span class="req">*</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="privacy-note">
+          <span class="lock">&#128274;</span>
+          <span id="t-privacy-note">We never share your personal data with third parties. Your sensitive information is stored securely and never shown to clients.</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submit-btn" id="t-submit-btn">
+        Join the Panel
+      </button>
+
+    </form>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-card" id="success-card">
+      <div class="success-icon">&#127881;</div>
+      <h2 id="t-success-title">You're enrolled!</h2>
+      <p id="t-success-p1">Thank you for joining GetHeard's panel. We'll be in touch when a study matches your profile.</p>
+      <p id="t-success-p2">Keep an eye on your WhatsApp or email for study invitations.</p>
+      <div class="success-points" id="t-success-points">
+        Welcome bonus: 10 points added to your account &#127881;
+      </div>
+    </div>
+
+  </div><!-- /form-wrap -->
+
+  <script>
+    // ============================================================
+    // TRANSLATIONS
+    // ============================================================
+    const T = {
+      en: {
+        pageTitle:     'Join the Panel — GetHeard',
+        pageHeading:   'Join the Research Panel',
+        pageSub:       'Takes 3 minutes. Earn rewards for sharing your opinion.',
+        s1:            'Basic Information',
+        s2:            'About You',
+        s4:            'Notifications & Consent',
+        lblName:       'Full Name',
+        lblPhone:      'Phone Number',
+        lblWhatsapp:   'WhatsApp Number',
+        lblVoice:      'Voice Call Number',
+        waSame:        'Same as phone number',
+        voiceSame:     'Same as phone number',
+        lblEmail:      'Email Address',
+        lblPrefLang:   'Preferred Language',
+        selLang:       'Select language',
+        lblCity:       'City',
+        lblCountry:    'Country',
+        selCountry:    'Select country',
+        lblAge:        'Age Range',
+        selAge:        'Select age range',
+        lblGender:     'Gender',
+        selGender:     'Prefer not to say',
+        genderM:       'Male',
+        genderF:       'Female',
+        genderNb:      'Non-binary',
+        lblMarital:    'Marital Status',
+        lblOccupation: 'Occupation / Job Title',
+        lblInterests:  'Interests (select all that apply)',
+        optLabel:      'Optional — helps us match you better',
+        lblOrientation:'Sexual Orientation',
+        lblMedical:    'Medical Conditions',
+        medPlaceholder:'e.g. diabetes, hypertension — helps us find relevant health studies',
+        lblNotif:      'How would you like to be notified?',
+        consentText:   'I agree to be contacted for market research studies and understand I will be compensated for my participation.',
+        privacyNote:   'We never share your personal data with third parties. Your sensitive information is stored securely and never shown to clients.',
+        submitBtn:     'Join the Panel',
+        successTitle:  "You're enrolled!",
+        successP1:     "Thank you for joining GetHeard's panel. We'll be in touch when a study matches your profile.",
+        successP2:     'Keep an eye on your WhatsApp or email for study invitations.',
+        successPoints: 'Welcome bonus: 10 points added to your account 🎉',
+        iFin:          'Fintech',
+        iEcom:         'E-commerce',
+        iFnb:          'Food & Beverage',
+        iTravel:       'Travel',
+        iHealth:       'Healthcare',
+        iEdu:          'Education',
+        iTech:         'Technology',
+        iRe:           'Real Estate',
+        iIns:          'Insurance',
+        iGaming:       'Gaming',
+      },
+      hi: {
+        pageTitle:     'पैनल में शामिल हों — GetHeard',
+        pageHeading:   'रिसर्च पैनल में शामिल हों',
+        pageSub:       'केवल 3 मिनट। अपनी राय शेयर करें और पुरस्कार जीतें।',
+        s1:            'मूल जानकारी',
+        s2:            'आपके बारे में',
+        s4:            'सूचना और सहमति',
+        lblName:       'पूरा नाम',
+        lblPhone:      'फोन नंबर',
+        lblWhatsapp:   'WhatsApp नंबर',
+        lblVoice:      'वॉइस कॉल नंबर',
+        waSame:        'फोन नंबर के समान',
+        voiceSame:     'फोन नंबर के समान',
+        lblEmail:      'ईमेल पता',
+        lblPrefLang:   'पसंदीदा भाषा',
+        selLang:       'भाषा चुनें',
+        lblCity:       'शहर',
+        lblCountry:    'देश',
+        selCountry:    'देश चुनें',
+        lblAge:        'आयु वर्ग',
+        selAge:        'आयु वर्ग चुनें',
+        lblGender:     'लिंग',
+        selGender:     'बताना नहीं चाहते',
+        genderM:       'पुरुष',
+        genderF:       'महिला',
+        genderNb:      'नॉन-बाइनरी',
+        lblMarital:    'वैवाहिक स्थिति',
+        lblOccupation: 'पेशा / नौकरी का शीर्षक',
+        lblInterests:  'रुचियाँ (सभी उपयुक्त चुनें)',
+        optLabel:      'वैकल्पिक — आपकी बेहतर मिलान के लिए',
+        lblOrientation:'यौन रुझान',
+        lblMedical:    'चिकित्सा स्थितियाँ',
+        medPlaceholder:'जैसे मधुमेह, उच्च रक्तचाप — स्वास्थ्य अध्ययन खोजने में मदद',
+        lblNotif:      'आप कैसे सूचित होना चाहते हैं?',
+        consentText:   'मैं बाजार अनुसंधान के लिए संपर्क किए जाने के लिए सहमत हूं और समझता/समझती हूं कि मुझे मुआवजा दिया जाएगा।',
+        privacyNote:   'हम आपका व्यक्तिगत डेटा किसी तृतीय पक्ष के साथ साझा नहीं करते। आपकी संवेदनशील जानकारी सुरक्षित रखी जाती है।',
+        submitBtn:     'पैनल में शामिल हों',
+        successTitle:  'आप नामांकित हो गए!',
+        successP1:     'GetHeard के पैनल में शामिल होने के लिए धन्यवाद। जब कोई अध्ययन आपकी प्रोफ़ाइल से मेल खाएगा तो हम संपर्क करेंगे।',
+        successP2:     'अध्ययन आमंत्रणों के लिए अपने WhatsApp या ईमेल पर ध्यान दें।',
+        successPoints: 'स्वागत बोनस: आपके खाते में 10 पॉइंट जोड़े गए 🎉',
+        iFin: 'फिनटेक', iEcom: 'ई-कॉमर्स', iFnb: 'खाना और पेय', iTravel: 'यात्रा',
+        iHealth: 'स्वास्थ्य', iEdu: 'शिक्षा', iTech: 'तकनीक',
+        iRe: 'रियल एस्टेट', iIns: 'बीमा', iGaming: 'गेमिंग',
+      },
+      // TODO: Add full translations for id, th, vi, zh
+      // For now, fall back to English for these languages
+      id: null, th: null, vi: null, zh: null,
+    };
+
+    let currentLang = 'en';
+
+    function applyTranslations(lang) {
+      const t = T[lang] || T['en'];
+      document.getElementById('page-title').textContent    = t.pageTitle;
+      document.getElementById('t-page-heading').textContent= t.pageHeading;
+      document.getElementById('t-page-sub').textContent    = t.pageSub;
+      document.getElementById('t-s1-title').textContent    = t.s1;
+      document.getElementById('t-s2-title').textContent    = t.s2;
+      document.getElementById('t-s4-title').textContent    = t.s4;
+      document.getElementById('t-lbl-name').childNodes[0].nodeValue = t.lblName + ' ';
+      document.getElementById('t-lbl-phone').childNodes[0].nodeValue = t.lblPhone + ' ';
+      document.getElementById('t-lbl-whatsapp').textContent = t.lblWhatsapp;
+      document.getElementById('t-lbl-voice').textContent    = t.lblVoice;
+      document.getElementById('t-wa-same').textContent      = t.waSame;
+      document.getElementById('t-voice-same').textContent   = t.voiceSame;
+      document.getElementById('t-lbl-email').textContent    = t.lblEmail;
+      document.getElementById('t-lbl-pref-lang').childNodes[0].nodeValue = t.lblPrefLang + ' ';
+      document.getElementById('t-lbl-city').textContent     = t.lblCity;
+      document.getElementById('t-lbl-country').childNodes[0].nodeValue = t.lblCountry + ' ';
+      document.getElementById('t-lbl-age').childNodes[0].nodeValue = t.lblAge + ' ';
+      document.getElementById('t-lbl-gender').textContent   = t.lblGender;
+      document.getElementById('t-lbl-marital').textContent  = t.lblMarital;
+      document.getElementById('t-lbl-occupation').textContent= t.lblOccupation;
+      document.getElementById('t-lbl-interests').textContent= t.lblInterests;
+      document.getElementById('t-opt-label').textContent    = t.optLabel;
+      document.getElementById('t-lbl-orientation').textContent = t.lblOrientation;
+      document.getElementById('t-lbl-medical').textContent  = t.lblMedical;
+      document.getElementById('f-medical').placeholder      = t.medPlaceholder;
+      document.getElementById('t-lbl-notif').textContent    = t.lblNotif;
+      document.getElementById('t-consent-text').childNodes[0].nodeValue = t.consentText + ' ';
+      document.getElementById('t-privacy-note').textContent = t.privacyNote;
+      document.getElementById('submit-btn').textContent     = t.submitBtn;
+      document.getElementById('t-success-title').textContent= t.successTitle;
+      document.getElementById('t-success-p1').textContent   = t.successP1;
+      document.getElementById('t-success-p2').textContent   = t.successP2;
+      document.getElementById('t-success-points').textContent = t.successPoints;
+      // Interests
+      document.getElementById('i-fintech').textContent    = t.iFin;
+      document.getElementById('i-ecom').textContent       = t.iEcom;
+      document.getElementById('i-fnb').innerHTML          = t.iFnb;
+      document.getElementById('i-travel').textContent     = t.iTravel;
+      document.getElementById('i-health').textContent     = t.iHealth;
+      document.getElementById('i-edu').textContent        = t.iEdu;
+      document.getElementById('i-tech').textContent       = t.iTech;
+      document.getElementById('i-realestate').textContent = t.iRe;
+      document.getElementById('i-insurance').textContent  = t.iIns;
+      document.getElementById('i-gaming').textContent     = t.iGaming;
+    }
+
+    // Language switcher
+    document.querySelectorAll('.lang-opt').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.lang-opt').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentLang = this.dataset.lang;
+        applyTranslations(currentLang);
+        // Set preferred language select
+        const sel = document.getElementById('f-pref-lang');
+        if (sel) sel.value = currentLang;
+      });
+    });
+
+    // Copy phone helpers
+    function copyPhone(target) {
+      const phoneCode = document.getElementById('f-phone-code').value;
+      const phone     = document.getElementById('f-phone').value;
+      if (target === 'wa') {
+        const cb = document.getElementById('wa-same');
+        document.getElementById('f-wa-code').value    = cb.checked ? phoneCode : '+91';
+        document.getElementById('f-whatsapp').value   = cb.checked ? phone : '';
+        document.getElementById('f-whatsapp').disabled = cb.checked;
+        document.getElementById('f-wa-code').disabled  = cb.checked;
+      } else {
+        const cb = document.getElementById('voice-same');
+        document.getElementById('f-voice-code').value   = cb.checked ? phoneCode : '+91';
+        document.getElementById('f-voice').value        = cb.checked ? phone : '';
+        document.getElementById('f-voice').disabled     = cb.checked;
+        document.getElementById('f-voice-code').disabled = cb.checked;
+      }
+    }
+
+    // Optional section toggle
+    function toggleOptional() {
+      const body  = document.getElementById('optional-body');
+      const arrow = document.getElementById('opt-arrow');
+      body.classList.toggle('visible');
+      arrow.classList.toggle('open');
+    }
+
+    // Form submission
+    document.getElementById('enroll-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Basic validation
+      const required = [
+        { id: 'f-name', msg: 'Please enter your full name.' },
+        { id: 'f-phone', msg: 'Please enter your phone number.' },
+        { id: 'f-pref-lang', msg: 'Please select your preferred language.' },
+        { id: 'f-country', msg: 'Please select your country.' },
+        { id: 'f-age', msg: 'Please select your age range.' },
+      ];
+      let valid = true;
+      required.forEach(r => {
+        const el = document.getElementById(r.id);
+        if (!el.value.trim()) {
+          el.style.borderColor = '#dc2626';
+          valid = false;
+        } else {
+          el.style.borderColor = '';
+        }
+      });
+
+      const consent = document.getElementById('f-consent');
+      if (!consent.checked) {
+        const alert = document.getElementById('alert-error');
+        alert.textContent = 'Please agree to the consent statement to continue.';
+        alert.classList.add('visible');
+        valid = false;
+      }
+
+      if (!valid) {
+        document.getElementById('alert-error').classList.add('visible');
+        if (!document.getElementById('alert-error').textContent) {
+          document.getElementById('alert-error').textContent = 'Please fill all required fields.';
+        }
+        document.querySelector('[style*="border-color: rgb"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      document.getElementById('alert-error').classList.remove('visible');
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Submitting…';
+
+      // Collect data
+      const formEl = document.getElementById('enroll-form');
+      const fd     = new FormData(formEl);
+      const data   = {};
+      fd.forEach((v, k) => {
+        if (data[k]) {
+          if (!Array.isArray(data[k])) data[k] = [data[k]];
+          data[k].push(v);
+        } else {
+          data[k] = v;
+        }
+      });
+      data.ui_language = currentLang;
+
+      try {
+        const res = await fetch('/api/respondents/enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok && (json.success || json.id || json.respondent_id)) {
+          document.getElementById('enroll-form').style.display = 'none';
+          document.getElementById('success-card').classList.add('visible');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const alert = document.getElementById('alert-error');
+          alert.textContent = json.error || 'Something went wrong. Please try again.';
+          alert.classList.add('visible');
+          btn.disabled = false;
+          btn.textContent = T[currentLang]?.submitBtn || 'Join the Panel';
+        }
+      } catch(err) {
+        const alert = document.getElementById('alert-error');
+        alert.textContent = 'Network error. Please check your connection and try again.';
+        alert.classList.add('visible');
+        btn.disabled = false;
+        btn.textContent = T[currentLang]?.submitBtn || 'Join the Panel';
+      }
+    });
+
+    // Clear error styling on input
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('change', () => { el.style.borderColor = ''; });
+    });
+  </script>
+</body>
+</html>

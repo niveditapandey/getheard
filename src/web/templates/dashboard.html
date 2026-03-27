@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GetHeard – Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --brand:#1e3c72;--brand-dark:#152d56;--bg:#f0f4f8;--surface:#fff;
+      --text:#1e1b4b;--muted:#6b7280;--border:#e5e7eb;--radius:14px;
+      --shadow:0 4px 24px rgba(30,60,114,.1);
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:var(--bg);color:var(--text);min-height:100vh;padding:24px}
+
+    /* ── Nav ── */
+    nav{display:flex;align-items:center;justify-content:space-between;
+      background:var(--surface);border-radius:var(--radius);
+      padding:16px 24px;margin-bottom:24px;box-shadow:var(--shadow)}
+    .nav-brand{font-size:1.2rem;font-weight:700;color:var(--brand)}
+    .nav-links a{margin-left:20px;text-decoration:none;color:var(--muted);
+      font-size:.9rem;font-weight:500}
+    .nav-links a:hover{color:var(--brand)}
+    .nav-links a.active{color:var(--brand);border-bottom:2px solid var(--brand);
+      padding-bottom:2px}
+
+    /* ── Grid ── */
+    .grid{display:grid;gap:20px}
+    .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-2{grid-template-columns:repeat(2,1fr)}
+    @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.grid-4,.grid-2{grid-template-columns:1fr}}
+
+    /* ── Card ── */
+    .card{background:var(--surface);border-radius:var(--radius);
+      padding:24px;box-shadow:var(--shadow)}
+    .card h3{font-size:.85rem;font-weight:600;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+
+    /* ── Stat cards ── */
+    .stat-value{font-size:2.2rem;font-weight:700;color:var(--text)}
+    .stat-sub{font-size:.8rem;color:var(--muted);margin-top:4px}
+
+    /* ── Section headers ── */
+    h2{font-size:1.1rem;font-weight:700;margin-bottom:16px;color:var(--text)}
+
+    /* ── Table ── */
+    table{width:100%;border-collapse:collapse;font-size:.875rem}
+    th{text-align:left;padding:10px 12px;font-size:.75rem;font-weight:600;
+      color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+      border-bottom:2px solid var(--border)}
+    td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+    tr:hover td{background:#f9fafb}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;
+      font-size:.72rem;font-weight:600}
+    .badge-en {background:#dbeafe;color:#1d4ed8}
+    .badge-hi {background:#fef3c7;color:#92400e}
+    .badge-id {background:#dcfce7;color:#15803d}
+    .badge-fil{background:#fce7f3;color:#9d174d}
+    .badge-th {background:#dce8f5;color:#1e3c72}
+    .badge-vi {background:#fff7ed;color:#c2410c}
+    .badge-ko {background:#f0fdf4;color:#166534}
+    .badge-ja {background:#fdf4ff;color:#86198f}
+    .badge-zh {background:#f0f9ff;color:#0369a1}
+    .badge-voice{background:#dce8f5;color:#1e3c72}
+    .badge-wa   {background:#dcfce7;color:#15803d}
+    .btn-sm{padding:5px 12px;border:none;border-radius:8px;cursor:pointer;
+      font-size:.78rem;font-weight:600;background:#dce8f5;color:var(--brand)}
+    .btn-sm:hover{background:#c8d9ee}
+
+    /* ── Transcript modal ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+      z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:#fff;border-radius:var(--radius);max-width:680px;width:90%;
+      max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
+    .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between}
+    .modal-body{overflow-y:auto;padding:20px 24px;flex:1}
+    .close-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;
+      color:var(--muted)}
+    .msg{padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:.88rem;
+      line-height:1.5;max-width:85%}
+    .msg.interviewer{background:#dce8f5;color:#152d56;
+      border-bottom-left-radius:4px;align-self:flex-start}
+    .msg.respondent{background:#dcfce7;color:#14532d;
+      border-bottom-right-radius:4px;align-self:flex-end;margin-left:auto}
+    .msg-label{font-size:.7rem;font-weight:700;opacity:.6;margin-bottom:3px}
+    .msgs-wrap{display:flex;flex-direction:column}
+
+    /* ── Channel indicator ── */
+    .channel-icon{margin-right:4px}
+    
+    /* ── Empty state ── */
+    .empty{text-align:center;padding:40px;color:var(--muted);font-size:.9rem}
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">🎙️ GetHeard</div>
+  <div class="nav-links">
+    <a href="/">Interview</a>
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/projects">Projects</a>
+  </div>
+</nav>
+
+<!-- Stat cards -->
+<div class="grid grid-4" id="statsGrid" style="margin-bottom:20px">
+  <div class="card"><h3>Total Interviews</h3><div class="stat-value" id="statTotal">—</div><div class="stat-sub">all time</div></div>
+  <div class="card"><h3>Completed</h3><div class="stat-value" id="statCompleted">—</div><div class="stat-sub" id="statPct">—</div></div>
+  <div class="card"><h3>Languages Used</h3><div class="stat-value" id="statLangs">—</div><div class="stat-sub">unique</div></div>
+  <div class="card"><h3>WhatsApp Sessions</h3><div class="stat-value" id="statWA">—</div><div class="stat-sub">active now</div></div>
+</div>
+
+<!-- Charts + recent -->
+<div class="grid grid-2" style="margin-bottom:20px">
+  <div class="card">
+    <h2>Interviews by Language</h2>
+    <canvas id="langChart" height="200"></canvas>
+  </div>
+  <div class="card">
+    <h2>Channel Mix</h2>
+    <canvas id="channelChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Transcript list -->
+<div class="card">
+  <h2>Recent Transcripts</h2>
+  <div id="transcriptTable"><div class="empty">Loading…</div></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <strong id="modalTitle">Transcript</strong>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="msgs-wrap" id="modalMsgs"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANG_LABELS = {
+  en:'🇬🇧 English',hi:'🇮🇳 Hindi',id:'🇮🇩 Indonesian',
+  fil:'🇵🇭 Filipino',th:'🇹🇭 Thai',vi:'🇻🇳 Vietnamese',
+  ko:'🇰🇷 Korean',ja:'🇯🇵 Japanese',zh:'🇨🇳 Mandarin',
+};
+const LANG_COLORS = {
+  en:'#1e3c72',hi:'#f59e0b',id:'#10b981',fil:'#ec4899',
+  th:'#2a5298',vi:'#f97316',ko:'#14b8a6',ja:'#1e3c72',zh:'#0ea5e9',
+};
+
+let langChart, channelChart;
+
+async function load() {
+  const [statsRes, listRes, healthRes] = await Promise.all([
+    fetch('/api/stats').then(r=>r.json()).catch(()=>({})),
+    fetch('/api/transcripts').then(r=>r.json()).catch(()=>({transcripts:[]})),
+    fetch('/health').then(r=>r.json()).catch(()=>({active_sessions:0})),
+  ]);
+
+  const transcripts = listRes.transcripts || [];
+  renderStats(transcripts, statsRes, healthRes);
+  renderCharts(transcripts);
+  renderTable(transcripts);
+}
+
+function renderStats(transcripts, stats, health) {
+  document.getElementById('statTotal').textContent = transcripts.length;
+
+  // "completed" = transcripts that exist (they're saved on completion)
+  const completed = transcripts.length;
+  document.getElementById('statCompleted').textContent = completed;
+  document.getElementById('statPct').textContent = completed
+    ? `${Math.round(completed/transcripts.length*100)}% completion`
+    : '—';
+
+  const langs = new Set(transcripts.map(t=>t.language_code));
+  document.getElementById('statLangs').textContent = langs.size || 0;
+  document.getElementById('statWA').textContent = stats.whatsapp_active ?? 0;
+}
+
+function renderCharts(transcripts) {
+  // Language distribution
+  const langCounts = {};
+  transcripts.forEach(t => {
+    const l = t.language_code || 'en';
+    langCounts[l] = (langCounts[l]||0)+1;
+  });
+  const langLabels = Object.keys(langCounts).map(k=>LANG_LABELS[k]||k);
+  const langData   = Object.values(langCounts);
+  const langColors = Object.keys(langCounts).map(k=>LANG_COLORS[k]||'#6b7280');
+
+  if (langChart) langChart.destroy();
+  langChart = new Chart(document.getElementById('langChart'), {
+    type: 'doughnut',
+    data: { labels: langLabels, datasets:[{ data: langData, backgroundColor: langColors, borderWidth:2 }] },
+    options: { plugins:{ legend:{ position:'right', labels:{font:{size:11}} } }, cutout:'65%' }
+  });
+
+  // Channel mix
+  const voiceCount = transcripts.filter(t=>!t.file?.startsWith('whatsapp')).length;
+  const waCount    = transcripts.filter(t=> t.file?.includes('whatsapp') || (t.metadata?.channel==='whatsapp')).length;
+
+  if (channelChart) channelChart.destroy();
+  channelChart = new Chart(document.getElementById('channelChart'), {
+    type: 'bar',
+    data: {
+      labels: ['🎤 Voice', '💬 WhatsApp'],
+      datasets:[{ data:[voiceCount||0, waCount||0],
+        backgroundColor:['#1e3c72','#10b981'], borderRadius:8 }]
+    },
+    options: {
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{stepSize:1} } }
+    }
+  });
+}
+
+function renderTable(transcripts) {
+  const container = document.getElementById('transcriptTable');
+  if (!transcripts.length) {
+    container.innerHTML = '<div class="empty">No transcripts yet — run an interview first!</div>';
+    return;
+  }
+
+  const rows = transcripts.slice(0,30).map(t => {
+    const lang = t.language_code || 'en';
+    const channel = (t.file||'').includes('whatsapp') ? 'wa' : 'voice';
+    const channelLabel = channel==='wa' ? '💬 WhatsApp' : '🎤 Voice';
+    const badgeClass = `badge badge-${lang}`;
+    const date = t.ended_at ? new Date(t.ended_at).toLocaleString() : '—';
+    return `<tr>
+      <td>${date}</td>
+      <td><span class="${badgeClass}">${LANG_LABELS[lang]||lang}</span></td>
+      <td><span class="badge badge-${channel}">${channelLabel}</span></td>
+      <td>${t.turn_count||'—'} turns</td>
+      <td><button class="btn-sm" onclick="openTranscript('${t.file}','${lang}','${date}')">View</button></td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Language</th><th>Channel</th><th>Turns</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function openTranscript(filename, lang, date) {
+  document.getElementById('modalTitle').textContent =
+    `${LANG_LABELS[lang]||lang} · ${date}`;
+  document.getElementById('modalMsgs').innerHTML = '<div class="empty">Loading…</div>';
+  document.getElementById('modal').classList.add('open');
+
+  try {
+    const data = await fetch(`/api/transcript-file/${encodeURIComponent(filename)}`).then(r=>r.json());
+    const conv = data.conversation || [];
+    if (!conv.length) {
+      document.getElementById('modalMsgs').innerHTML = '<div class="empty">Empty transcript</div>';
+      return;
+    }
+    document.getElementById('modalMsgs').innerHTML = conv.map(m => `
+      <div class="msg ${m.speaker==='interviewer'?'interviewer':'respondent'}">
+        <div class="msg-label">${m.speaker==='interviewer'?'🤖 Alex':'👤 You'}</div>
+        <div>${escHtml(m.text||m.content||'')}</div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('modalMsgs').innerHTML = '<div class="empty">Failed to load</div>';
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target===document.getElementById('modal')) closeModal();
+});
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+load();
+setInterval(load, 30000); // refresh every 30s
+</script>
+</body>
+</html>

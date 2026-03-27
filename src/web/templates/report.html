@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GetHeard – Research Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --brand:#1e3c72;--brand-dark:#152d56;--bg:#f0f4f8;--surface:#fff;
+      --text:#1e1b4b;--muted:#6b7280;--border:#e5e7eb;--radius:14px;
+      --shadow:0 4px 24px rgba(30,60,114,.1);
+      --pos:#22c55e;--neu:#f59e0b;--neg:#ef4444;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:var(--bg);color:var(--text);min-height:100vh;padding:24px}
+    nav{display:flex;align-items:center;justify-content:space-between;
+      background:var(--surface);border-radius:var(--radius);
+      padding:16px 24px;margin-bottom:24px;box-shadow:var(--shadow)}
+    .nav-brand{font-size:1.2rem;font-weight:700;color:var(--brand)}
+    .nav-links a{margin-left:20px;text-decoration:none;color:var(--muted);font-size:.9rem;font-weight:500}
+    .nav-links a:hover{color:var(--brand)}
+
+    .page-wrap{max-width:980px;margin:0 auto}
+    .report-header{background:linear-gradient(135deg,#152d56 0%,#1e3c72 100%);
+      color:#fff;border-radius:var(--radius);padding:32px 36px;margin-bottom:24px;position:relative}
+    .report-header h1{font-size:1.8rem;margin-bottom:6px}
+    .report-meta{opacity:.8;font-size:.88rem;display:flex;gap:20px;flex-wrap:wrap;margin-top:10px}
+    .report-meta span::before{content:'• ';opacity:.5}
+    .report-meta span:first-child::before{content:''}
+
+    /* Header action buttons */
+    .header-actions{position:absolute;top:28px;right:32px;display:flex;gap:8px;flex-wrap:wrap}
+    .btn-header{padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;
+      cursor:pointer;transition:all .2s;border:none}
+    .btn-header-solid{background:#1e3c72;color:#fff;border:2px solid rgba(255,255,255,.5)}
+    .btn-header-solid:hover{background:#152d56;border-color:#fff}
+    .btn-header-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)}
+    .btn-header-outline:hover{background:rgba(255,255,255,.15)}
+    .copy-tooltip{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:#1e3c72;color:#fff;padding:8px 18px;border-radius:8px;
+      font-size:.85rem;font-weight:600;z-index:9999;
+      opacity:0;pointer-events:none;transition:opacity .2s}
+    .copy-tooltip.show{opacity:1}
+
+    .card{background:var(--surface);border-radius:var(--radius);
+      padding:28px;box-shadow:var(--shadow);margin-bottom:20px}
+    .card h2{font-size:1.05rem;font-weight:700;margin-bottom:16px;
+      display:flex;align-items:center;gap:8px}
+    .section-icon{font-size:1.2rem}
+
+    /* Grid layouts */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    @media(max-width:720px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+    /* Stat row */
+    .stat-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+    .stat-box{flex:1;min-width:120px;background:var(--bg);border-radius:12px;
+      padding:16px 20px;text-align:center}
+    .stat-box .val{font-size:2rem;font-weight:700;color:var(--brand)}
+    .stat-box .lbl{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+    /* Sentiment bar */
+    .sent-bar{display:flex;border-radius:999px;overflow:hidden;height:20px;margin:10px 0}
+    .sent-pos{background:var(--pos)}
+    .sent-neu{background:var(--neu)}
+    .sent-neg{background:var(--neg)}
+    .sent-legend{display:flex;gap:16px;font-size:.8rem;margin-top:8px}
+    .sent-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
+
+    /* Theme cards */
+    .theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .theme-card{border:2px solid var(--border);border-radius:12px;padding:16px}
+    .theme-card.positive{border-color:#bbf7d0}
+    .theme-card.negative{border-color:#fecaca}
+    .theme-card.mixed{border-color:#fed7aa}
+    .theme-card.neutral{border-color:var(--border)}
+    .theme-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .theme-name{font-weight:700;font-size:.9rem}
+    .theme-freq{background:var(--brand);color:#fff;border-radius:999px;
+      padding:2px 10px;font-size:.72rem;font-weight:700}
+    .theme-desc{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:8px}
+    .theme-quote{font-size:.8rem;color:var(--text);background:#f9fafb;
+      border-left:3px solid var(--brand);padding:8px 12px;border-radius:0 8px 8px 0;
+      font-style:italic;margin-top:6px}
+    .theme-sent{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-top:8px;display:inline-block}
+    .sent-badge-positive{background:#dcfce7;color:#15803d}
+    .sent-badge-negative{background:#fee2e2;color:#991b1b}
+    .sent-badge-neutral {background:#f3f4f6;color:var(--muted)}
+    .sent-badge-mixed   {background:#fff7ed;color:#92400e}
+
+    /* Q&A insights */
+    .q-insight{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+    .q-insight-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+    .q-num{background:var(--brand);color:#fff;width:28px;height:28px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0}
+    .q-text{font-weight:600;font-size:.9rem;flex:1}
+    .q-summary{font-size:.85rem;color:var(--muted);margin-bottom:8px;line-height:1.5}
+    .q-responses{display:flex;flex-direction:column;gap:4px}
+    .q-response{font-size:.82rem;padding:4px 10px;background:#f9fafb;border-radius:6px}
+    .q-response::before{content:'→ ';color:var(--brand);font-weight:700}
+    .q-notable{font-size:.8rem;font-style:italic;background:#e8eef7;
+      border-radius:8px;padding:10px 14px;margin-top:8px;color:var(--brand-dark)}
+    .q-notable::before{content:'"';font-size:1.2rem;font-weight:700}
+    .q-notable::after{content:'"';font-size:1.2rem;font-weight:700}
+
+    /* Quotes */
+    .quote-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .quote-card{background:#f9fafb;border-radius:12px;padding:16px;
+      border-left:4px solid var(--brand)}
+    .quote-card.negative{border-left-color:var(--neg);background:#fff5f5}
+    .quote-card.positive{border-left-color:var(--pos);background:#f0fdf4}
+    .quote-text{font-size:.88rem;font-style:italic;line-height:1.6;margin-bottom:8px}
+    .quote-meta{font-size:.72rem;color:var(--muted)}
+
+    /* Recommendations */
+    .rec-list{display:flex;flex-direction:column;gap:12px}
+    .rec-item{display:flex;gap:12px;align-items:flex-start;padding:16px;
+      border-radius:12px;border:2px solid var(--border)}
+    .rec-item.high{border-color:#fecaca;background:#fff5f5}
+    .rec-item.medium{border-color:#fed7aa;background:#fffbf5}
+    .rec-item.low{border-color:#bbf7d0;background:#f0fdf4}
+    .rec-priority{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:999px;
+      text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;margin-top:2px}
+    .pri-high  {background:#fee2e2;color:#991b1b}
+    .pri-medium{background:#fef3c7;color:#92400e}
+    .pri-low   {background:#dcfce7;color:#15803d}
+    .rec-body .rec-title{font-weight:600;font-size:.9rem;margin-bottom:4px}
+    .rec-body .rec-rationale{font-size:.82rem;color:var(--muted);line-height:1.5}
+    .rec-body .rec-impact{font-size:.78rem;color:var(--brand);margin-top:6px;font-weight:500}
+
+    /* Print/Export */
+    .export-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .btn{padding:10px 20px;border:none;border-radius:10px;font-size:.88rem;
+      font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-outline{background:transparent;border:2px solid var(--brand);color:var(--brand)}
+    .btn-outline:hover{background:#e8eef7}
+
+    @media print{nav,.export-bar{display:none}body{background:#fff;padding:0}
+      .card{box-shadow:none;border:1px solid #e5e7eb}}
+
+    /* Loading state */
+    .loading{text-align:center;padding:60px;color:var(--muted)}
+    .spinner{width:48px;height:48px;border:5px solid #dce8f5;border-top-color:var(--brand);
+      border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">🎙️ GetHeard</div>
+  <div class="nav-links">
+    <a href="/">Interview</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/projects">Projects</a>
+  </div>
+</nav>
+
+<!-- Copy tooltip -->
+<div class="copy-tooltip" id="copyTooltip">Link copied!</div>
+
+<div class="page-wrap" id="reportWrap">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>AI is analyzing your transcripts…<br><small>This takes 20–40 seconds</small></p>
+  </div>
+</div>
+
+<script>
+const LANG_NAMES = {en:'English',hi:'Hindi',id:'Indonesian',fil:'Filipino',
+  th:'Thai',vi:'Vietnamese',ko:'Korean',ja:'Japanese',zh:'Mandarin'};
+
+// Get report_id from URL: /report/abc123 or ?report_id=abc123
+const pathParts = location.pathname.split('/');
+const reportId  = pathParts[pathParts.length-1] || new URLSearchParams(location.search).get('report_id');
+
+async function loadReport() {
+  try {
+    const res  = await fetch(`/api/reports/${reportId}`);
+    if (!res.ok) throw new Error('Report not found');
+    const data = await res.json();
+    renderReport(data);
+  } catch(err) {
+    document.getElementById('reportWrap').innerHTML =
+      `<div class="loading"><p style="color:#ef4444">Error: ${err.message}</p></div>`;
+  }
+}
+
+function shareReport() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const tt = document.getElementById('copyTooltip');
+    tt.classList.add('show');
+    setTimeout(() => tt.classList.remove('show'), 2000);
+  }).catch(() => {
+    prompt('Copy this link:', window.location.href);
+  });
+}
+
+function downloadPDF() {
+  alert('Download PDF — Coming soon!');
+}
+
+function renderReport(r) {
+  const wrap = document.getElementById('reportWrap');
+  const sent = r.sentiment_overview || {};
+  const themes = r.key_themes || [];
+  const qInsights = r.question_insights || [];
+  const quotes = r.notable_quotes || [];
+  const recs = r.recommendations || [];
+  const pains = r.pain_points || [];
+  const positives = r.positive_highlights || [];
+  const meth = r.methodology || {};
+
+  wrap.innerHTML = `
+    <!-- Export bar -->
+    <div class="export-bar">
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Print / PDF</button>
+      <button class="btn btn-outline" onclick="exportJSON()">📥 Export JSON</button>
+    </div>
+
+    <!-- Header -->
+    <div class="report-header">
+      <div class="header-actions">
+        <button class="btn-header btn-header-solid" onclick="shareReport()">🔗 Share Report</button>
+        <button class="btn-header btn-header-outline" onclick="downloadPDF()">⬇ Download PDF</button>
+      </div>
+      <h1>📊 ${escHtml(r.project_name || 'Research Report')}</h1>
+      <div style="opacity:.85;font-size:.9rem;margin-top:4px">${escHtml(r.objective||'')}</div>
+      <div class="report-meta">
+        <span>${r.total_transcripts} respondents</span>
+        <span>${(r.languages||[]).map(l=>LANG_NAMES[l]||l).join(', ')}</span>
+        <span>${r.research_type?.toUpperCase()}</span>
+        <span>Generated ${new Date(r.generated_at).toLocaleDateString()}</span>
+      </div>
+    </div>
+
+    <!-- Stat row -->
+    <div class="stat-row">
+      <div class="stat-box"><div class="val">${r.total_transcripts}</div><div class="lbl">Respondents</div></div>
+      <div class="stat-box"><div class="val">${themes.length}</div><div class="lbl">Key Themes</div></div>
+      <div class="stat-box"><div class="val">${recs.length}</div><div class="lbl">Recommendations</div></div>
+      <div class="stat-box"><div class="val">${sent.overall?.charAt(0).toUpperCase()+sent.overall?.slice(1)||'—'}</div><div class="lbl">Overall Sentiment</div></div>
+    </div>
+
+    <!-- Executive Summary + Sentiment -->
+    <div class="grid-2">
+      <div class="card">
+        <h2><span class="section-icon">📝</span> Executive Summary</h2>
+        <p style="font-size:.9rem;line-height:1.7;color:#374151">${escHtml(r.executive_summary||'No summary available')}</p>
+        ${r.confidence_notes ? `<p style="font-size:.78rem;color:var(--muted);margin-top:12px;font-style:italic">${escHtml(r.confidence_notes)}</p>` : ''}
+      </div>
+      <div class="card">
+        <h2><span class="section-icon">😊</span> Sentiment Overview</h2>
+        <div class="sent-bar">
+          <div class="sent-pos" style="width:${sent.positive_pct||0}%"></div>
+          <div class="sent-neu" style="width:${sent.neutral_pct||0}%"></div>
+          <div class="sent-neg" style="width:${sent.negative_pct||0}%"></div>
+        </div>
+        <div class="sent-legend">
+          <span><span class="sent-dot" style="background:var(--pos)"></span>Positive ${sent.positive_pct||0}%</span>
+          <span><span class="sent-dot" style="background:var(--neu)"></span>Neutral ${sent.neutral_pct||0}%</span>
+          <span><span class="sent-dot" style="background:var(--neg)"></span>Negative ${sent.negative_pct||0}%</span>
+        </div>
+        <p style="font-size:.85rem;color:var(--muted);margin-top:14px;line-height:1.5">
+          ${escHtml(sent.sentiment_narrative||'')}
+        </p>
+        <canvas id="sentChart" height="180" style="margin-top:16px"></canvas>
+      </div>
+    </div>
+
+    <!-- Theme frequency chart + Theme cards -->
+    <div class="card">
+      <h2><span class="section-icon">🗂️</span> Key Themes</h2>
+      <canvas id="themeChart" height="120" style="margin-bottom:24px"></canvas>
+      <div class="theme-grid">
+        ${themes.map(t=>`
+          <div class="theme-card ${t.sentiment||'neutral'}">
+            <div class="theme-top">
+              <span class="theme-name">${escHtml(t.theme)}</span>
+              <span class="theme-freq">${t.frequency} mentions (${t.frequency_pct||0}%)</span>
+            </div>
+            <span class="theme-sent sent-badge-${t.sentiment||'neutral'}">${t.sentiment||'neutral'}</span>
+            <p class="theme-desc">${escHtml(t.description||'')}</p>
+            ${(t.quotes||[]).slice(0,1).map(q=>`<div class="theme-quote">${escHtml(q)}</div>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Question-by-question insights -->
+    ${qInsights.length ? `
+    <div class="card">
+      <h2><span class="section-icon">❓</span> Question-by-Question Insights</h2>
+      ${qInsights.map(q=>`
+        <div class="q-insight">
+          <div class="q-insight-top">
+            <span class="q-num">${q.question_number}</span>
+            <span class="q-text">${escHtml(q.question_text||'')}</span>
+            <span class="theme-sent sent-badge-${q.sentiment||'neutral'}" style="flex-shrink:0">${q.sentiment||''}</span>
+          </div>
+          <p class="q-summary">${escHtml(q.summary||'')}</p>
+          <div class="q-responses">${(q.top_responses||[]).map(r=>`<div class="q-response">${escHtml(r)}</div>`).join('')}</div>
+          ${q.notable_quote ? `<div class="q-notable">${escHtml(q.notable_quote)}</div>` : ''}
+        </div>`).join('')}
+    </div>` : ''}
+
+    <!-- Pain points + Positives side by side -->
+    <div class="grid-2">
+      ${pains.length ? `
+      <div class="card">
+        <h2><span class="section-icon">⚠️</span> Pain Points</h2>
+        ${pains.map(p=>`
+          <div style="border-left:3px solid var(--neg);padding:10px 14px;margin-bottom:10px;border-radius:0 8px 8px 0;background:#fff5f5">
+            <div style="font-weight:600;font-size:.88rem;display:flex;justify-content:space-between">
+              ${escHtml(p.pain_point)}
+              <span style="font-size:.72rem;background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:999px">${p.severity||'medium'}</span>
+            </div>
+            ${p.example ? `<div style="font-size:.78rem;font-style:italic;color:var(--muted);margin-top:4px">"${escHtml(p.example)}"</div>` : ''}
+          </div>`).join('')}
+      </div>` : '<div></div>'}
+
+      ${positives.length ? `
+      <div class="card">
+        <h2><span class="section-icon">✨</span> Positive Highlights</h2>
+        ${positives.map(p=>`
+          <div style="border-left:3px solid var(--pos);padding:10px 14px;margin-bottom:10px;border-radius:0 8px 8px 0;background:#f0fdf4">
+            <div style="font-weight:600;font-size:.88rem">${escHtml(p.highlight)}</div>
+            ${p.example ? `<div style="font-size:.78rem;font-style:italic;color:var(--muted);margin-top:4px">"${escHtml(p.example)}"</div>` : ''}
+          </div>`).join('')}
+      </div>` : '<div></div>'}
+    </div>
+
+    <!-- Notable Quotes -->
+    ${quotes.length ? `
+    <div class="card">
+      <h2><span class="section-icon">💬</span> Notable Quotes</h2>
+      <div class="quote-grid">
+        ${quotes.map(q=>`
+          <div class="quote-card ${q.sentiment||''}">
+            <p class="quote-text">"${escHtml(q.quote)}"</p>
+            <p class="quote-meta">${LANG_NAMES[q.language]||q.language||''} · ${escHtml(q.context||'')}</p>
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <!-- Recommendations -->
+    ${recs.length ? `
+    <div class="card">
+      <h2><span class="section-icon">🎯</span> Recommendations</h2>
+      <div class="rec-list">
+        ${recs.map(rec=>`
+          <div class="rec-item ${rec.priority||'medium'}">
+            <span class="rec-priority pri-${rec.priority||'medium'}">${rec.priority||'medium'}</span>
+            <div class="rec-body">
+              <div class="rec-title">${escHtml(rec.recommendation)}</div>
+              <div class="rec-rationale">${escHtml(rec.rationale||'')}</div>
+              ${rec.expected_impact ? `<div class="rec-impact">Expected impact: ${escHtml(rec.expected_impact)}</div>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
+  `;
+
+  // Render charts
+  setTimeout(() => {
+    // Sentiment donut
+    new Chart(document.getElementById('sentChart'), {
+      type:'doughnut',
+      data:{
+        labels:['Positive','Neutral','Negative'],
+        datasets:[{data:[sent.positive_pct||0,sent.neutral_pct||0,sent.negative_pct||0],
+          backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:2}]
+      },
+      options:{plugins:{legend:{position:'right',labels:{font:{size:11}}}},cutout:'65%'}
+    });
+
+    // Theme frequency bar
+    if (themes.length) {
+      new Chart(document.getElementById('themeChart'), {
+        type:'bar',
+        data:{
+          labels: themes.map(t=>t.theme),
+          datasets:[{
+            data: themes.map(t=>t.frequency),
+            backgroundColor: themes.map(t=>
+              t.sentiment==='positive'?'#86efac':
+              t.sentiment==='negative'?'#fca5a5':'#60a5fa'),
+            borderRadius:6,
+          }]
+        },
+        options:{
+          indexAxis:'y',
+          plugins:{legend:{display:false}},
+          scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}
+        }
+      });
+    }
+  }, 100);
+}
+
+function exportJSON() {
+  fetch(`/api/reports/${reportId}`)
+    .then(r=>r.json())
+    .then(data=>{
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `report_${reportId}.json`;
+      a.click();
+    });
+}
+
+function escHtml(t='') {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+loadReport();
+</script>
+</body>
+</html>

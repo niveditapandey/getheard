@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Projects – GetHeard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+  /* NAV */
+  nav { background: #1a202c; padding: 0 24px; display: flex; align-items: center; gap: 8px; height: 56px; }
+  nav a { color: #a0aec0; text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 6px; transition: background .2s; }
+  nav a:hover, nav a.active { background: #2d3748; color: #fff; }
+  .nav-brand { color: #fff; font-weight: 700; font-size: 16px; margin-right: 16px; }
+
+  /* PAGE */
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .page-header h1 { font-size: 28px; font-weight: 700; }
+  .page-header p { color: #718096; margin-top: 4px; font-size: 14px; }
+
+  .btn-primary { background: #4299e1; color: #fff; border: none; padding: 10px 20px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex;
+    align-items: center; gap: 6px; transition: background .2s; }
+  .btn-primary:hover { background: #3182ce; }
+
+  /* STATS ROW */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 20px 24px; flex: 1;
+    border: 1px solid #e2e8f0; }
+  .stat-card .val { font-size: 32px; font-weight: 700; color: #4299e1; }
+  .stat-card .lbl { font-size: 12px; color: #718096; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* PROJECT GRID */
+  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .project-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 22px;
+    cursor: pointer; transition: box-shadow .2s, transform .15s; text-decoration: none; color: inherit; display: block; }
+  .project-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+
+  .project-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .project-card .card-name { font-size: 17px; font-weight: 700; }
+  .project-card .badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+    background: #ebf8ff; color: #2b6cb0; white-space: nowrap; }
+  .badge.type-cx    { background: #ebf8ff; color: #2b6cb0; }
+  .badge.type-ux    { background: #f0fff4; color: #276749; }
+  .badge.type-brand { background: #eaf0f9; color: #1e3c72; }
+  .badge.type-product { background: #fff5f0; color: #c05621; }
+  .badge.type-nps   { background: #fffaf0; color: #b7791f; }
+  .badge.type-employee { background: #fef0f0; color: #c53030; }
+  .badge.type-market { background: #e6fffa; color: #234e52; }
+  .badge.type-custom { background: #f7fafc; color: #4a5568; }
+
+  .project-card .meta { display: flex; gap: 16px; font-size: 13px; color: #718096; margin-bottom: 14px; }
+  .project-card .meta span { display: flex; align-items: center; gap: 4px; }
+
+  .project-card .card-footer { display: flex; justify-content: space-between; align-items: center;
+    padding-top: 12px; border-top: 1px solid #f0f4f8; }
+  .project-card .card-footer .date { font-size: 12px; color: #a0aec0; }
+  .project-card .sessions-pill { background: #ebf8ff; color: #2b6cb0; font-size: 12px; font-weight: 600;
+    padding: 3px 10px; border-radius: 12px; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 80px 24px; }
+  .empty h2 { font-size: 22px; color: #4a5568; margin-bottom: 10px; }
+  .empty p { color: #a0aec0; margin-bottom: 24px; }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 60px; color: #a0aec0; }
+
+  @media (max-width: 600px) {
+    .stats-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">GetHeard</span>
+  <a href="/">Voice Interview</a>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/projects" class="active">Projects</a>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Research Projects</h1>
+      <p>Create AI-powered interview studies with custom question sets</p>
+    </div>
+    <a href="/projects/new" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Project
+    </a>
+  </div>
+
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="val" id="statTotal">–</div><div class="lbl">Total Projects</div></div>
+    <div class="stat-card"><div class="val" id="statInterviews">–</div><div class="lbl">Total Interviews</div></div>
+    <div class="stat-card"><div class="val" id="statActive">–</div><div class="lbl">Active Projects</div></div>
+  </div>
+
+  <div id="projectsContainer" class="loading">Loading projects…</div>
+</div>
+
+<script>
+const RESEARCH_LABELS = {
+  cx: 'Customer Experience', ux: 'User Experience', brand: 'Brand Perception',
+  product: 'Product Feedback', nps: 'NPS Deep-Dive', employee: 'Employee Satisfaction',
+  market: 'Market Research', custom: 'Custom'
+};
+const LANG_NAMES = {
+  en:'English', hi:'Hindi', id:'Indonesian', fil:'Filipino',
+  th:'Thai', vi:'Vietnamese', ko:'Korean', ja:'Japanese', zh:'Mandarin'
+};
+const LANG_FLAGS = { en:'🇬🇧', hi:'🇮🇳', id:'🇮🇩', fil:'🇵🇭', th:'🇹🇭', vi:'🇻🇳', ko:'🇰🇷', ja:'🇯🇵', zh:'🇨🇳' };
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function load() {
+  const res = await fetch('/api/projects');
+  const data = await res.json();
+  const projects = data.projects || [];
+
+  // Stats
+  document.getElementById('statTotal').textContent = projects.length;
+  document.getElementById('statInterviews').textContent = projects.reduce((s, p) => s + (p.sessions || 0), 0);
+  document.getElementById('statActive').textContent = projects.filter(p => p.status === 'active').length;
+
+  const container = document.getElementById('projectsContainer');
+
+  if (projects.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <h2>No projects yet</h2>
+        <p>Create your first research study with AI-generated interview questions</p>
+        <a href="/projects/new" class="btn-primary">Create First Project</a>
+      </div>`;
+    return;
+  }
+
+  container.className = 'project-grid';
+  container.innerHTML = projects.map(p => `
+    <a class="project-card" href="/projects/${p.project_id}">
+      <div class="card-header">
+        <div class="card-name">${escHtml(p.name)}</div>
+        <div class="badge type-${p.research_type}">${RESEARCH_LABELS[p.research_type] || p.research_type}</div>
+      </div>
+      <div class="meta">
+        <span>${LANG_FLAGS[p.language] || '🌐'} ${LANG_NAMES[p.language] || p.language}</span>
+        <span>📋 ${p.question_count} questions</span>
+      </div>
+      <div class="card-footer">
+        <span class="date">${formatDate(p.created_at)}</span>
+        <span class="sessions-pill">${p.sessions} interview${p.sessions !== 1 ? 's' : ''}</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+load().catch(e => {
+  document.getElementById('projectsContainer').innerHTML = `<div class="empty"><h2>Failed to load projects</h2><p>${e.message}</p></div>`;
+});
+</script>
+</body>
+</html>

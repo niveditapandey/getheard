@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --white:      #ffffff;
+      --muted:      #8fa3c8;
+      --danger:     #dc2626;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--navy-dark) 0%, #1a3460 40%, #1e4080 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      color: #1a2540;
+    }
+
+    .signup-wrapper {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Wordmark */
+    .wordmark {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .wordmark a {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .wordmark a span { color: var(--blue-light); }
+    .wordmark p {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+
+    /* Card */
+    .signup-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 40px 40px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .card-header {
+      margin-bottom: 28px;
+    }
+    .card-header h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .card-header p {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 480px) {
+      .signup-card { padding: 28px 20px 24px; }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    label .req { color: var(--danger); margin-left: 2px; }
+
+    input, select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid #c5d2e8;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      color: #1a2540;
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(30,60,114,0.12);
+    }
+    input::placeholder { color: var(--muted); }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238fa3c8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    input[type="password"] { letter-spacing: 0.1em; }
+    input[type="password"]::placeholder { letter-spacing: normal; }
+
+    .password-wrapper {
+      position: relative;
+    }
+    .password-wrapper input {
+      padding-right: 42px;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      font-size: 0.85rem;
+      transition: color 0.15s;
+    }
+    .password-toggle:hover { color: var(--navy); }
+
+    .password-strength {
+      margin-top: 6px;
+      display: flex;
+      gap: 4px;
+    }
+    .strength-bar {
+      height: 3px;
+      flex: 1;
+      border-radius: 2px;
+      background: #e2e8f0;
+      transition: background 0.3s;
+    }
+    .strength-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Checkbox */
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .check-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--navy);
+      cursor: pointer;
+    }
+    .check-row span {
+      font-size: 0.865rem;
+      color: #475569;
+      line-height: 1.45;
+    }
+    .check-row a { color: var(--blue); }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 9px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+    }
+    .btn-submit:hover {
+      background: var(--navy-dark);
+      box-shadow: 0 6px 20px rgba(30,60,114,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e8edf5;
+      margin: 24px 0;
+    }
+
+    .login-link {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .login-link a {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 18px;
+    }
+
+    .field-error {
+      font-size: 0.78rem;
+      color: var(--danger);
+      margin-top: 4px;
+      display: none;
+    }
+    .field-error.visible { display: block; }
+    input.invalid { border-color: var(--danger); }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="signup-wrapper">
+
+    <div class="wordmark">
+      <a href="/"><b>Get</b><span>Heard</span></a>
+      <p>The market research platform built for Asia</p>
+    </div>
+
+    <div class="signup-card">
+      <div class="card-header">
+        <h1>Create your account</h1>
+        <p>Start commissioning research across Asia in minutes.</p>
+      </div>
+
+      <div id="error-banner" class="alert-error" style="display:none;"></div>
+
+      <form id="signup-form" method="POST" action="/listen/api/signup" novalidate>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="full_name">Full name <span class="req">*</span></label>
+            <input type="text" id="full_name" name="full_name" placeholder="Jane Smith" required autocomplete="name" />
+            <div class="field-error" id="err-name">Please enter your full name.</div>
+          </div>
+          <div class="form-group">
+            <label for="company">Company name <span class="req">*</span></label>
+            <input type="text" id="company" name="company" placeholder="Acme Corp" required autocomplete="organization" />
+            <div class="field-error" id="err-company">Please enter your company name.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Work email <span class="req">*</span></label>
+          <input type="email" id="email" name="email" placeholder="jane@company.com" required autocomplete="email" />
+          <div class="field-error" id="err-email">Please enter a valid work email.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country <span class="req">*</span></label>
+          <select id="country" name="country" required>
+            <option value="" disabled selected>Select your country</option>
+            <option value="IN">India</option>
+            <option value="SG">Singapore</option>
+            <option value="ID">Indonesia</option>
+            <option value="TH">Thailand</option>
+            <option value="VN">Vietnam</option>
+            <option value="PH">Philippines</option>
+            <option value="MY">Malaysia</option>
+            <option value="JP">Japan</option>
+            <option value="KR">South Korea</option>
+            <option value="CN">China</option>
+            <option value="AU">Australia</option>
+            <option value="OT">Other</option>
+          </select>
+          <div class="field-error" id="err-country">Please select your country.</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password <span class="req">*</span></label>
+            <div class="password-wrapper">
+              <input type="password" id="password" name="password" placeholder="Min. 8 characters" required autocomplete="new-password" />
+              <button type="button" class="password-toggle" aria-label="Toggle password visibility" onclick="togglePwd('password', this)">👁</button>
+            </div>
+            <div class="password-strength" id="strength-bars">
+              <div class="strength-bar" id="sb1"></div>
+              <div class="strength-bar" id="sb2"></div>
+              <div class="strength-bar" id="sb3"></div>
+              <div class="strength-bar" id="sb4"></div>
+            </div>
+            <div class="strength-label" id="strength-label"></div>
+            <div class="field-error" id="err-pwd">Password must be at least 8 characters.</div>
+          </div>
+          <div class="form-group">
+            <label for="confirm_password">Confirm password <span class="req">*</span></label>
+            <div class="password-wrapper">
+              <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required autocomplete="new-password" />
+              <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility" onclick="togglePwd('confirm_password', this)">👁</button>
+            </div>
+            <div class="field-error" id="err-confirm">Passwords do not match.</div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-group">
+          <label class="check-row">
+            <input type="checkbox" id="agree" name="agree" required />
+            <span>I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a> <span class="req">*</span></span>
+          </label>
+          <div class="field-error" id="err-agree">You must agree to continue.</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">Create Account</button>
+
+      </form>
+
+      <hr class="divider" />
+      <p class="login-link">Already have an account? <a href="/listen/login">Log in →</a></p>
+    </div>
+
+  </div>
+
+  <script>
+    function togglePwd(id, btn) {
+      const inp = document.getElementById(id);
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁';
+      }
+    }
+
+    // Password strength
+    document.getElementById('password').addEventListener('input', function() {
+      const val = this.value;
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+
+      const colors = ['', '#dc2626', '#f59e0b', '#3b82f6', '#16a34a'];
+      const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('sb' + i).style.background = i <= score ? colors[score] : '#e2e8f0';
+      }
+      document.getElementById('strength-label').textContent = val.length ? labels[score] : '';
+      document.getElementById('strength-label').style.color = colors[score];
+    });
+
+    // Form validation
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      let valid = true;
+
+      const fields = [
+        { id: 'full_name', err: 'err-name', check: v => v.trim().length >= 2 },
+        { id: 'company',   err: 'err-company', check: v => v.trim().length >= 1 },
+        { id: 'email',     err: 'err-email', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+        { id: 'country',   err: 'err-country', check: v => v !== '' },
+        { id: 'password',  err: 'err-pwd', check: v => v.length >= 8 },
+      ];
+
+      fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        const err = document.getElementById(f.err);
+        if (!f.check(el.value)) {
+          el.classList.add('invalid');
+          err.classList.add('visible');
+          valid = false;
+        } else {
+          el.classList.remove('invalid');
+          err.classList.remove('visible');
+        }
+      });
+
+      // Confirm password
+      const pwd = document.getElementById('password').value;
+      const cpwd = document.getElementById('confirm_password').value;
+      const errConfirm = document.getElementById('err-confirm');
+      if (pwd !== cpwd) {
+        document.getElementById('confirm_password').classList.add('invalid');
+        errConfirm.classList.add('visible');
+        valid = false;
+      } else {
+        document.getElementById('confirm_password').classList.remove('invalid');
+        errConfirm.classList.remove('visible');
+      }
+
+      // Agree checkbox
+      const agree = document.getElementById('agree');
+      const errAgree = document.getElementById('err-agree');
+      if (!agree.checked) {
+        errAgree.classList.add('visible');
+        valid = false;
+      } else {
+        errAgree.classList.remove('visible');
+      }
+
+      if (!valid) return;
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Creating account…';
+
+      try {
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const res = await fetch('/listen/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          window.location.href = json.redirect || '/listen';
+        } else {
+          const banner = document.getElementById('error-banner');
+          banner.textContent = json.error || 'Something went wrong. Please try again.';
+          banner.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+        }
+      } catch (err) {
+        const banner = document.getElementById('error-banner');
+        banner.textContent = 'Network error. Please check your connection and try again.';
+        banner.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+      }
+    });
+
+    // Live validation clear on input
+    ['full_name','company','email','country','password','confirm_password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        this.classList.remove('invalid');
+      });
+    });
+  </script>
+</body>
+</html>

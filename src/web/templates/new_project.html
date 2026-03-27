@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GetHeard – New Research Project</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --brand:#1e3c72;--brand-dark:#152d56;--bg:#f0f4f8;
+      --surface:#fff;--text:#1e1b4b;--muted:#6b7280;
+      --border:#e5e7eb;--radius:14px;--shadow:0 4px 24px rgba(30,60,114,.1);
+      --success:#22c55e;--danger:#ef4444;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:var(--bg);color:var(--text);min-height:100vh;padding:24px}
+    nav{display:flex;align-items:center;justify-content:space-between;
+      background:var(--surface);border-radius:var(--radius);
+      padding:16px 24px;margin-bottom:24px;box-shadow:var(--shadow)}
+    .nav-brand{font-size:1.2rem;font-weight:700;color:var(--brand)}
+    .nav-links a{margin-left:20px;text-decoration:none;color:var(--muted);font-size:.9rem;font-weight:500}
+    .nav-links a:hover{color:var(--brand)}
+
+    .page-wrap{max-width:860px;margin:0 auto}
+    h1{font-size:1.6rem;font-weight:700;margin-bottom:6px}
+    .subtitle{color:var(--muted);font-size:.9rem;margin-bottom:28px}
+
+    .card{background:var(--surface);border-radius:var(--radius);
+      padding:28px;box-shadow:var(--shadow);margin-bottom:20px}
+    .card h2{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:18px;
+      display:flex;align-items:center;gap:8px}
+    .card h2 .step{background:var(--brand);color:#fff;width:24px;height:24px;
+      border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+      font-size:.75rem;font-weight:700;flex-shrink:0}
+
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group.full{grid-column:1/-1}
+    label{font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;
+      letter-spacing:.04em}
+    input,select,textarea{
+      padding:10px 14px;border:2px solid var(--border);border-radius:10px;
+      font-size:.9rem;font-family:inherit;color:var(--text);background:#fff;
+      transition:border-color .2s;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+    textarea{resize:vertical;min-height:80px}
+
+    /* Question count slider */
+    .qcount-row{display:flex;align-items:center;gap:16px;margin-top:4px}
+    input[type=range]{flex:1;accent-color:var(--brand)}
+    .qcount-badge{background:var(--brand);color:#fff;border-radius:999px;
+      padding:4px 14px;font-weight:700;font-size:.95rem;min-width:40px;text-align:center}
+    .qcount-hints{display:flex;justify-content:space-between;
+      font-size:.72rem;color:var(--muted);margin-top:2px}
+
+    /* Generate button */
+    .btn{padding:12px 24px;border:none;border-radius:10px;font-size:.95rem;
+      font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-primary{background:var(--brand);color:#fff}
+    .btn-primary:hover:not(:disabled){background:var(--brand-dark);transform:translateY(-1px)}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .btn-outline{background:transparent;border:2px solid var(--brand);color:var(--brand)}
+    .btn-outline:hover{background:#dce8f5}
+    .btn-success{background:var(--success);color:#fff}
+    .btn-success:hover:not(:disabled){filter:brightness(1.05)}
+    .btn-danger{background:var(--danger);color:#fff;padding:6px 12px;font-size:.8rem}
+
+    /* Generating state */
+    .generating{text-align:center;padding:32px;color:var(--muted)}
+    .spinner{width:40px;height:40px;border:4px solid #dce8f5;border-top-color:var(--brand);
+      border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Question editor */
+    .q-list{display:flex;flex-direction:column;gap:14px}
+    .q-item{border:2px solid var(--border);border-radius:12px;padding:16px;
+      transition:border-color .2s}
+    .q-item:focus-within{border-color:var(--brand)}
+    .q-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .q-num{background:var(--brand);color:#fff;width:28px;height:28px;
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:.78rem;font-weight:700;flex-shrink:0}
+    .q-type{font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:999px;
+      background:#dce8f5;color:var(--brand-dark);text-transform:capitalize}
+    .q-intent{font-size:.75rem;color:var(--muted);margin-bottom:10px;font-style:italic}
+    .q-field label{font-size:.75rem;font-weight:600;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px}
+    .q-field textarea{width:100%;min-height:60px;margin-bottom:10px}
+    .q-field textarea.probe{min-height:44px;background:#f9fafb}
+    .del-btn{margin-left:auto;padding:4px 10px;border:none;border-radius:6px;
+      background:#fef2f2;color:var(--danger);cursor:pointer;font-size:.75rem;font-weight:600}
+    .del-btn:hover{background:#fee2e2}
+    .add-q-btn{border:2px dashed var(--border);background:transparent;
+      border-radius:12px;padding:12px;width:100%;color:var(--muted);cursor:pointer;
+      font-size:.9rem;font-weight:500;transition:all .2s}
+    .add-q-btn:hover{border-color:var(--brand);color:var(--brand);background:#eaf0f9}
+
+    /* Action bar */
+    .action-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .regenerate-note{font-size:.8rem;color:var(--muted)}
+
+    /* Status */
+    .status-msg{padding:12px 16px;border-radius:10px;font-size:.88rem;font-weight:500;
+      margin-top:12px;display:none}
+    .status-msg.ok{background:#f0fdf4;color:#15803d;display:block}
+    .status-msg.err{background:#fef2f2;color:var(--danger);display:block}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">🎙️ GetHeard</div>
+  <div class="nav-links">
+    <a href="/">Interview</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/projects">Projects</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <h1>🔬 New Research Project</h1>
+  <p class="subtitle">Fill in the brief → AI generates tailored interview questions → edit & launch</p>
+
+  <!-- Step 1: Brief -->
+  <div class="card">
+    <h2><span class="step">1</span> Research Brief</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Project Name *</label>
+        <input id="name" type="text" placeholder="e.g. Indonesia Clinic CX Study Q2 2026"/>
+      </div>
+      <div class="form-group">
+        <label>Research Type *</label>
+        <select id="researchType">
+          <option value="cx">Customer Experience</option>
+          <option value="ux">User Experience / Product</option>
+          <option value="brand">Brand Perception</option>
+          <option value="product">Product Feedback</option>
+          <option value="nps">NPS Deep-Dive</option>
+          <option value="employee">Employee Satisfaction</option>
+          <option value="market">Market Research</option>
+          <option value="custom">Custom / Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Industry *</label>
+        <select id="industry">
+          <option>Healthcare</option>
+          <option>Retail / E-commerce</option>
+          <option>Banking / Finance</option>
+          <option>Telecom</option>
+          <option>Food &amp; Beverage</option>
+          <option>Education</option>
+          <option>Travel &amp; Hospitality</option>
+          <option>Government / Public Services</option>
+          <option>Technology / SaaS</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Interview Language *</label>
+        <select id="language">
+          <option value="en">🇬🇧 English</option>
+          <option value="hi">🇮🇳 Hindi</option>
+          <option value="id">🇮🇩 Indonesian</option>
+          <option value="fil">🇵🇭 Filipino</option>
+          <option value="th">🇹🇭 Thai</option>
+          <option value="vi">🇻🇳 Vietnamese</option>
+          <option value="ko">🇰🇷 Korean</option>
+          <option value="ja">🇯🇵 Japanese</option>
+          <option value="zh">🇨🇳 Mandarin</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Research Objective *</label>
+        <textarea id="objective" placeholder="What do you want to learn? e.g. Understand why patients at private clinics in Jakarta are switching to public hospitals, and what would retain them."></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Target Audience</label>
+        <input id="audience" type="text" placeholder="e.g. Adults 25–55 who visited a private clinic in the last 3 months"/>
+      </div>
+      <div class="form-group full">
+        <label>Key Topics to Explore (optional)</label>
+        <textarea id="topics" placeholder="e.g. Waiting experience, doctor communication, cost perception, follow-up care, digital tools used" style="min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <!-- Question count slider -->
+    <div style="margin-top:20px">
+      <label style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px">
+        Number of Questions
+      </label>
+      <div class="qcount-row">
+        <input type="range" id="qcount" min="0" max="7" step="1" value="2"
+          oninput="updateQCount(this.value)"/>
+        <span class="qcount-badge" id="qcountBadge">10</span>
+      </div>
+      <div class="qcount-hints">
+        <span>5 (quick)</span><span>7</span><span>10</span><span>12</span>
+        <span>15</span><span>20</span><span>25</span><span>30 (deep)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate button -->
+  <div style="text-align:center;margin-bottom:20px">
+    <button class="btn btn-primary" id="generateBtn" onclick="generateQuestions()"
+      style="padding:14px 40px;font-size:1rem">
+      ✨ Generate Questions with AI
+    </button>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <!-- Step 2: Question Editor (hidden until generated) -->
+  <div class="card" id="editorCard" style="display:none">
+    <h2><span class="step">2</span> Review & Edit Questions</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">
+      AI has generated your questions. Edit any question text, reorder, add, or delete.
+      The <em>probe</em> is used by the AI if the respondent gives a short answer.
+    </p>
+    <div class="q-list" id="qList"></div>
+    <button class="add-q-btn" onclick="addQuestion()" style="margin-top:12px">
+      + Add Question
+    </button>
+
+    <div class="action-bar" style="margin-top:20px">
+      <button class="btn btn-success" onclick="saveProject()">💾 Save &amp; Launch Project</button>
+      <button class="btn btn-outline" onclick="generateQuestions()">↻ Regenerate All</button>
+      <span class="regenerate-note">Saved projects appear on the Dashboard</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const Q_COUNTS = [5,7,10,12,15,20,25,30];
+let currentQuestions = [];
+let generatedProjectId = null;
+
+function updateQCount(idx) {
+  document.getElementById('qcountBadge').textContent = Q_COUNTS[idx];
+}
+updateQCount(2);
+
+function setStatus(msg, isErr=false) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + (isErr ? 'err' : 'ok');
+}
+
+async function generateQuestions() {
+  const name      = document.getElementById('name').value.trim();
+  const objective = document.getElementById('objective').value.trim();
+  if (!name || !objective) {
+    setStatus('Please fill in Project Name and Research Objective.', true);
+    return;
+  }
+
+  const count = Q_COUNTS[document.getElementById('qcount').value];
+  const btn   = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '✨ Generating…';
+  document.getElementById('editorCard').style.display = 'none';
+  setStatus('');
+
+  try {
+    const res = await fetch('/api/projects/generate-questions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name,
+        research_type: document.getElementById('researchType').value,
+        industry:      document.getElementById('industry').value,
+        objective,
+        audience:      document.getElementById('audience').value,
+        language:      document.getElementById('language').value,
+        topics:        document.getElementById('topics').value,
+        question_count: count,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Generation failed');
+
+    currentQuestions = data.questions;
+    renderEditor(currentQuestions);
+    document.getElementById('editorCard').style.display = 'block';
+    document.getElementById('editorCard').scrollIntoView({behavior:'smooth',block:'start'});
+    setStatus(`✓ ${currentQuestions.length} questions generated. Review and edit below.`);
+  } catch(err) {
+    setStatus('Error: ' + err.message, true);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Generate Questions with AI';
+  }
+}
+
+function renderEditor(questions) {
+  const list = document.getElementById('qList');
+  list.innerHTML = questions.map((q, i) => `
+    <div class="q-item" id="qi-${i}">
+      <div class="q-header">
+        <span class="q-num">${i+1}</span>
+        <span class="q-type">${q.type || 'question'}</span>
+        <button class="del-btn" onclick="deleteQuestion(${i})">✕ Remove</button>
+      </div>
+      ${q.intent ? `<div class="q-intent">Intent: ${escHtml(q.intent)}</div>` : ''}
+      <div class="q-field">
+        <label>Question</label>
+        <textarea oninput="syncQ(${i},'main',this.value)">${escHtml(q.main||'')}</textarea>
+      </div>
+      <div class="q-field">
+        <label>Follow-up Probe (optional)</label>
+        <textarea class="probe" oninput="syncQ(${i},'probe',this.value)">${escHtml(q.probe||'')}</textarea>
+      </div>
+    </div>`).join('');
+}
+
+function syncQ(idx, field, val) {
+  if (currentQuestions[idx]) currentQuestions[idx][field] = val;
+}
+
+function deleteQuestion(idx) {
+  if (currentQuestions.length <= 2) { alert('Minimum 2 questions required.'); return; }
+  currentQuestions.splice(idx, 1);
+  currentQuestions.forEach((q,i) => q.number = i+1);
+  renderEditor(currentQuestions);
+}
+
+function addQuestion() {
+  currentQuestions.push({number: currentQuestions.length+1, type:'custom',
+    main:'', probe:'', intent:'Custom question'});
+  renderEditor(currentQuestions);
+  setTimeout(() => {
+    const items = document.querySelectorAll('.q-item');
+    items[items.length-1].scrollIntoView({behavior:'smooth'});
+  }, 100);
+}
+
+async function saveProject() {
+  if (currentQuestions.length === 0) { setStatus('No questions to save.', true); return; }
+
+  const name      = document.getElementById('name').value.trim();
+  const objective = document.getElementById('objective').value.trim();
+  if (!name) { setStatus('Project name is required.', true); return; }
+
+  try {
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name,
+        research_type: document.getElementById('researchType').value,
+        industry:      document.getElementById('industry').value,
+        objective,
+        audience:      document.getElementById('audience').value,
+        language:      document.getElementById('language').value,
+        topics:        document.getElementById('topics').value,
+        questions:     currentQuestions,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Save failed');
+
+    setStatus(`✓ Project saved! Redirecting…`);
+    setTimeout(() => {
+      window.location.href = `/projects/${data.project_id}`;
+    }, 1200);
+  } catch(err) {
+    setStatus('Error: ' + err.message, true);
+  }
+}
+
+function escHtml(t='') {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

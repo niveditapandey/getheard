@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GetHeard — Voice has Value</title>
+  <meta name="description" content="The market research platform built for Asia. Commission research or join our panel." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --white:      #ffffff;
+      --muted:      #8fa3c8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: #1a2540;
+      background: var(--white);
+      line-height: 1.6;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(21,45,86,0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .nav-logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--blue-light); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.75);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 7px;
+      transition: background 0.18s, color 0.18s;
+    }
+    .nav-link:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-btn {
+      background: var(--blue-light);
+      color: var(--white) !important;
+      padding: 8px 18px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.18s;
+    }
+    .nav-btn:hover { background: var(--accent); text-decoration: none; }
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 7px;
+      padding: 4px;
+    }
+    .lang-btn {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lang-btn:hover, .lang-btn.active {
+      background: rgba(255,255,255,0.15);
+      color: var(--white);
+    }
+    @media (max-width: 680px) {
+      .nav-links .nav-link:not(.nav-btn) { display: none; }
+      .lang-switcher { display: none; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, #1e4a94 100%);
+      padding: 100px 24px 90px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(79,172,254,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; max-width: 780px; margin: 0 auto; }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(79,172,254,0.15);
+      color: var(--blue-light);
+      border: 1px solid rgba(79,172,254,0.3);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2.6rem, 6vw, 4rem);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--blue-light);
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.8);
+      max-width: 520px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--blue-light);
+      color: var(--white);
+      padding: 15px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      border: 2px solid var(--blue-light);
+      transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+    }
+    .btn-hero-primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(79,172,254,0.35);
+      text-decoration: none;
+      color: var(--white);
+    }
+    .btn-hero-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--white);
+      padding: 15px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      border: 2px solid rgba(255,255,255,0.4);
+      transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    }
+    .btn-hero-outline:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--white);
+      transform: translateY(-2px);
+      text-decoration: none;
+      color: var(--white);
+    }
+    .hero-trust {
+      margin-top: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-trust-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.82rem;
+    }
+    .hero-trust-item .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue-light);
+      flex-shrink: 0;
+    }
+
+    /* ── TWO COLUMN CARDS ── */
+    .two-col-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+    .two-col-section .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .two-col-section > h2 {
+      text-align: center;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      color: var(--navy);
+      margin-bottom: 48px;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    @media (max-width: 720px) { .cards-grid { grid-template-columns: 1fr; } }
+
+    .audience-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 40px 36px;
+      border: 1px solid rgba(30,60,114,0.1);
+      box-shadow: 0 4px 24px rgba(30,60,114,0.08);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .audience-card:hover {
+      box-shadow: 0 12px 40px rgba(30,60,114,0.14);
+      transform: translateY(-3px);
+    }
+    .audience-card.client-card {
+      border-top: 4px solid var(--navy);
+    }
+    .audience-card.respondent-card {
+      border-top: 4px solid var(--blue-light);
+    }
+    .card-icon {
+      font-size: 2.6rem;
+      margin-bottom: 16px;
+      line-height: 1;
+    }
+    .audience-card h3 {
+      font-size: 1.35rem;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .card-tagline {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .feature-list {
+      list-style: none;
+      margin-bottom: 32px;
+      flex: 1;
+    }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 0.95rem;
+      color: #334155;
+      border-bottom: 1px solid rgba(30,60,114,0.05);
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list .check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .respondent-card .feature-list .check {
+      background: var(--blue-light);
+    }
+    .card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 24px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+      border: 2px solid;
+    }
+    .client-card .card-cta {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+    .client-card .card-cta:hover {
+      background: var(--navy-dark);
+      border-color: var(--navy-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(30,60,114,0.25);
+      text-decoration: none;
+      color: var(--white);
+    }
+    .respondent-card .card-cta {
+      background: var(--blue-light);
+      color: var(--white);
+      border-color: var(--blue-light);
+    }
+    .respondent-card .card-cta:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(79,172,254,0.3);
+      text-decoration: none;
+      color: var(--white);
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section {
+      background: linear-gradient(180deg, var(--off-white) 0%, #dde5f3 100%);
+      padding: 80px 24px;
+    }
+    .how-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .how-section .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .how-section h2 {
+      text-align: center;
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      color: var(--navy);
+      margin-bottom: 52px;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 12%;
+      width: 76%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--blue-light) 100%);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+    @media (max-width: 720px) {
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .steps-grid::before { display: none; }
+    }
+    @media (max-width: 400px) { .steps-grid { grid-template-columns: 1fr; } }
+
+    .step-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 28px 20px 24px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
+      border: 1px solid rgba(30,60,114,0.06);
+      position: relative;
+    }
+    .step-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 12px rgba(30,60,114,0.25);
+    }
+    .step-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .step-card p {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      background: var(--navy-dark);
+      padding: 52px 24px;
+    }
+    .stats-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+    @media (max-width: 600px) { .stats-inner { grid-template-columns: 1fr; gap: 20px; } }
+    .stat-item .val {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--blue-light);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-item .lbl {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.65);
+      font-weight: 500;
+    }
+
+    /* ── LANGUAGES ── */
+    .lang-section {
+      padding: 72px 24px;
+      text-align: center;
+      background: var(--white);
+    }
+    .lang-section h2 {
+      font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .lang-section p {
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+    .lang-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .lang-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--off-white);
+      border: 1.5px solid rgba(30,60,114,0.12);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--navy);
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    .lang-chip:hover {
+      background: rgba(30,60,114,0.07);
+      border-color: var(--navy);
+      transform: translateY(-2px);
+    }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      background: var(--navy-dark);
+      color: rgba(255,255,255,0.6);
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .footer-inner { max-width: 1100px; margin: 0 auto; }
+    .footer-logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .footer-logo span { color: var(--blue-light); }
+    .footer-tagline {
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .footer-links a {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--white); text-decoration: none; }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Get<span>Heard</span></a>
+
+      <div class="nav-links">
+        <a href="/listen" class="nav-link">For Clients</a>
+        <a href="/join" class="nav-link">For Respondents</a>
+        <a href="/listen/signup" class="nav-link nav-btn">Commission Research</a>
+      </div>
+
+      <div class="lang-switcher" role="navigation" aria-label="Language selector">
+        <span class="lang-btn active" data-lang="en">EN</span>
+        <span class="lang-btn" data-lang="hi">हि</span>
+        <span class="lang-btn" data-lang="id">ID</span>
+        <span class="lang-btn" data-lang="th">ไท</span>
+        <span class="lang-btn" data-lang="vi">VI</span>
+        <span class="lang-btn" data-lang="zh">中文</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span>✦</span> Asia-Focused Market Research
+      </div>
+      <h1>Voice has <em>Value.</em></h1>
+      <p>The market research platform built for Asia — fast insights, multilingual panels, AI-powered interviews.</p>
+      <div class="hero-ctas">
+        <a href="/listen" class="btn-hero-primary">
+          Commission Research <span>→</span>
+        </a>
+        <a href="/join" class="btn-hero-outline">
+          Join Our Panel <span>→</span>
+        </a>
+      </div>
+      <div class="hero-trust">
+        <div class="hero-trust-item"><div class="dot"></div> 9 languages</div>
+        <div class="hero-trust-item"><div class="dot"></div> Reports in days, not weeks</div>
+        <div class="hero-trust-item"><div class="dot"></div> AI-conducted interviews</div>
+        <div class="hero-trust-item"><div class="dot"></div> Respondents across Asia</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip" aria-label="Key statistics">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="val">9+</div>
+        <div class="lbl">Languages Supported</div>
+      </div>
+      <div class="stat-item">
+        <div class="val">72hr</div>
+        <div class="lbl">Average Report Turnaround</div>
+      </div>
+      <div class="stat-item">
+        <div class="val">10+</div>
+        <div class="lbl">Countries in Panel</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO-COLUMN CARDS -->
+  <section class="two-col-section" aria-label="Who GetHeard is for">
+    <div class="section-label">Who is it for?</div>
+    <h2>Built for both sides of research</h2>
+    <div class="cards-grid">
+
+      <!-- CLIENT CARD -->
+      <div class="audience-card client-card">
+        <div class="card-icon">🎯</div>
+        <h3>Hear your market</h3>
+        <p class="card-tagline">For research clients who need fast, reliable insights from Asia.</p>
+        <ul class="feature-list">
+          <li>
+            <span class="check">✓</span>
+            <span>Fast briefing via AI — describe your research goal in minutes</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Panel recruited across India, SEA, China & more</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>AI conducts voice &amp; text interviews at scale</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Report in days — not weeks</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Transparent pricing, no agency markup</span>
+          </li>
+        </ul>
+        <a href="/listen/signup" class="card-cta">Start a Study <span>→</span></a>
+      </div>
+
+      <!-- RESPONDENT CARD -->
+      <div class="audience-card respondent-card">
+        <div class="card-icon">🎙️</div>
+        <h3>Get heard. Get paid.</h3>
+        <p class="card-tagline">For people across Asia who want to share opinions and earn rewards.</p>
+        <ul class="feature-list">
+          <li>
+            <span class="check">✓</span>
+            <span>Share your opinion on brands, products, and services</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Earn points redeemable for gift cards or cash</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Interviews by voice or text — your choice</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Available in your language</span>
+          </li>
+          <li>
+            <span class="check">✓</span>
+            <span>Flexible — participate when it suits you</span>
+          </li>
+        </ul>
+        <a href="/join" class="card-cta">Join the Panel <span>→</span></a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" aria-label="How GetHeard works">
+    <div class="how-inner">
+      <div class="section-label">The process</div>
+      <h2>How it works</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>Submit your brief</h4>
+          <p>Describe what you want to learn. Our AI helps structure your research goals.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>We recruit your panel</h4>
+          <p>We match your criteria to our Asia-wide panel of verified respondents.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>AI conducts interviews</h4>
+          <p>Multilingual AI interviews by voice or text — at scale, 24/7.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4>You get a report</h4>
+          <p>Structured insights, themes, and quotes — delivered to your dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LANGUAGES -->
+  <section class="lang-section" aria-label="Supported languages">
+    <h2>Available in your language</h2>
+    <p>We conduct research in the language your respondents actually speak.</p>
+    <div class="lang-grid">
+      <div class="lang-chip">🇬🇧 English</div>
+      <div class="lang-chip">🇮🇳 हिन्दी</div>
+      <div class="lang-chip">🇮🇩 Bahasa Indonesia</div>
+      <div class="lang-chip">🇹🇭 ภาษาไทย</div>
+      <div class="lang-chip">🇻🇳 Tiếng Việt</div>
+      <div class="lang-chip">🇨🇳 中文</div>
+      <div class="lang-chip">🇯🇵 日本語</div>
+      <div class="lang-chip">🇰🇷 한국어</div>
+      <div class="lang-chip">🇵🇭 Filipino</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-logo">Get<span>Heard</span></div>
+      <div class="footer-tagline">Asia-focused market research — getheard.space</div>
+      <div class="footer-links">
+        <a href="/listen">For Clients</a>
+        <a href="/join">For Respondents</a>
+        <a href="/listen/signup">Start a Study</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-copy">© 2026 GetHeard. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Language switcher UI (visual only)
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

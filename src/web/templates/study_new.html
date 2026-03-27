@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Study — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --muted:      #8fa3c8;
+      --white:      #ffffff;
+      --success:    #16a34a;
+      --warning:    #d97706;
+      --danger:     #dc2626;
+      --sidebar-w:  220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white);
+      color: #1a2540;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy-dark);
+      min-height: 100vh;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-decoration: none;
+      display: block;
+    }
+    .sidebar-logo span { color: var(--blue-light); }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
+    .nav-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+      padding: 10px 20px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); text-decoration: none; }
+    .nav-item.active {
+      background: rgba(79,172,254,0.14);
+      color: var(--white);
+      border-left-color: var(--blue-light);
+      font-weight: 600;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-company { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+    .sidebar-company strong {
+      display: block; color: rgba(255,255,255,0.8); font-size: 0.82rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      color: var(--navy); font-size: 1.4rem; line-height: 1;
+      padding: 4px;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ── MAIN ── */
+    .app-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid rgba(30,60,114,0.08);
+      padding: 0 36px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .page-content { padding: 32px 36px; flex: 1; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    .page-header p { font-size: 0.875rem; color: var(--muted); }
+
+    /* ── TWO-COL LAYOUT ── */
+    .study-grid {
+      display: grid;
+      grid-template-columns: 60fr 40fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── CHAT WINDOW ── */
+    .chat-card {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
+      border: 1px solid rgba(30,60,114,0.07);
+      display: flex;
+      flex-direction: column;
+      min-height: 600px;
+    }
+    .chat-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(30,60,114,0.07);
+    }
+    .chat-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .chat-header p { font-size: 0.8rem; color: var(--muted); }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 400px;
+      scroll-behavior: smooth;
+    }
+    .msg-row { display: flex; align-items: flex-end; gap: 8px; }
+    .msg-row.ai { justify-content: flex-start; }
+    .msg-row.client { justify-content: flex-end; }
+    .msg-avatar {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700;
+    }
+    .msg-avatar.ai { background: var(--navy); color: var(--white); }
+    .msg-bubble {
+      max-width: 75%;
+      padding: 11px 16px;
+      border-radius: 14px;
+      font-size: 0.875rem;
+      line-height: 1.55;
+    }
+    .msg-bubble.ai {
+      background: var(--navy);
+      color: var(--white);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-bubble.client {
+      background: #f1f5f9;
+      color: #1a2540;
+      border-bottom-right-radius: 4px;
+    }
+    .typing-indicator {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .typing-dots { display: flex; gap: 4px; padding: 8px 14px; }
+    .typing-dots span {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+    .chat-input-row {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(30,60,114,0.07);
+      display: flex; gap: 10px;
+    }
+    .chat-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(30,60,114,0.15);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: #1a2540;
+      outline: none;
+      transition: border-color 0.15s;
+      resize: none;
+    }
+    .chat-input:focus { border-color: var(--navy); }
+    .chat-input::placeholder { color: var(--muted); }
+    .btn-send {
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn-send:hover { background: var(--navy-dark); transform: translateY(-1px); }
+    .btn-send:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+
+    /* Completion banner */
+    .completion-banner {
+      display: none;
+      margin: 12px 20px;
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.875rem;
+      color: #166534;
+      font-weight: 600;
+      text-align: center;
+    }
+    .completion-banner.show { display: block; }
+
+    /* ── STUDY TYPE SELECTOR ── */
+    .type-card {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
+      border: 1px solid rgba(30,60,114,0.07);
+      padding: 22px;
+      transition: opacity 0.3s, max-height 0.4s;
+      overflow: hidden;
+    }
+    .type-card.collapsed {
+      max-height: 0 !important;
+      padding-top: 0; padding-bottom: 0;
+      opacity: 0;
+      pointer-events: none;
+      margin: 0; border: none; box-shadow: none;
+    }
+    .type-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+    .study-type-item {
+      border: 1.5px solid rgba(30,60,114,0.12);
+      border-radius: 10px;
+      padding: 13px 14px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      background: var(--white);
+    }
+    .study-type-item:hover { border-color: var(--navy); background: rgba(30,60,114,0.03); box-shadow: 0 2px 8px rgba(30,60,114,0.1); }
+    .study-type-item.selected { border-color: var(--blue-light); background: rgba(79,172,254,0.07); box-shadow: 0 0 0 3px rgba(79,172,254,0.15); }
+    .type-item-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .type-item-name { font-size: 0.875rem; font-weight: 600; color: #1a2540; }
+    .type-item-price { font-size: 0.75rem; font-weight: 700; color: var(--navy); background: var(--off-white); padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+    .type-item-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+
+    .tip-box {
+      background: rgba(79,172,254,0.08);
+      border: 1px solid rgba(79,172,254,0.25);
+      border-radius: 9px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      color: var(--blue);
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    /* ── FOOTER NOTE ── */
+    .page-footer-note {
+      margin-top: 24px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon {
+      width: 22px; height: 22px;
+      border: 2.5px solid rgba(30,60,114,0.15);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .app-main { margin-left: 0; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .topbar { padding: 0 20px; }
+      .page-content { padding: 20px 16px; }
+      .study-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a href="/listen" class="sidebar-logo">Get<span>Heard</span></a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/listen" class="nav-item">
+        <span class="nav-icon">&#9783;</span> Dashboard
+      </a>
+      <a href="/listen/studies" class="nav-item active">
+        <span class="nav-icon">&#128202;</span> My Studies
+      </a>
+      <a href="/listen/panel" class="nav-item">
+        <span class="nav-icon">&#128101;</span> Panel
+      </a>
+      <a href="/listen/reports" class="nav-item">
+        <span class="nav-icon">&#128196;</span> Reports
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a href="/listen/billing" class="nav-item">
+        <span class="nav-icon">&#128179;</span> Billing
+      </a>
+      <a href="/listen/settings" class="nav-item">
+        <span class="nav-icon">&#9881;</span> Settings
+      </a>
+      <a href="/listen/logout" class="nav-item" style="margin-top:4px;">
+        <span class="nav-icon">&#8592;</span> Log Out
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-company">
+        Logged in as <strong id="sidebar-company-name">—</strong>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="app-main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">&#9776;</button>
+        <div class="topbar-title">New Study</div>
+      </div>
+      <a href="/listen/studies" style="font-size:0.8rem;color:var(--muted);text-decoration:none;">&#8592; Back to My Studies</a>
+    </header>
+
+    <div class="page-content">
+      <div class="page-header">
+        <h1>Start a new study</h1>
+        <p>Our AI will guide you through the brief — just describe what you need to learn.</p>
+      </div>
+
+      <div class="study-grid">
+
+        <!-- LEFT: Chat -->
+        <div class="chat-card">
+          <div class="chat-header">
+            <h2>Brief your study</h2>
+            <p>Tell our AI what you need — it'll ask the right questions</p>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div id="loadingInitial" style="display:flex;align-items:center;justify-content:center;height:120px;gap:10px;color:var(--muted);font-size:0.85rem;">
+              <span class="spin-icon"></span> Starting conversation&hellip;
+            </div>
+          </div>
+          <div class="completion-banner" id="completionBanner">
+            &#10003; Brief complete! Generating your quote&hellip;
+          </div>
+          <div class="chat-input-row">
+            <textarea
+              class="chat-input"
+              id="chatInput"
+              rows="1"
+              placeholder="Type your message&hellip;"
+              disabled
+            ></textarea>
+            <button class="btn-send" id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Study type selector -->
+        <div class="type-card" id="typeSelector">
+          <h3>What kind of study?</h3>
+
+          <div class="study-type-item" onclick="selectType(this, 'NPS / Customer Satisfaction', 'I want to measure customer loyalty and satisfaction scores using NPS.')" data-prompt="I want to measure customer loyalty and satisfaction scores using NPS.">
+            <div class="type-item-header">
+              <span class="type-item-name">&#127919; NPS / Customer Satisfaction</span>
+              <span class="type-item-price">&#8377;7,999 base</span>
+            </div>
+            <div class="type-item-desc">Measure loyalty and satisfaction scores</div>
+          </div>
+
+          <div class="study-type-item" onclick="selectType(this, 'Feature Feedback', 'I want to understand how users experience specific product features.')" data-prompt="I want to understand how users experience specific product features.">
+            <div class="type-item-header">
+              <span class="type-item-name">&#128269; Feature Feedback</span>
+              <span class="type-item-price">&#8377;11,999 base</span>
+            </div>
+            <div class="type-item-desc">Understand how users experience specific features</div>
+          </div>
+
+          <div class="study-type-item" onclick="selectType(this, 'Customer Pain Points', 'I want to discover what is frustrating my customers and what problems they have.')" data-prompt="I want to discover what is frustrating my customers and what problems they have.">
+            <div class="type-item-header">
+              <span class="type-item-name">&#128172; Customer Pain Points</span>
+              <span class="type-item-price">&#8377;14,999 base</span>
+            </div>
+            <div class="type-item-desc">Discover what's frustrating your customers</div>
+          </div>
+
+          <div class="study-type-item" onclick="selectType(this, 'Custom Research', 'I have custom research needs I\'d like to discuss.')" data-prompt="I have custom research needs I'd like to discuss.">
+            <div class="type-item-header">
+              <span class="type-item-name">&#9999;&#65039; Custom Research</span>
+              <span class="type-item-price">&#8377;16,999 base</span>
+            </div>
+            <div class="type-item-desc">Tell us exactly what you need</div>
+          </div>
+
+          <div class="tip-box">
+            &#128161; You can choose a template or just start chatting — our AI will guide you.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="page-footer-note">
+        &#128190; Your brief is saved automatically. You can come back and continue any time.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let sessionId = null;
+    let awaitingResponse = false;
+    let pollTimer = null;
+    let firstMessageSent = false;
+
+    // ── Sidebar ──
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    // ── HTML escape ──
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Render message ──
+    function appendMessage(role, text) {
+      const container = document.getElementById('chatMessages');
+      const row = document.createElement('div');
+      row.className = `msg-row ${role}`;
+
+      if (role === 'ai') {
+        row.innerHTML = `
+          <div class="msg-avatar ai">AI</div>
+          <div class="msg-bubble ai">${esc(text).replace(/\n/g,'<br>')}</div>`;
+      } else {
+        row.innerHTML = `<div class="msg-bubble client">${esc(text).replace(/\n/g,'<br>')}</div>`;
+      }
+
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // ── Typing indicator ──
+    let typingEl = null;
+    function showTyping() {
+      if (typingEl) return;
+      const container = document.getElementById('chatMessages');
+      typingEl = document.createElement('div');
+      typingEl.className = 'msg-row ai typing-indicator';
+      typingEl.innerHTML = `
+        <div class="msg-avatar ai">AI</div>
+        <div class="msg-bubble ai" style="padding:0;">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>`;
+      container.appendChild(typingEl);
+      container.scrollTop = container.scrollHeight;
+    }
+    function hideTyping() {
+      if (typingEl) { typingEl.remove(); typingEl = null; }
+    }
+
+    // ── Start session on page load ──
+    async function startSession() {
+      try {
+        const res = await fetch('/agent/api/brief/start', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ language: 'en' })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        sessionId = data.session_id;
+        document.getElementById('loadingInitial').remove();
+
+        const greeting = data.message || data.response || 'Hello! I\'m here to help you brief your study. What kind of research are you looking to do?';
+        appendMessage('ai', greeting);
+
+        enableInput();
+        handleCompletion(data);
+      } catch (err) {
+        document.getElementById('loadingInitial').remove();
+        appendMessage('ai', 'Welcome! I\'m your brief assistant. Tell me about the research study you have in mind — what would you like to learn from your customers?');
+        // Generate a fallback session id so the UI still works
+        sessionId = 'fallback-' + Date.now();
+        enableInput();
+      }
+    }
+
+    function enableInput() {
+      document.getElementById('chatInput').disabled = false;
+      document.getElementById('sendBtn').disabled = false;
+      document.getElementById('chatInput').focus();
+    }
+
+    // ── Send message ──
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text || awaitingResponse) return;
+
+      // Collapse type selector on first send
+      if (!firstMessageSent) {
+        firstMessageSent = true;
+        const ts = document.getElementById('typeSelector');
+        ts.classList.add('collapsed');
+      }
+
+      input.value = '';
+      input.rows = 1;
+      appendMessage('client', text);
+      awaitingResponse = true;
+      document.getElementById('sendBtn').disabled = true;
+      showTyping();
+
+      try {
+        const res = await fetch('/agent/api/brief/message', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ session_id: sessionId, message: text })
+        });
+        hideTyping();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const reply = data.message || data.response || '';
+        if (reply) appendMessage('ai', reply);
+        handleCompletion(data);
+      } catch (err) {
+        hideTyping();
+        appendMessage('ai', 'Sorry, I had trouble processing that. Please try again in a moment.');
+      } finally {
+        awaitingResponse = false;
+        document.getElementById('sendBtn').disabled = false;
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    // ── Handle completion ──
+    function handleCompletion(data) {
+      if (!data.is_complete) return;
+
+      document.getElementById('completionBanner').classList.add('show');
+      document.getElementById('chatInput').disabled = true;
+      document.getElementById('sendBtn').disabled = true;
+
+      if (data.project_id) {
+        setTimeout(() => {
+          window.location.href = `/listen/study/${encodeURIComponent(data.project_id)}/pricing`;
+        }, 2000);
+      } else if (sessionId && !sessionId.startsWith('fallback')) {
+        // Poll for project_id
+        pollTimer = setInterval(async () => {
+          try {
+            const r = await fetch(`/agent/api/brief/${encodeURIComponent(sessionId)}`);
+            if (!r.ok) return;
+            const d = await r.json();
+            if (d.project_id) {
+              clearInterval(pollTimer);
+              setTimeout(() => {
+                window.location.href = `/listen/study/${encodeURIComponent(d.project_id)}/pricing`;
+              }, 500);
+            }
+          } catch(e) {}
+        }, 2000);
+      }
+    }
+
+    // ── Study type selection ──
+    function selectType(el, name, prompt) {
+      document.querySelectorAll('.study-type-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+      const input = document.getElementById('chatInput');
+      input.value = prompt;
+      input.focus();
+    }
+
+    // ── Enter to send ──
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Auto-resize textarea
+    document.getElementById('chatInput').addEventListener('input', function() {
+      this.rows = 1;
+      const lines = Math.min(4, Math.ceil(this.scrollHeight / 22));
+      this.rows = lines;
+    });
+
+    // Boot
+    startSession();
+  </script>
+</body>
+</html>

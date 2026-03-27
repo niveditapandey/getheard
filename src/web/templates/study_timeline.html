@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timeline &amp; Payment — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --muted:      #8fa3c8;
+      --white:      #ffffff;
+      --success:    #16a34a;
+      --warning:    #d97706;
+      --danger:     #dc2626;
+      --sidebar-w:  220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white);
+      color: #1a2540;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--navy-dark); min-height: 100vh;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px; font-size: 1.3rem; font-weight: 800; color: var(--white);
+      letter-spacing: -0.02em; border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-decoration: none; display: block;
+    }
+    .sidebar-logo span { color: var(--blue-light); }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
+    .nav-section-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: rgba(255,255,255,0.3); padding: 10px 20px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: rgba(255,255,255,0.65); font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; border-left: 3px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s; cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); text-decoration: none; }
+    .nav-item.active {
+      background: rgba(79,172,254,0.14); color: var(--white);
+      border-left-color: var(--blue-light); font-weight: 600;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-company { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+    .sidebar-company strong {
+      display: block; color: rgba(255,255,255,0.8); font-size: 0.82rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      color: var(--navy); font-size: 1.4rem; padding: 4px;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ── MAIN ── */
+    .app-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      background: var(--white); border-bottom: 1px solid rgba(30,60,114,0.08);
+      padding: 0 36px; height: 64px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .page-content { padding: 32px 36px; flex: 1; }
+    .centered { max-width: 700px; margin: 0 auto; }
+
+    /* Badge */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px; font-size: 0.7rem;
+      font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap;
+    }
+    .badge::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; flex-shrink: 0;
+    }
+    .badge-timeline_estimate { background: #dbeafe; color: var(--blue); }
+
+    /* Quote strip */
+    .quote-strip {
+      background: var(--white); border-radius: 12px; padding: 14px 20px;
+      box-shadow: 0 2px 10px rgba(30,60,114,0.07); border: 1px solid rgba(30,60,114,0.07);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .quote-strip-info { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .quote-strip-name { font-size: 0.95rem; font-weight: 700; color: var(--navy); }
+    .quote-strip-total { font-size: 1.1rem; font-weight: 800; color: var(--navy); }
+
+    /* Card */
+    .card {
+      background: var(--white); border-radius: 14px; padding: 28px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08); border: 1px solid rgba(30,60,114,0.07);
+      margin-bottom: 20px;
+    }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+
+    /* Loading state */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon {
+      width: 22px; height: 22px; border: 2.5px solid rgba(30,60,114,0.15);
+      border-top-color: var(--navy); border-radius: 50%;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .progress-bar-loading {
+      height: 6px; border-radius: 999px;
+      background: linear-gradient(90deg, var(--off-white) 25%, rgba(79,172,254,0.4) 50%, var(--off-white) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite; margin-bottom: 14px;
+    }
+    .loading-block {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 0.875rem; padding: 8px 0;
+    }
+
+    /* Timeline heading */
+    .timeline-heading { font-size: 1.6rem; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+    .timeline-subtitle { font-size: 0.875rem; color: var(--muted); margin-bottom: 28px; }
+
+    /* Stepper */
+    .stepper {
+      display: flex; gap: 0; margin-bottom: 24px; overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .step {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      position: relative; min-width: 90px;
+    }
+    .step:not(:last-child)::after {
+      content: ''; position: absolute; top: 18px; left: 50%; right: -50%;
+      height: 2px; background: rgba(30,60,114,0.15); z-index: 0;
+    }
+    .step.done::after { background: var(--navy); }
+    .step-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; position: relative; z-index: 1;
+      background: var(--off-white); border: 2px solid rgba(30,60,114,0.15);
+      margin-bottom: 8px;
+    }
+    .step.done .step-icon { background: var(--navy); border-color: var(--navy); }
+    .step.active .step-icon { background: var(--blue-light); border-color: var(--blue-light); }
+    .step-name { font-size: 0.7rem; font-weight: 600; color: var(--muted); text-align: center; }
+    .step.done .step-name, .step.active .step-name { color: var(--navy); }
+    .step-days { font-size: 0.65rem; color: var(--muted); text-align: center; margin-top: 2px; }
+
+    /* Vertical stepper (mobile) */
+    .stepper-vertical { display: none; flex-direction: column; gap: 0; margin-bottom: 24px; }
+    .vstep { display: flex; gap: 14px; position: relative; }
+    .vstep-left { display: flex; flex-direction: column; align-items: center; }
+    .vstep-icon {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+      background: var(--off-white); border: 2px solid rgba(30,60,114,0.15);
+    }
+    .vstep.done .vstep-icon { background: var(--navy); border-color: var(--navy); }
+    .vstep.active .vstep-icon { background: var(--blue-light); border-color: var(--blue-light); }
+    .vstep-line { width: 2px; flex: 1; background: rgba(30,60,114,0.12); margin: 4px 0; min-height: 24px; }
+    .vstep.done .vstep-line { background: var(--navy); }
+    .vstep:last-child .vstep-line { display: none; }
+    .vstep-body { padding-bottom: 20px; }
+    .vstep-name { font-size: 0.875rem; font-weight: 600; color: #1a2540; }
+    .vstep.done .vstep-name { color: var(--navy); }
+    .vstep-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+    /* Caveats */
+    .caveats-box {
+      background: #fef9c3; border: 1px solid #fde047; border-radius: 10px;
+      padding: 14px 16px; font-size: 0.82rem; color: #713f12; margin-bottom: 20px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+
+    /* Payment section */
+    .payment-section { margin-top: 4px; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 18px; }
+    .payment-recap {
+      background: var(--off-white); border-radius: 10px; padding: 14px 18px;
+      display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;
+      font-size: 0.875rem; color: #334155;
+    }
+    .recap-item strong { display: block; font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
+
+    .method-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .method-item {
+      display: flex; align-items: center; gap: 12px; padding: 13px 16px;
+      border: 1.5px solid rgba(30,60,114,0.15); border-radius: 10px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .method-item:hover { border-color: var(--navy); background: rgba(30,60,114,0.02); }
+    .method-item.selected { border-color: var(--blue-light); background: rgba(79,172,254,0.07); }
+    .method-item input[type="radio"] { accent-color: var(--navy); flex-shrink: 0; }
+    .method-item-text { flex: 1; }
+    .method-name { font-size: 0.875rem; font-weight: 600; color: #1a2540; }
+    .method-sub { font-size: 0.75rem; color: var(--muted); }
+    .method-secure-note { font-size: 0.72rem; color: var(--muted); margin-bottom: 16px; }
+
+    .btn-pay {
+      width: 100%; padding: 15px; background: var(--navy); color: var(--white);
+      border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      letter-spacing: 0.01em;
+    }
+    .btn-pay:hover { background: var(--navy-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(30,60,114,0.25); }
+    .btn-pay:disabled { background: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+    .pay-note { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 10px; }
+    .gateway-placeholder {
+      background: #fef9c3; border: 1px solid #fde047; border-radius: 10px;
+      padding: 14px 16px; font-size: 0.82rem; color: #713f12; margin-top: 16px;
+    }
+
+    .chat-link { font-size: 0.8rem; color: var(--blue); text-decoration: none; }
+    .chat-link:hover { text-decoration: underline; }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .app-main { margin-left: 0; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .topbar { padding: 0 20px; }
+      .page-content { padding: 20px 16px; }
+      .stepper { display: none; }
+      .stepper-vertical { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a href="/listen" class="sidebar-logo">Get<span>Heard</span></a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/listen" class="nav-item">
+        <span class="nav-icon">&#9783;</span> Dashboard
+      </a>
+      <a href="/listen/studies" class="nav-item active">
+        <span class="nav-icon">&#128202;</span> My Studies
+      </a>
+      <a href="/listen/panel" class="nav-item">
+        <span class="nav-icon">&#128101;</span> Panel
+      </a>
+      <a href="/listen/reports" class="nav-item">
+        <span class="nav-icon">&#128196;</span> Reports
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a href="/listen/billing" class="nav-item">
+        <span class="nav-icon">&#128179;</span> Billing
+      </a>
+      <a href="/listen/settings" class="nav-item">
+        <span class="nav-icon">&#9881;</span> Settings
+      </a>
+      <a href="/listen/logout" class="nav-item" style="margin-top:4px;">
+        <span class="nav-icon">&#8592;</span> Log Out
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-company">Logged in as <strong id="sidebar-company-name">—</strong></div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">&#9776;</button>
+        <div class="topbar-title">Timeline &amp; Payment</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="centered">
+
+        <!-- Quote strip -->
+        <div class="quote-strip">
+          <div class="quote-strip-info">
+            <div class="quote-strip-name" id="studyName">Loading&hellip;</div>
+            <span class="badge badge-timeline_estimate">Timeline Estimate</span>
+          </div>
+          <div class="quote-strip-total" id="stripTotal">—</div>
+        </div>
+
+        <!-- Timeline card -->
+        <div class="card">
+          <div class="card-title">Delivery Timeline</div>
+
+          <!-- Loading state -->
+          <div id="timelineLoading">
+            <div class="progress-bar-loading"></div>
+            <div class="loading-block">
+              <span class="spin-icon"></span>
+              Our AI is estimating your delivery timeline&hellip;
+            </div>
+          </div>
+
+          <!-- Loaded state (hidden until data arrives) -->
+          <div id="timelineContent" style="display:none;">
+            <div class="timeline-heading" id="timelineDays">Estimated delivery: calculating&hellip;</div>
+            <div class="timeline-subtitle" id="timelineDate"></div>
+
+            <!-- Desktop stepper -->
+            <div class="stepper" id="stepperDesktop"></div>
+
+            <!-- Mobile stepper -->
+            <div class="stepper-vertical" id="stepperMobile"></div>
+
+            <!-- Caveats -->
+            <div class="caveats-box" id="caveatsBox" style="display:none;">
+              <span style="font-size:1.1rem;">&#9888;&#65039;</span>
+              <div id="caveatsText"></div>
+            </div>
+
+            <a href="#" class="chat-link">Any questions about the timeline? Chat with us &#8594;</a>
+          </div>
+        </div>
+
+        <!-- Payment card -->
+        <div class="card payment-section">
+          <div class="section-title">Confirm &amp; Pay</div>
+
+          <div class="payment-recap">
+            <div class="recap-item"><strong>Study</strong><span id="recapName">—</span></div>
+            <div class="recap-item"><strong>Respondents</strong><span id="recapRespondents">—</span></div>
+            <div class="recap-item"><strong>Total</strong><span id="recapTotal" style="font-size:1rem;font-weight:700;color:var(--navy);">—</span></div>
+          </div>
+
+          <div class="method-group" id="methodGroup">
+            <label class="method-item selected" onclick="selectMethod(this, 'razorpay')" id="methodRazorpay">
+              <input type="radio" name="payMethod" value="razorpay" checked />
+              <div class="method-item-text">
+                <div class="method-name">&#128179; Pay with Razorpay</div>
+                <div class="method-sub">Cards, UPI, netbanking, wallets</div>
+              </div>
+            </label>
+            <label class="method-item" onclick="selectMethod(this, 'stripe')" id="methodStripe">
+              <input type="radio" name="payMethod" value="stripe" />
+              <div class="method-item-text">
+                <div class="method-name">&#128179; Pay with Stripe</div>
+                <div class="method-sub">International cards</div>
+              </div>
+            </label>
+          </div>
+          <div class="method-secure-note">Both options are secure and encrypted.</div>
+
+          <button class="btn-pay" id="payBtn" onclick="initiatePayment()">
+            Pay <span id="payBtnAmount">—</span> &#8594;
+          </button>
+          <div class="pay-note">&#128274; Secure payment. You'll receive a receipt by email.</div>
+
+          <div class="gateway-placeholder" id="gatewayPlaceholder" style="display:none;">
+            Payment gateway not yet configured. Contact <a href="mailto:hello@getheard.space" style="color:inherit;">hello@getheard.space</a> to proceed.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const pathParts = window.location.pathname.split('/');
+    const projectId = pathParts[pathParts.indexOf('study') + 1] || '';
+    let timelineData = null;
+    let quoteData = null;
+    let pollTimer = null;
+    let selectedMethod = 'razorpay';
+
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    function fmt(n) {
+      if (n == null || isNaN(Number(n))) return '—';
+      return '\u20B9' + Number(n).toLocaleString('en-IN');
+    }
+
+    function esc(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function selectMethod(el, method) {
+      document.querySelectorAll('.method-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input[type="radio"]').checked = true;
+      selectedMethod = method;
+    }
+
+    // ── Load quote for summary ──
+    async function loadQuote() {
+      try {
+        const res = await fetch(`/api/client/quote/${encodeURIComponent(projectId)}`);
+        if (!res.ok) return;
+        quoteData = await res.json();
+        document.getElementById('studyName').textContent = quoteData.study_name || quoteData.name || 'Your Study';
+        const total = quoteData.total || quoteData.total_amount || 0;
+        document.getElementById('stripTotal').innerHTML = fmt(total);
+        document.getElementById('recapName').textContent = quoteData.study_name || quoteData.name || '—';
+        document.getElementById('recapRespondents').textContent = (quoteData.panel_size || '—') + ' respondents';
+        document.getElementById('recapTotal').innerHTML = fmt(total);
+        document.getElementById('payBtnAmount').innerHTML = fmt(total);
+      } catch(e) {}
+    }
+
+    // ── Load / poll timeline ──
+    async function loadTimeline() {
+      try {
+        const res = await fetch(`/api/client/timeline/${encodeURIComponent(projectId)}`);
+        if (!res.ok) throw new Error('not ready');
+        const data = await res.json();
+        if (!data || (!data.min_days && !data.phases)) throw new Error('empty');
+        clearInterval(pollTimer);
+        timelineData = data;
+        renderTimeline(data);
+      } catch(e) {
+        // Keep polling
+      }
+    }
+
+    function renderTimeline(data) {
+      document.getElementById('timelineLoading').style.display = 'none';
+      document.getElementById('timelineContent').style.display = 'block';
+
+      const min = data.min_days || data.min || 0;
+      const max = data.max_days || data.max || 0;
+      document.getElementById('timelineDays').textContent = `Estimated delivery: ${min}–${max} business days`;
+
+      if (data.estimated_report_date) {
+        document.getElementById('timelineDate').textContent =
+          `Report ready by approximately ${data.estimated_report_date}`;
+      }
+
+      const phases = data.phases || [
+        { name: 'Recruitment', icon: '📋', days: '3–5 days', desc: 'Identifying and contacting respondents' },
+        { name: 'Scheduling', icon: '⏳', days: '1–2 days', desc: 'Coordinating interview slots' },
+        { name: 'Interviews', icon: '🎙', days: '3–7 days', desc: 'Conducting live interviews' },
+        { name: 'Analysis', icon: '📊', days: '2–3 days', desc: 'AI-powered theme extraction' },
+        { name: 'Report', icon: '📄', days: '1 day', desc: 'Final report generation' },
+      ];
+
+      // Desktop stepper
+      const stepperD = document.getElementById('stepperDesktop');
+      stepperD.innerHTML = phases.map((p, i) => `
+        <div class="step done">
+          <div class="step-icon">${p.icon}</div>
+          <div class="step-name">${esc(p.name)}</div>
+          <div class="step-days">${esc(p.days || '')}</div>
+        </div>`).join('');
+
+      // Mobile stepper
+      const stepperM = document.getElementById('stepperMobile');
+      stepperM.innerHTML = phases.map((p, i) => `
+        <div class="vstep done">
+          <div class="vstep-left">
+            <div class="vstep-icon">${p.icon}</div>
+            <div class="vstep-line"></div>
+          </div>
+          <div class="vstep-body">
+            <div class="vstep-name">${esc(p.name)} &mdash; ${esc(p.days || '')}</div>
+            <div class="vstep-desc">${esc(p.desc || '')}</div>
+          </div>
+        </div>`).join('');
+
+      // Caveats
+      if (data.caveats && data.caveats.length) {
+        const box = document.getElementById('caveatsBox');
+        box.style.display = 'flex';
+        document.getElementById('caveatsText').innerHTML = Array.isArray(data.caveats)
+          ? data.caveats.map(c => `<div>${esc(c)}</div>`).join('')
+          : esc(String(data.caveats));
+      }
+
+      // Enable pay button
+      document.getElementById('payBtn').disabled = false;
+    }
+
+    // ── Payment ──
+    async function initiatePayment() {
+      const btn = document.getElementById('payBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing\u2026';
+
+      try {
+        const res = await fetch('/api/client/payment/initiate', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ project_id: projectId, method: selectedMethod })
+        });
+
+        if (res.status === 503 || res.status === 501) {
+          // Gateway not configured
+          document.getElementById('gatewayPlaceholder').style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = 'Pay <span id="payBtnAmount">' + (document.getElementById('payBtnAmount')?.innerHTML || '—') + '</span> \u2192';
+          return;
+        }
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (selectedMethod === 'razorpay' && data.razorpay_order_id) {
+          openRazorpay(data);
+        } else if (selectedMethod === 'stripe' && data.checkout_url) {
+          window.location.href = data.checkout_url;
+        } else {
+          throw new Error('Invalid payment response');
+        }
+      } catch(err) {
+        btn.disabled = false;
+        btn.innerHTML = 'Pay \u2192';
+        if (err.message === 'Invalid payment response') {
+          document.getElementById('gatewayPlaceholder').style.display = 'block';
+        } else {
+          alert('Payment initiation failed. Please try again or contact support.');
+        }
+      }
+    }
+
+    function openRazorpay(data) {
+      if (typeof Razorpay === 'undefined') {
+        // Load Razorpay script dynamically
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => launchRazorpay(data);
+        script.onerror = () => {
+          alert('Could not load Razorpay. Please check your connection.');
+          document.getElementById('payBtn').disabled = false;
+        };
+        document.head.appendChild(script);
+      } else {
+        launchRazorpay(data);
+      }
+    }
+
+    function launchRazorpay(data) {
+      const options = {
+        key: data.key_id,
+        amount: data.amount,
+        currency: 'INR',
+        order_id: data.razorpay_order_id,
+        name: 'GetHeard',
+        description: document.getElementById('studyName').textContent,
+        theme: { color: '#1e3c72' },
+        handler: function(response) {
+          window.location.href = `/listen/study/${encodeURIComponent(projectId)}/status?payment=success`;
+        },
+        modal: {
+          ondismiss: function() {
+            const btn = document.getElementById('payBtn');
+            btn.disabled = false;
+            btn.innerHTML = 'Pay ' + (document.getElementById('recapTotal').innerHTML) + ' \u2192';
+          }
+        }
+      };
+      const rz = new Razorpay(options);
+      rz.open();
+    }
+
+    // Boot
+    document.getElementById('payBtn').disabled = true;
+    loadQuote();
+    loadTimeline();
+    pollTimer = setInterval(loadTimeline, 3000);
+  </script>
+</body>
+</html>

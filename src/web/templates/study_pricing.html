@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:       #1e3c72;
+      --navy-dark:  #152d56;
+      --blue:       #2a5298;
+      --blue-light: #4facfe;
+      --accent:     #60a5fa;
+      --off-white:  #e8edf5;
+      --muted:      #8fa3c8;
+      --white:      #ffffff;
+      --success:    #16a34a;
+      --warning:    #d97706;
+      --danger:     #dc2626;
+      --sidebar-w:  220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--off-white);
+      color: #1a2540;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy-dark);
+      min-height: 100vh;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      font-size: 1.3rem; font-weight: 800; color: var(--white);
+      letter-spacing: -0.02em;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-decoration: none; display: block;
+    }
+    .sidebar-logo span { color: var(--blue-light); }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
+    .nav-section-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: rgba(255,255,255,0.3); padding: 10px 20px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: rgba(255,255,255,0.65); font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; border-left: 3px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s; cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); text-decoration: none; }
+    .nav-item.active {
+      background: rgba(79,172,254,0.14); color: var(--white);
+      border-left-color: var(--blue-light); font-weight: 600;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-company { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+    .sidebar-company strong {
+      display: block; color: rgba(255,255,255,0.8); font-size: 0.82rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      color: var(--navy); font-size: 1.4rem; padding: 4px;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ── MAIN ── */
+    .app-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      background: var(--white); border-bottom: 1px solid rgba(30,60,114,0.08);
+      padding: 0 36px; height: 64px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .page-content { padding: 32px 36px; flex: 1; }
+    .centered { max-width: 800px; margin: 0 auto; }
+
+    /* ── STUDY SUMMARY CARD ── */
+    .summary-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 18px 24px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
+      border: 1px solid rgba(30,60,114,0.07);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .summary-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .summary-name { font-size: 1.05rem; font-weight: 700; color: var(--navy); }
+    .back-link { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    .back-link:hover { color: var(--navy); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px; font-size: 0.7rem;
+      font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap;
+    }
+    .badge::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; flex-shrink: 0;
+    }
+    .badge-type { background: var(--off-white); color: var(--blue); }
+    .badge-pricing { background: #dbeafe; color: var(--blue); }
+
+    /* ── PRICING GRID ── */
+    .pricing-grid {
+      display: grid; grid-template-columns: 55fr 45fr; gap: 20px; align-items: start;
+    }
+
+    /* ── QUOTE CARD ── */
+    .card {
+      background: var(--white); border-radius: 14px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(30,60,114,0.08); border: 1px solid rgba(30,60,114,0.07);
+    }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 18px; }
+    .quote-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 0; border-bottom: 1px solid rgba(30,60,114,0.06); gap: 12px;
+    }
+    .quote-row:last-of-type { border-bottom: none; }
+    .quote-label { font-size: 0.875rem; color: #334155; }
+    .quote-note { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+    .quote-amount { font-size: 0.875rem; font-weight: 600; color: #1a2540; white-space: nowrap; }
+    .quote-divider { border: none; border-top: 2px solid rgba(30,60,114,0.1); margin: 12px 0; }
+    .quote-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; gap: 12px;
+    }
+    .quote-total-label { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .quote-total-amount {
+      font-size: 1.6rem; font-weight: 800; color: var(--navy);
+      transition: all 0.3s ease;
+    }
+    .quote-currency-note { font-size: 0.72rem; color: var(--muted); margin-top: 14px; }
+
+    /* Loading state */
+    .loading-block {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 0.85rem; padding: 16px 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-icon {
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(30,60,114,0.15);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── LEVERS CARD ── */
+    .lever { margin-bottom: 22px; }
+    .lever:last-child { margin-bottom: 0; }
+    .lever-label {
+      font-size: 0.78rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+    }
+
+    /* Panel size */
+    .panel-size-row { display: flex; align-items: center; gap: 10px; }
+    .stepper-btn {
+      width: 34px; height: 34px; border-radius: 8px; border: 1.5px solid rgba(30,60,114,0.2);
+      background: var(--white); color: var(--navy); font-size: 1.1rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .stepper-btn:hover { background: var(--off-white); border-color: var(--navy); }
+    .stepper-input {
+      width: 70px; height: 34px; text-align: center; border: 1.5px solid rgba(30,60,114,0.2);
+      border-radius: 8px; font-size: 0.95rem; font-weight: 600; color: var(--navy);
+      font-family: inherit; outline: none;
+    }
+    .stepper-input:focus { border-color: var(--navy); }
+    .stepper-label { font-size: 0.82rem; color: var(--muted); }
+
+    /* Radio group */
+    .radio-group { display: flex; flex-direction: column; gap: 8px; }
+    .radio-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+      border: 1.5px solid rgba(30,60,114,0.12); border-radius: 9px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .radio-item:hover { border-color: var(--navy); background: rgba(30,60,114,0.02); }
+    .radio-item input[type="radio"] { margin-top: 2px; accent-color: var(--navy); flex-shrink: 0; }
+    .radio-item.checked { border-color: var(--blue-light); background: rgba(79,172,254,0.07); }
+    .radio-item-text { flex: 1; }
+    .radio-item-name { font-size: 0.875rem; font-weight: 500; color: #1a2540; }
+    .radio-item-sub { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+
+    /* Dropdown */
+    .lever-select {
+      width: 100%; padding: 9px 12px; border: 1.5px solid rgba(30,60,114,0.2);
+      border-radius: 8px; font-size: 0.875rem; color: #1a2540; font-family: inherit;
+      outline: none; background: var(--white); cursor: pointer;
+    }
+    .lever-select:focus { border-color: var(--navy); }
+
+    /* Slider */
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    .lever-slider {
+      flex: 1; accent-color: var(--navy); height: 4px; cursor: pointer;
+    }
+    .slider-val {
+      font-size: 0.9rem; font-weight: 700; color: var(--navy);
+      min-width: 54px; text-align: right;
+    }
+    .slider-note { font-size: 0.75rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+    /* Urgency toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .toggle-text { font-size: 0.875rem; color: #1a2540; }
+    .toggle-sub { font-size: 0.75rem; color: var(--muted); }
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #cbd5e1; border-radius: 99px; transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      left: 3px; top: 3px; background: var(--white); border-radius: 50%;
+      transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--navy); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* Confirm button */
+    .confirm-section { margin-top: 28px; }
+    .btn-confirm {
+      width: 100%; padding: 14px; background: var(--navy); color: var(--white);
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .btn-confirm:hover { background: var(--navy-dark); transform: translateY(-1px); }
+    .btn-confirm:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+    .confirm-small-print { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 10px; line-height: 1.5; }
+
+    /* Error state */
+    .error-block {
+      padding: 16px; background: #fee2e2; border-radius: 10px;
+      color: var(--danger); font-size: 0.875rem; margin-top: 8px;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .app-main { margin-left: 0; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .topbar { padding: 0 20px; }
+      .page-content { padding: 20px 16px; }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a href="/listen" class="sidebar-logo">Get<span>Heard</span></a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/listen" class="nav-item">
+        <span class="nav-icon">&#9783;</span> Dashboard
+      </a>
+      <a href="/listen/studies" class="nav-item active">
+        <span class="nav-icon">&#128202;</span> My Studies
+      </a>
+      <a href="/listen/panel" class="nav-item">
+        <span class="nav-icon">&#128101;</span> Panel
+      </a>
+      <a href="/listen/reports" class="nav-item">
+        <span class="nav-icon">&#128196;</span> Reports
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a href="/listen/billing" class="nav-item">
+        <span class="nav-icon">&#128179;</span> Billing
+      </a>
+      <a href="/listen/settings" class="nav-item">
+        <span class="nav-icon">&#9881;</span> Settings
+      </a>
+      <a href="/listen/logout" class="nav-item" style="margin-top:4px;">
+        <span class="nav-icon">&#8592;</span> Log Out
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-company">Logged in as <strong id="sidebar-company-name">—</strong></div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">&#9776;</button>
+        <div class="topbar-title">Study Pricing</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="centered">
+
+        <!-- Summary Card -->
+        <div class="summary-card">
+          <div class="summary-info">
+            <div class="summary-name" id="studyName">Loading study&hellip;</div>
+            <span class="badge badge-type" id="studyTypeBadge">—</span>
+            <span class="badge badge-pricing">Pricing</span>
+          </div>
+          <a href="#" id="backLink" class="back-link">&#8592; Back to brief</a>
+        </div>
+
+        <!-- Pricing Grid -->
+        <div class="pricing-grid">
+
+          <!-- Left: Quote Breakdown -->
+          <div class="card">
+            <div class="card-title">Your quote</div>
+            <div id="quoteContent">
+              <div class="loading-block"><span class="spin-icon"></span> Fetching your quote&hellip;</div>
+            </div>
+          </div>
+
+          <!-- Right: Levers -->
+          <div class="card">
+            <div class="card-title">Adjust your study</div>
+
+            <!-- Panel Size -->
+            <div class="lever">
+              <div class="lever-label">Panel Size</div>
+              <div class="panel-size-row">
+                <button class="stepper-btn" onclick="adjustPanel(-1)">&#8722;</button>
+                <input class="stepper-input" type="number" id="panelSize" value="20" min="5" max="100" onchange="onLeverChange()" />
+                <button class="stepper-btn" onclick="adjustPanel(1)">&#43;</button>
+                <span class="stepper-label" id="panelSizeLabel">20 respondents</span>
+              </div>
+            </div>
+
+            <!-- Panel Source -->
+            <div class="lever">
+              <div class="lever-label">Panel Source</div>
+              <div class="radio-group" id="panelSourceGroup">
+                <label class="radio-item checked" onclick="selectRadio(this, 'panelSourceGroup')">
+                  <input type="radio" name="panelSource" value="csv" checked />
+                  <div class="radio-item-text">
+                    <div class="radio-item-name">&#128193; I'll upload a CSV</div>
+                    <div class="radio-item-sub">Cheapest &mdash; +&#8377;0</div>
+                  </div>
+                </label>
+                <label class="radio-item" onclick="selectRadio(this, 'panelSourceGroup')">
+                  <input type="radio" name="panelSource" value="panel" />
+                  <div class="radio-item-text">
+                    <div class="radio-item-name">&#128269; GetHeard recruits from panel</div>
+                    <div class="radio-item-sub">Faster &mdash; +&#8377;1,499/respondent</div>
+                  </div>
+                </label>
+                <label class="radio-item" onclick="selectRadio(this, 'panelSourceGroup')">
+                  <input type="radio" name="panelSource" value="targeted" />
+                  <div class="radio-item-text">
+                    <div class="radio-item-name">&#127919; Targeted recruitment</div>
+                    <div class="radio-item-sub">Premium &mdash; custom pricing</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Study Type -->
+            <div class="lever">
+              <div class="lever-label">Study Type</div>
+              <select class="lever-select" id="studyTypeSelect" onchange="onLeverChange()">
+                <option value="nps_csat">NPS / CSAT</option>
+                <option value="feature_feedback">Feature Feedback</option>
+                <option value="pain_points">Customer Pain Points</option>
+                <option value="custom">Custom Research</option>
+              </select>
+            </div>
+
+            <!-- Incentive Slider -->
+            <div class="lever">
+              <div class="lever-label">Respondent Incentive (optional)</div>
+              <div class="slider-row">
+                <input type="range" class="lever-slider" id="incentiveSlider" min="0" max="500" step="50" value="0" oninput="updateSlider()" />
+                <span class="slider-val" id="incentiveVal">&#8377;0</span>
+              </div>
+              <div class="slider-note">Higher incentive = faster recruitment and better response rates</div>
+            </div>
+
+            <!-- Urgency Toggle -->
+            <div class="lever">
+              <div class="lever-label">Urgency</div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-text">Need it faster? <span style="color:var(--warning);font-weight:600;">(+25%)</span></div>
+                  <div class="toggle-sub">Priority scheduling and panel activation</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="urgencyToggle" onchange="onLeverChange()" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm Section -->
+        <div class="confirm-section">
+          <button class="btn-confirm" id="confirmBtn" onclick="confirmQuote()" disabled>
+            Confirm Quote
+          </button>
+          <div class="confirm-small-print">
+            You'll be charged after reviewing the timeline and confirming payment.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Extract project_id from URL ──
+    const pathParts = window.location.pathname.split('/');
+    const projectId = pathParts[pathParts.indexOf('study') + 1] || '';
+
+    // ── State ──
+    let currentQuote = {};
+    let debounceTimer = null;
+
+    // ── Sidebar ──
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    function esc(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function fmt(n) {
+      if (n == null || isNaN(Number(n))) return '—';
+      return '&#8377;' + Number(n).toLocaleString('en-IN');
+    }
+
+    // ── Fetch initial quote ──
+    async function loadQuote() {
+      try {
+        const res = await fetch(`/api/client/quote/${encodeURIComponent(projectId)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        populateStudyMeta(data);
+        renderQuote(data);
+        prefillLevers(data);
+        currentQuote = data;
+        document.getElementById('confirmBtn').disabled = false;
+      } catch(err) {
+        document.getElementById('quoteContent').innerHTML = `
+          <div class="error-block">Failed to load quote. Please refresh the page or contact support.</div>`;
+      }
+    }
+
+    function populateStudyMeta(data) {
+      document.getElementById('studyName').textContent = data.study_name || data.name || 'Your Study';
+      document.getElementById('studyTypeBadge').textContent = data.study_type || data.research_type || 'Survey';
+      const briefId = data.brief_session_id || '';
+      if (briefId) {
+        document.getElementById('backLink').href = `/listen/study/${encodeURIComponent(projectId)}/brief`;
+      }
+    }
+
+    function renderQuote(data) {
+      const rows = [];
+      if (data.study_fee != null) {
+        rows.push(`
+          <div class="quote-row">
+            <div><div class="quote-label">Study fee</div>${data.size_multiplier ? `<div class="quote-note">Includes ${esc(String(data.size_multiplier))}x panel multiplier</div>` : ''}</div>
+            <div class="quote-amount">${fmt(data.study_fee)}</div>
+          </div>`);
+      }
+      if (data.recruitment_fee) {
+        rows.push(`
+          <div class="quote-row">
+            <div><div class="quote-label">Recruitment fee</div><div class="quote-note">Panel sourcing &amp; screening</div></div>
+            <div class="quote-amount">${fmt(data.recruitment_fee)}</div>
+          </div>`);
+      }
+      if (data.respondent_incentive) {
+        rows.push(`
+          <div class="quote-row">
+            <div><div class="quote-label">Respondent incentive</div><div class="quote-note">${esc(String(data.panel_size || 20))} &times; ${fmt(data.respondent_incentive_per)}</div></div>
+            <div class="quote-amount">${fmt(data.respondent_incentive)}</div>
+          </div>`);
+      }
+      if (data.urgency_premium) {
+        rows.push(`
+          <div class="quote-row">
+            <div><div class="quote-label">Urgency premium</div><div class="quote-note">+25% priority surcharge</div></div>
+            <div class="quote-amount" id="urgencyLine">${fmt(data.urgency_premium)}</div>
+          </div>`);
+      }
+      const total = data.total || data.total_amount || 0;
+      document.getElementById('quoteContent').innerHTML = `
+        ${rows.join('')}
+        <hr class="quote-divider" />
+        <div class="quote-total-row">
+          <div class="quote-total-label">TOTAL</div>
+          <div class="quote-total-amount" id="totalDisplay">${fmt(total)}</div>
+        </div>
+        <div class="quote-currency-note">Prices in Indian Rupees (INR). Other currencies on request.</div>`;
+    }
+
+    function prefillLevers(data) {
+      if (data.panel_size) {
+        document.getElementById('panelSize').value = data.panel_size;
+        document.getElementById('panelSizeLabel').textContent = `${data.panel_size} respondents`;
+      }
+      if (data.study_type) {
+        const sel = document.getElementById('studyTypeSelect');
+        const map = {
+          'nps_csat':'nps_csat','nps':'nps_csat','csat':'nps_csat',
+          'feature_feedback':'feature_feedback','pain_points':'pain_points','custom':'custom'
+        };
+        const v = map[(data.study_type||'').toLowerCase()] || 'custom';
+        sel.value = v;
+      }
+      if (data.respondent_incentive_per != null) {
+        document.getElementById('incentiveSlider').value = data.respondent_incentive_per;
+        document.getElementById('incentiveVal').textContent = fmt(data.respondent_incentive_per);
+      }
+      if (data.urgency) {
+        document.getElementById('urgencyToggle').checked = true;
+      }
+    }
+
+    // ── Lever helpers ──
+    function adjustPanel(delta) {
+      const inp = document.getElementById('panelSize');
+      const newVal = Math.min(100, Math.max(5, parseInt(inp.value||'20') + delta));
+      inp.value = newVal;
+      document.getElementById('panelSizeLabel').textContent = `${newVal} respondents`;
+      onLeverChange();
+    }
+
+    function updateSlider() {
+      const val = document.getElementById('incentiveSlider').value;
+      document.getElementById('incentiveVal').innerHTML = fmt(val);
+      onLeverChange();
+    }
+
+    function selectRadio(el, groupId) {
+      document.querySelectorAll(`#${groupId} .radio-item`).forEach(i => i.classList.remove('checked'));
+      el.classList.add('checked');
+      el.querySelector('input[type="radio"]').checked = true;
+      onLeverChange();
+    }
+
+    // ── Debounced recompute ──
+    function onLeverChange() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(recompute, 300);
+    }
+
+    function getParams() {
+      const panelSize = parseInt(document.getElementById('panelSize').value) || 20;
+      const panelSource = document.querySelector('input[name="panelSource"]:checked')?.value || 'csv';
+      const studyType = document.getElementById('studyTypeSelect').value;
+      const incentive = parseInt(document.getElementById('incentiveSlider').value) || 0;
+      const urgency = document.getElementById('urgencyToggle').checked;
+      return { project_id: projectId, panel_size: panelSize, panel_source: panelSource, study_type: studyType, respondent_incentive: incentive, urgency };
+    }
+
+    async function recompute() {
+      const params = getParams();
+      try {
+        const res = await fetch('/api/client/quote/compute', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(params)
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        currentQuote = { ...currentQuote, ...data };
+        // Animate total
+        const totalEl = document.getElementById('totalDisplay');
+        if (totalEl) {
+          totalEl.style.opacity = '0.4';
+          totalEl.style.transform = 'translateY(-4px)';
+          const newTotal = data.total || data.total_amount || 0;
+          setTimeout(() => {
+            totalEl.innerHTML = fmt(newTotal);
+            totalEl.style.opacity = '1';
+            totalEl.style.transform = 'translateY(0)';
+          }, 180);
+        }
+        // Update urgency line if visible
+        const urgencyLine = document.getElementById('urgencyLine');
+        if (urgencyLine && data.urgency_premium != null) {
+          urgencyLine.innerHTML = fmt(data.urgency_premium);
+        }
+        // Update recruitment fee if visible (re-render full quote)
+        renderQuote({ ...currentQuote, ...data, panel_size: params.panel_size });
+      } catch(e) {}
+    }
+
+    // ── Confirm quote ──
+    async function confirmQuote() {
+      const btn = document.getElementById('confirmBtn');
+      btn.disabled = true;
+      btn.textContent = 'Confirming\u2026';
+      const params = getParams();
+      try {
+        const res = await fetch(`/api/client/quote/${encodeURIComponent(projectId)}/confirm`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(params)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        window.location.href = `/listen/study/${encodeURIComponent(projectId)}/timeline`;
+      } catch(err) {
+        btn.disabled = false;
+        btn.textContent = 'Confirm Quote';
+        alert('Failed to confirm quote. Please try again.');
+      }
+    }
+
+    // Boot
+    loadQuote();
+  </script>
+</body>
+</html>

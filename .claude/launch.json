@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "getHeard",
+      "runtimeExecutable": "/Users/niveditapandey/Documents/AI Projects/getHeard/venv/bin/python",
+      "runtimeArgs": ["-m", "uvicorn", "src.web.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+      "port": 8000
+    },
+    {
+      "name": "color-sample",
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "8099", "--directory", "/Users/niveditapandey/Documents/AI Projects/getHeard"],
+      "port": 8099
+    }
+  ]
+}
