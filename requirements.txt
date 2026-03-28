@@ -17,5 +17,6 @@ itsdangerous>=2.1.0
 razorpay>=1.4.0
 stripe>=7.0.0
 twilio>=8.0.0
+python-pptx>=0.6.21
 pytest>=7.4.0
 pytest-asyncio>=0.21.0

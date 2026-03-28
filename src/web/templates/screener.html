@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Check – GetHeard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand: #1e3c72;
+    --brand-light: #4299e1;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --text: #1a202c;
+    --muted: #718096;
+    --border: #e2e8f0;
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(30,60,114,.12);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 580px;
+    padding: 40px;
+    animation: fadeIn .35s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .logo { text-align: center; margin-bottom: 24px; }
+  .logo span { font-size: 1.5rem; font-weight: 800; color: var(--brand); letter-spacing: -.5px; }
+  .logo .dot { color: var(--brand-light); }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 28px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .progress-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand-light));
+    border-radius: 99px; transition: width .4s ease; }
+
+  /* Question area */
+  .question-num { font-size: 12px; font-weight: 700; color: var(--brand-light); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 10px; }
+  .question-text { font-size: 1.2rem; font-weight: 600; color: var(--text); line-height: 1.55;
+    margin-bottom: 24px; }
+
+  /* Choices */
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .choice-btn {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; border: 2px solid var(--border); border-radius: 10px;
+    background: var(--surface); cursor: pointer; font-size: 15px; color: var(--text);
+    transition: all .18s; text-align: left; width: 100%;
+  }
+  .choice-btn:hover { border-color: var(--brand-light); background: #ebf8ff; }
+  .choice-btn.selected { border-color: var(--brand); background: #dce8f5; color: var(--brand); font-weight: 600; }
+  .choice-icon { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .18s; }
+  .choice-btn.selected .choice-icon { background: var(--brand); border-color: var(--brand); }
+  .choice-btn.selected .choice-icon::after { content: ''; width: 8px; height: 8px; background: #fff;
+    border-radius: 50%; display: block; }
+  /* Multi-select uses square checkboxes */
+  .multi .choice-btn .choice-icon { border-radius: 5px; }
+  .multi .choice-btn.selected .choice-icon { background: var(--brand); border-color: var(--brand); }
+  .multi .choice-btn.selected .choice-icon::after { content: '✓'; color: #fff; font-size: 12px;
+    font-weight: 700; border-radius: 0; width: auto; height: auto; background: none; }
+
+  /* Yes/No inline */
+  .yn-row { display: flex; gap: 12px; margin-bottom: 28px; }
+  .yn-row .choice-btn { flex: 1; justify-content: center; font-size: 16px; font-weight: 600; }
+
+  /* Text input */
+  .text-input { width: 100%; padding: 13px 16px; border: 2px solid var(--border); border-radius: 10px;
+    font-size: 15px; color: var(--text); resize: vertical; min-height: 100px; margin-bottom: 28px;
+    outline: none; font-family: inherit; }
+  .text-input:focus { border-color: var(--brand-light); }
+
+  /* Nav buttons */
+  .nav-row { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn { padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; border: none; transition: all .18s; }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: #163060; }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* Result screens */
+  .result-screen { text-align: center; }
+  .result-icon { font-size: 3.5rem; margin-bottom: 16px; }
+  .result-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .result-msg { font-size: 1rem; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+  .result-screen .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; padding: 14px 28px; }
+
+  /* Error */
+  .error-hint { font-size: 13px; color: var(--danger); margin-top: -20px; margin-bottom: 16px; display: none; }
+
+  /* Loading overlay */
+  #loadingScreen { display: none; flex-direction: column; align-items: center; gap: 14px; }
+  #loadingScreen p { color: var(--muted); font-size: 14px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--brand);
+    border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .powered { text-align: center; margin-top: 20px; font-size: 12px; color: #a0aec0; }
+</style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+  <div class="logo"><span>Get<span class="dot">H</span>eard</span></div>
+
+  <!-- Loading screen while fetching screener -->
+  <div id="loadingScreen" style="display:flex">
+    <div class="spinner"></div>
+    <p>Loading your screener…</p>
+  </div>
+
+  <!-- Screener questions screen -->
+  <div id="questionScreen" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressLabel">Question 1 of 1</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="question-num" id="questionNum">QUESTION 1</div>
+    <div class="question-text" id="questionText"></div>
+
+    <!-- Answers area — content injected per question type -->
+    <div id="answersArea"></div>
+    <div class="error-hint" id="errorHint">Please select an answer to continue.</div>
+
+    <div class="nav-row">
+      <button class="btn btn-primary" id="nextBtn" onclick="advance()">Next →</button>
+    </div>
+  </div>
+
+  <!-- Evaluating screen -->
+  <div id="evaluatingScreen" style="display:none">
+    <div style="text-align:center;padding:40px 0">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <p style="color:var(--muted)">Checking your answers…</p>
+    </div>
+  </div>
+
+  <!-- Result screen (qualified OR disqualified) -->
+  <div id="resultScreen" style="display:none" class="result-screen">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-msg" id="resultMsg"></div>
+    <div id="resultActions"></div>
+  </div>
+</div>
+
+<div class="powered">Powered by GetHeard · AI Research Platform</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const PROJECT_ID = params.get('project_id') || location.pathname.split('/screener/')[1]?.split('/')[0] || '';
+const LANG      = params.get('lang') || 'en';
+
+let questions  = [];
+let currentIdx = 0;
+let answers    = {};  // { question_id: answer_value }
+let screenerConfig = null;
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+async function init() {
+  if (!PROJECT_ID) {
+    showError('No project ID found. Please use the link provided by the researcher.');
+    return;
+  }
+  try {
+    const res = await fetch(`/api/projects/${PROJECT_ID}/screener`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    screenerConfig = await res.json();
+
+    if (!screenerConfig.enabled || !screenerConfig.questions?.length) {
+      // No screener — go straight to interview
+      redirectToInterview();
+      return;
+    }
+    questions = screenerConfig.questions;
+    showQuestion(0);
+  } catch (e) {
+    showError('Could not load the screener. Please try again or contact the researcher.');
+    console.error(e);
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showQuestion(idx) {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('questionScreen').style.display = '';
+  document.getElementById('errorHint').style.display = 'none';
+
+  const q = questions[idx];
+  const total = questions.length;
+  const pct = Math.round((idx / total) * 100);
+
+  document.getElementById('questionNum').textContent = `QUESTION ${idx + 1}`;
+  document.getElementById('questionText').textContent = q.text;
+  document.getElementById('progressLabel').textContent = `Question ${idx + 1} of ${total}`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('nextBtn').textContent = idx === total - 1 ? 'Submit →' : 'Next →';
+
+  // Restore previous answer if user navigated back (not implemented, but keep value)
+  const prevAnswer = answers[q.id];
+  renderAnswerArea(q, prevAnswer);
+}
+
+function advance() {
+  const q = questions[currentIdx];
+  const answer = collectAnswer(q);
+
+  if (answer === null || answer === '' || (Array.isArray(answer) && answer.length === 0)) {
+    document.getElementById('errorHint').style.display = '';
+    return;
+  }
+  document.getElementById('errorHint').style.display = 'none';
+  answers[q.id] = answer;
+
+  if (currentIdx < questions.length - 1) {
+    currentIdx++;
+    showQuestion(currentIdx);
+  } else {
+    submitAnswers();
+  }
+}
+
+// ── Answer rendering ──────────────────────────────────────────────────────────
+function renderAnswerArea(q, prevAnswer) {
+  const area = document.getElementById('answersArea');
+  const type = q.type || 'single_choice';
+
+  if (type === 'yes_no') {
+    area.innerHTML = `
+      <div class="yn-row">
+        <button class="choice-btn ${prevAnswer === 'Yes' ? 'selected' : ''}" onclick="selectYN('Yes', this)">
+          <div class="choice-icon"></div> Yes
+        </button>
+        <button class="choice-btn ${prevAnswer === 'No' ? 'selected' : ''}" onclick="selectYN('No', this)">
+          <div class="choice-icon"></div> No
+        </button>
+      </div>`;
+
+  } else if (type === 'single_choice') {
+    const opts = q.options || [];
+    area.innerHTML = `<div class="choices">` +
+      opts.map(opt => `
+        <button class="choice-btn ${prevAnswer === opt ? 'selected' : ''}" onclick="selectSingle('${esc(opt)}', this)">
+          <div class="choice-icon"></div> ${escHtml(opt)}
+        </button>`).join('') +
+      `</div>`;
+
+  } else if (type === 'multi_choice') {
+    const opts = q.options || [];
+    const prev = Array.isArray(prevAnswer) ? prevAnswer : [];
+    area.innerHTML = `<div class="choices multi">` +
+      opts.map(opt => `
+        <button class="choice-btn ${prev.includes(opt) ? 'selected' : ''}" onclick="toggleMulti('${esc(opt)}', this)">
+          <div class="choice-icon"></div> ${escHtml(opt)}
+        </button>`).join('') +
+      `</div>`;
+
+  } else if (type === 'text') {
+    area.innerHTML = `
+      <textarea class="text-input" id="textAnswer" placeholder="Type your answer here…">${escHtml(prevAnswer || '')}</textarea>`;
+  }
+}
+
+function selectSingle(value, el) {
+  el.closest('.choices').querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('errorHint').style.display = 'none';
+}
+
+function selectYN(value, el) {
+  el.closest('.yn-row').querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('errorHint').style.display = 'none';
+}
+
+function toggleMulti(value, el) {
+  el.classList.toggle('selected');
+  document.getElementById('errorHint').style.display = 'none';
+}
+
+function collectAnswer(q) {
+  const type = q.type || 'single_choice';
+  if (type === 'yes_no' || type === 'single_choice') {
+    const sel = document.querySelector('.choice-btn.selected');
+    if (!sel) return null;
+    // Extract text after the icon div
+    return sel.textContent.trim();
+  } else if (type === 'multi_choice') {
+    const sels = [...document.querySelectorAll('.choice-btn.selected')];
+    if (!sels.length) return null;
+    return sels.map(s => s.textContent.trim());
+  } else if (type === 'text') {
+    const val = document.getElementById('textAnswer')?.value.trim() || '';
+    return val || null;
+  }
+  return null;
+}
+
+// ── Submission ────────────────────────────────────────────────────────────────
+async function submitAnswers() {
+  document.getElementById('questionScreen').style.display = 'none';
+  document.getElementById('evaluatingScreen').style.display = '';
+
+  try {
+    const res = await fetch(`/api/screener/${PROJECT_ID}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers, lang: LANG }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    showResult(result.qualified, result.message);
+  } catch (e) {
+    console.error(e);
+    showResult(false, 'Something went wrong evaluating your answers. Please try again.');
+  }
+}
+
+// ── Result screen ─────────────────────────────────────────────────────────────
+function showResult(qualified, message) {
+  document.getElementById('evaluatingScreen').style.display = 'none';
+  const screen = document.getElementById('resultScreen');
+  screen.style.display = '';
+
+  if (qualified) {
+    document.getElementById('resultIcon').textContent = '🎉';
+    document.getElementById('resultTitle').textContent = 'You qualify!';
+    document.getElementById('resultMsg').textContent = message;
+    document.getElementById('resultActions').innerHTML = `
+      <button class="btn btn-primary" onclick="redirectToInterview()" style="width:100%;justify-content:center">
+        🎙️ Start Interview
+      </button>`;
+  } else {
+    document.getElementById('resultIcon').textContent = '🙏';
+    document.getElementById('resultTitle').textContent = 'Thank you for your time';
+    document.getElementById('resultMsg').textContent = message;
+    document.getElementById('resultActions').innerHTML = '';
+  }
+}
+
+function redirectToInterview() {
+  window.location.href = `/interview?project_id=${encodeURIComponent(PROJECT_ID)}&lang=${encodeURIComponent(LANG)}`;
+}
+
+// ── Error screen ──────────────────────────────────────────────────────────────
+function showError(msg) {
+  document.getElementById('loadingScreen').style.display = 'none';
+  const screen = document.getElementById('resultScreen');
+  screen.style.display = '';
+  document.getElementById('resultIcon').textContent = '⚠️';
+  document.getElementById('resultTitle').textContent = 'Something went wrong';
+  document.getElementById('resultMsg').textContent = msg;
+  document.getElementById('resultActions').innerHTML = '';
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

@@ -182,3 +182,17 @@ class VoiceInterviewPipeline:
             logger.info(f"[{self.session_id}] Transcript saved → {filepath}")
         except Exception as e:
             logger.error(f"[{self.session_id}] Failed to save transcript: {e}")
+            return
+
+        # Auto-score with rule-based checks (fast, no AI call) immediately after saving
+        try:
+            from src.core.quality_scorer import score_transcript
+            transcript_data = {
+                "conversation": self.get_conversation_history(),
+                "started_at": self.started_at,
+            }
+            quality = score_transcript(transcript_data, ai_evaluate=False)
+            self.transcript_manager.update_quality(self.session_id, quality)
+            logger.info(f"[{self.session_id}] Auto-quality score: {quality['score']} ({quality['label']})")
+        except Exception as e:
+            logger.warning(f"[{self.session_id}] Auto quality scoring failed: {e}")

@@ -71,10 +71,22 @@
   .transcript-list { display: flex; flex-direction: column; gap: 8px; }
   .t-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
     border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-  .t-row .t-info { display: flex; gap: 12px; align-items: center; }
+  .t-row .t-info { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .t-row .t-lang { background: #ebf8ff; color: #2b6cb0; padding: 2px 8px; border-radius: 10px;
     font-size: 12px; font-weight: 600; }
   .t-row a { color: #4299e1; font-size: 13px; text-decoration: none; }
+  .t-row .t-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+  /* Quality badges */
+  .q-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 10px;
+    cursor: default; white-space: nowrap; }
+  .q-badge.high_quality    { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+  .q-badge.medium_quality  { background: #fffaf0; color: #b7791f; border: 1px solid #feebc8; }
+  .q-badge.low_quality     { background: #fff5f0; color: #c05621; border: 1px solid #fed7c3; }
+  .q-badge.suspected_fraud { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
+  .q-badge.unscored        { background: #f7fafc; color: #a0aec0; border: 1px solid #e2e8f0; }
+  .score-btn { background: none; border: none; color: #4299e1; font-size: 12px; cursor: pointer;
+    padding: 2px 6px; text-decoration: underline; }
 
   /* REPORT SECTION */
   .report-cta { text-align: center; padding: 32px; }
@@ -105,6 +117,52 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (max-width: 600px) { .stats-row { flex-direction: column; } .action-bar { flex-direction: column; } }
+
+  /* ── Screener designer ─────────────────────────── */
+  .screener-toggle { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track { position: absolute; inset: 0; background: #cbd5e0; border-radius: 99px;
+    cursor: pointer; transition: background .25s; }
+  .toggle input:checked ~ .toggle-track { background: #38a169; }
+  .toggle-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px;
+    background: #fff; border-radius: 50%; transition: transform .25s; }
+  .toggle input:checked ~ .toggle-track::after { transform: translateX(20px); }
+  .toggle-label { font-size: 14px; font-weight: 600; color: #4a5568; }
+
+  .sq-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .sq-card .sq-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .sq-card .sq-text { font-size: 14px; font-weight: 500; color: #2d3748; flex: 1; }
+  .sq-card .sq-meta { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .sq-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .sq-tag-type { background: #ebf8ff; color: #2b6cb0; }
+  .sq-tag-qual { background: #f0fff4; color: #276749; }
+  .sq-tag-opts { background: #f7fafc; color: #718096; }
+  .sq-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .sq-del { background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 16px; padding: 2px 4px; }
+  .screener-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+  .quota-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 14px; color: #4a5568; }
+  .quota-row input { width: 80px; padding: 6px 10px; border: 1.5px solid #cbd5e0; border-radius: 8px;
+    font-size: 14px; outline: none; }
+  .quota-row input:focus { border-color: #4299e1; }
+
+  /* Add-question inline form */
+  .add-q-form { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;
+    margin-bottom: 14px; }
+  .add-q-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .add-q-form label { display: block; font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 4px; }
+  .add-q-form input, .add-q-form select, .add-q-form textarea {
+    width: 100%; padding: 8px 10px; border: 1.5px solid #cbd5e0; border-radius: 8px;
+    font-size: 13px; outline: none; font-family: inherit; }
+  .add-q-form input:focus, .add-q-form select:focus, .add-q-form textarea:focus { border-color: #4299e1; }
+  .add-q-form textarea { min-height: 60px; resize: vertical; }
+  .screener-link-box { background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 8px;
+    padding: 12px 16px; margin-top: 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .screener-link-box code { flex: 1; color: #276749; font-size: 12px; word-break: break-all; }
+  .copy-btn { background: #38a169; color: #fff; border: none; border-radius: 6px; padding: 6px 12px;
+    font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+  .copy-btn:hover { background: #2f855a; }
 </style>
 </head>
 <body>
@@ -156,10 +214,26 @@
   <div class="section">
     <div class="section-header">
       <h2>Interview Transcripts</h2>
-      <span id="transcriptCount" style="font-size:13px;color:#718096"></span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="transcriptCount" style="font-size:13px;color:#718096"></span>
+        <button class="btn btn-outline btn-sm" id="btnScoreAll" onclick="scoreAllSessions()" style="font-size:12px;padding:5px 12px">
+          🔍 Score Quality
+        </button>
+      </div>
     </div>
     <div class="section-body">
       <div class="transcript-list" id="transcriptList"></div>
+    </div>
+  </div>
+
+  <!-- Screener -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Screener Questions</h2>
+      <span id="screenerStatus" style="font-size:13px;color:#718096"></span>
+    </div>
+    <div class="section-body" id="screenerBody">
+      <!-- Loaded by renderScreener() -->
     </div>
   </div>
 
@@ -219,6 +293,8 @@ const projectId = (() => {
 let project = null;
 let linkedTranscripts = [];
 let allReports = [];
+let screenerConfig = { enabled: false, questions: [], quota: 0 };
+let showAddQForm = false;
 
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function formatDate(iso) {
@@ -233,14 +309,16 @@ async function load() {
     document.getElementById('projObjective').textContent = 'Open this page from /projects or click a project card.';
     return;
   }
-  const [projRes, transcRes, repsRes] = await Promise.all([
+  const [projRes, transcRes, repsRes, screenerRes] = await Promise.all([
     fetch(`/api/projects/${projectId}`),
     fetch('/api/transcripts'),
     fetch('/api/reports'),
+    fetch(`/api/projects/${projectId}/screener`),
   ]);
   project = await projRes.json();
   const { transcripts } = await transcRes.json();
   const { reports } = await repsRes.json();
+  screenerConfig = screenerRes.ok ? await screenerRes.json() : { enabled: false, questions: [] };
 
   // filter transcripts linked to this project
   linkedTranscripts = transcripts.filter(t => t.project_id === projectId || (t.metadata && t.metadata.project_id === projectId));
@@ -251,6 +329,7 @@ async function load() {
   renderQuestions();
   renderTranscripts(transcripts);
   renderReports(reports);
+  renderScreener();
 
   document.getElementById('launchLang').value = project.language || 'en';
   document.getElementById('page').style.display = '';
@@ -301,26 +380,34 @@ function renderQuestions() {
   }).join('');
 }
 
+function qualityBadge(t) {
+  if (!t.quality_label) return `<span class="q-badge unscored">Unscored</span>`;
+  const labels = { high_quality:'✅ High', medium_quality:'🟡 Medium', low_quality:'🟠 Low', suspected_fraud:'🔴 Fraud?' };
+  return `<span class="q-badge ${t.quality_label}" title="Score: ${t.quality_score ?? '?'}">${labels[t.quality_label] || t.quality_label}</span>`;
+}
+
 function renderTranscripts(all) {
-  // Show all transcripts and flag if linked to this project
-  // Also show any transcript whose session_id is in project.sessions
-  const sessions = new Set(project.sessions || []);
-  const relevant = all.filter(t => sessions.has(t.session_id) || linkedTranscripts.includes(t));
+  const sessionSet = new Set(project.sessions || []);
+  const relevant = all.filter(t => sessionSet.has(t.session_id) || linkedTranscripts.includes(t));
   const list = document.getElementById('transcriptList');
-  document.getElementById('transcriptCount').textContent = relevant.length ? `${relevant.length} found` : '';
+  document.getElementById('transcriptCount').textContent = relevant.length ? `${relevant.length} interview${relevant.length !== 1 ? 's' : ''}` : '';
 
   if (!relevant.length) {
     list.innerHTML = '<div class="empty-msg">No interviews recorded yet. Launch an interview to get started.</div>';
     return;
   }
   list.innerHTML = relevant.map(t => `
-    <div class="t-row">
+    <div class="t-row" id="trow-${t.session_id}">
       <div class="t-info">
         <span class="t-lang">${LANG_FLAGS[t.language_code] || '🌐'} ${LANG_NAMES[t.language_code] || t.language_code}</span>
-        <span>${formatDate(t.created_at || t.started_at)}</span>
+        <span>${formatDate(t.ended_at || t.created_at)}</span>
         <span style="color:#a0aec0;font-size:12px">${t.session_id || ''}</span>
+        ${qualityBadge(t)}
       </div>
-      <a href="#" onclick="viewTranscript('${escHtml(t.file || '')}'); return false;">View →</a>
+      <div class="t-actions">
+        <button class="score-btn" onclick="scoreSession('${escHtml(t.session_id)}', true)" title="Re-score with AI">🔍</button>
+        <a href="#" onclick="viewTranscript('${escHtml(t.file || t.session_id || '')}'); return false;">View →</a>
+      </div>
     </div>
   `).join('');
 }
@@ -398,6 +485,292 @@ async function viewTranscript(filename) {
     `${m.speaker === 'interviewer' ? '🤖 ALEX' : '👤 YOU'}: ${m.text || m.content || ''}`
   ).join('\n\n');
   alert(text || 'Empty transcript');
+}
+
+// ── Quality Scoring ───────────────────────────────────────────────────────────
+async function scoreSession(sessionId, aiEvaluate = false) {
+  const row = document.getElementById(`trow-${sessionId}`);
+  const btn = row?.querySelector('.score-btn');
+  if (btn) btn.textContent = '⏳';
+
+  try {
+    const res = await fetch(`/api/sessions/${sessionId}/score`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ai_evaluate: aiEvaluate }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const q = await res.json();
+
+    // Update badge in place
+    const existingBadge = row?.querySelector('.q-badge');
+    const labels = { high_quality:'✅ High', medium_quality:'🟡 Medium', low_quality:'🟠 Low', suspected_fraud:'🔴 Fraud?' };
+    const badgeHtml = `<span class="q-badge ${q.label}" title="Score: ${q.score}\n${q.flags.join('\n')}">${labels[q.label] || q.label}</span>`;
+    if (existingBadge) existingBadge.outerHTML = badgeHtml;
+    if (btn) btn.textContent = '🔍';
+
+    if (q.flags.length) console.info(`[${sessionId}] Quality flags:`, q.flags);
+  } catch (e) {
+    alert('Scoring failed: ' + e.message);
+    if (btn) btn.textContent = '🔍';
+  }
+}
+
+async function scoreAllSessions() {
+  const btn = document.getElementById('btnScoreAll');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="border-color:#cbd5e0;border-top-color:#4299e1"></span> Scoring…';
+
+  try {
+    const res = await fetch(`/api/projects/${projectId}/score-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ai_evaluate: false }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Update each row badge in place
+    const labels = { high_quality:'✅ High', medium_quality:'🟡 Medium', low_quality:'🟠 Low', suspected_fraud:'🔴 Fraud?' };
+    for (const s of data.scored || []) {
+      if (s.error) continue;
+      const row = document.getElementById(`trow-${s.session_id}`);
+      const badge = row?.querySelector('.q-badge');
+      if (badge) badge.outerHTML = `<span class="q-badge ${s.label}" title="Score: ${s.score}\n${(s.flags||[]).join('\n')}">${labels[s.label] || s.label}</span>`;
+    }
+
+    btn.textContent = `✓ Scored ${data.total}`;
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🔍 Score Quality'; }, 2500);
+  } catch (e) {
+    alert('Scoring failed: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🔍 Score Quality';
+  }
+}
+
+// ── Screener Designer ─────────────────────────────────────────────────────────
+function renderScreener() {
+  const body = document.getElementById('screenerBody');
+  const status = document.getElementById('screenerStatus');
+  const qs = screenerConfig.questions || [];
+  const enabled = screenerConfig.enabled || false;
+
+  status.textContent = enabled ? `${qs.length} question${qs.length !== 1 ? 's' : ''} · active` : 'disabled';
+  status.style.color = enabled ? '#38a169' : '#a0aec0';
+
+  const screenerLink = `${location.origin}/screener/${projectId}?lang=${project.language || 'en'}`;
+
+  body.innerHTML = `
+    <div class="screener-toggle">
+      <label class="toggle">
+        <input type="checkbox" id="screenerEnabled" onchange="toggleScreenerEnabled()" ${enabled ? 'checked' : ''}>
+        <div class="toggle-track"></div>
+      </label>
+      <span class="toggle-label">${enabled ? 'Screener active — respondents must qualify before interview' : 'Screener disabled — all respondents go straight to interview'}</span>
+    </div>
+
+    <div class="screener-toolbar">
+      <button class="btn btn-outline btn-sm" onclick="aiGenerateScreener()">✨ AI Generate</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleAddQForm()">+ Add Question</button>
+      <button class="btn btn-primary btn-sm" onclick="saveScreener()">Save Screener</button>
+    </div>
+
+    ${showAddQForm ? renderAddQForm() : ''}
+
+    <div id="sqList">
+      ${qs.length ? qs.map((q, i) => renderSQCard(q, i)).join('') : '<div class="empty-msg">No screener questions yet. Click "AI Generate" to create them automatically, or add manually.</div>'}
+    </div>
+
+    <div class="quota-row">
+      <label style="font-weight:600">Quota:</label>
+      <input type="number" id="screenerQuota" min="0" value="${screenerConfig.quota || 0}" placeholder="0">
+      <span style="color:#718096">qualified respondents (0 = unlimited)</span>
+    </div>
+
+    ${enabled && qs.length ? `
+      <div class="screener-link-box">
+        <div>
+          <div style="font-weight:600;margin-bottom:4px">Screener link to share with respondents</div>
+          <code>${escHtml(screenerLink)}</code>
+        </div>
+        <button class="copy-btn" onclick="copyScreenerLink()">Copy</button>
+      </div>` : ''}
+  `;
+}
+
+function renderSQCard(q, i) {
+  const typeLabel = { single_choice:'Single choice', multi_choice:'Multi-select', yes_no:'Yes / No', text:'Free text' }[q.type] || q.type;
+  const qualLabel = q.required_to_qualify === false ? 'Informational' : (q.qualifier === 'exclude' ? 'Exclude' : 'Include');
+  const opts = (q.options || []).slice(0, 3).join(', ') + ((q.options || []).length > 3 ? '…' : '');
+  return `
+    <div class="sq-card">
+      <div class="sq-header">
+        <div class="sq-text">${i + 1}. ${escHtml(q.text)}</div>
+        <div class="sq-actions">
+          <button class="sq-del" title="Remove question" onclick="removeSQ(${i})">✕</button>
+        </div>
+      </div>
+      <div class="sq-meta">
+        <span class="sq-tag sq-tag-type">${typeLabel}</span>
+        <span class="sq-tag sq-tag-qual">${qualLabel}</span>
+        ${opts ? `<span class="sq-tag sq-tag-opts">${escHtml(opts)}</span>` : ''}
+        ${q.qualifying_answers?.length ? `<span class="sq-tag" style="background:#fffaf0;color:#b7791f">Qualifies: ${escHtml(q.qualifying_answers.join(', '))}</span>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderAddQForm() {
+  return `
+    <div class="add-q-form" id="addQForm">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#2d3748">Add Screener Question</div>
+      <div class="form-row">
+        <div>
+          <label>Question Type</label>
+          <select id="aqType" onchange="updateAddQForm()">
+            <option value="single_choice">Single choice</option>
+            <option value="multi_choice">Multi-select</option>
+            <option value="yes_no">Yes / No</option>
+            <option value="text">Free text (AI-evaluated)</option>
+          </select>
+        </div>
+        <div>
+          <label>Qualifier</label>
+          <select id="aqQualifier">
+            <option value="include">Include (must match)</option>
+            <option value="exclude">Exclude (must NOT match)</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label>Question Text</label>
+        <input type="text" id="aqText" placeholder="e.g. Have you used a mobile banking app in the last 3 months?">
+      </div>
+      <div id="aqOptionsWrap" style="margin-bottom:10px">
+        <label>Options (comma-separated)</label>
+        <input type="text" id="aqOptions" placeholder="e.g. Yes, No, Sometimes">
+      </div>
+      <div id="aqQualifyingWrap" style="margin-bottom:10px">
+        <label>Qualifying Answers (comma-separated)</label>
+        <input type="text" id="aqQualifying" placeholder="e.g. Yes">
+      </div>
+      <div id="aqCriteriaWrap" style="display:none;margin-bottom:10px">
+        <label>AI Qualification Criteria</label>
+        <textarea id="aqCriteria" placeholder="Describe what answer qualifies, e.g. 'Respondent has at least 1 year of experience'"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-outline btn-sm" onclick="cancelAddQ()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="confirmAddQ()">Add Question</button>
+      </div>
+    </div>`;
+}
+
+function updateAddQForm() {
+  const type = document.getElementById('aqType')?.value;
+  if (!type) return;
+  const isText = type === 'text';
+  const isYN = type === 'yes_no';
+  document.getElementById('aqOptionsWrap').style.display = (isText || isYN) ? 'none' : '';
+  document.getElementById('aqQualifyingWrap').style.display = isText ? 'none' : '';
+  document.getElementById('aqCriteriaWrap').style.display = isText ? '' : 'none';
+}
+
+function toggleAddQForm() {
+  showAddQForm = !showAddQForm;
+  renderScreener();
+  if (showAddQForm) setTimeout(() => document.getElementById('aqText')?.focus(), 50);
+}
+
+function cancelAddQ() {
+  showAddQForm = false;
+  renderScreener();
+}
+
+function confirmAddQ() {
+  const text = document.getElementById('aqText')?.value.trim();
+  if (!text) { alert('Please enter the question text.'); return; }
+  const type = document.getElementById('aqType')?.value || 'single_choice';
+  const qualifier = document.getElementById('aqQualifier')?.value || 'include';
+  const isYN = type === 'yes_no';
+  const isText = type === 'text';
+
+  const optionsRaw = document.getElementById('aqOptions')?.value || '';
+  const qualifyingRaw = document.getElementById('aqQualifying')?.value || '';
+  const aiCriteria = document.getElementById('aqCriteria')?.value.trim() || '';
+
+  const q = {
+    id: `sq${Date.now()}`,
+    text,
+    type,
+    qualifier,
+    required_to_qualify: true,
+    options: isYN ? ['Yes', 'No'] : (isText ? [] : optionsRaw.split(',').map(s => s.trim()).filter(Boolean)),
+    qualifying_answers: isYN ? [qualifyingRaw || 'Yes'] : (isText ? [] : qualifyingRaw.split(',').map(s => s.trim()).filter(Boolean)),
+    ai_criteria: isText ? aiCriteria : '',
+  };
+
+  if (!screenerConfig.questions) screenerConfig.questions = [];
+  screenerConfig.questions.push(q);
+  showAddQForm = false;
+  renderScreener();
+}
+
+function removeSQ(idx) {
+  screenerConfig.questions.splice(idx, 1);
+  renderScreener();
+}
+
+function toggleScreenerEnabled() {
+  screenerConfig.enabled = document.getElementById('screenerEnabled').checked;
+  renderScreener();
+}
+
+async function aiGenerateScreener() {
+  const toolbar = document.querySelector('.screener-toolbar');
+  const btn = toolbar?.querySelector('button');
+  if (btn) { btn.disabled = true; btn.textContent = '✨ Generating…'; }
+
+  try {
+    const res = await fetch(`/api/projects/${projectId}/screener/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count: 4 }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const generated = await res.json();
+    screenerConfig = { ...screenerConfig, ...generated, enabled: true };
+    renderScreener();
+  } catch (e) {
+    alert('AI generation failed: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '✨ AI Generate'; }
+  }
+}
+
+async function saveScreener() {
+  screenerConfig.quota = parseInt(document.getElementById('screenerQuota')?.value || '0') || 0;
+  screenerConfig.enabled = document.getElementById('screenerEnabled')?.checked ?? screenerConfig.enabled;
+
+  try {
+    const res = await fetch(`/api/projects/${projectId}/screener`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(screenerConfig),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    renderScreener();
+    // Brief success flash on button
+    const btn = document.querySelector('.screener-toolbar .btn-primary');
+    if (btn) { btn.textContent = '✓ Saved!'; setTimeout(() => { btn.textContent = 'Save Screener'; }, 1800); }
+  } catch (e) {
+    alert('Save failed: ' + e.message);
+  }
+}
+
+function copyScreenerLink() {
+  const link = `${location.origin}/screener/${projectId}?lang=${project.language || 'en'}`;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 1800); }
+  });
 }
 
 // Close modal on overlay click

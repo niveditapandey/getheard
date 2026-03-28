@@ -18,6 +18,11 @@ Routes:
   GET  /api/projects                   → list all projects
   GET  /api/projects/{id}              → get project JSON
   PATCH /api/projects/{id}/questions   → update edited questions
+  GET  /api/projects/{id}/screener     → get screener config
+  PATCH /api/projects/{id}/screener    → save screener config
+  POST /api/projects/{id}/screener/generate → AI-generate screener questions
+  GET  /screener/{id}                  → respondent screener page
+  POST /api/screener/{id}/submit       → evaluate screener answers
   POST /api/reports/generate           → generate report from transcripts
   GET  /api/reports/{id}               → get report JSON
   GET  /api/reports                    → list all reports
@@ -76,6 +81,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from config.settings import settings
 from src.core.report_generator import generate_report, load_report, list_reports
+from src.core.research_agent import query_report, STARTER_QUERIES
+from src.core.pptx_generator import generate_pptx
+from src.core.screener import evaluate_screener, generate_screener_questions
+from src.core.quality_scorer import score_transcript
 from src.core.research_project import (
     create_project, generate_questions, get_project, list_projects,
     RESEARCH_TYPES, INDUSTRIES, LANGUAGE_NAMES, VALID_QUESTION_COUNTS,
@@ -451,18 +460,19 @@ async def api_generate_report(payload: dict = Body(...), _: str = Depends(option
     Body: { project_id (optional), transcript_files: [filename, ...],
             project_name, research_type, objective }
     """
-    transcript_files = payload.get("transcript_files", [])
-    if not transcript_files:
+    transcript_ids = payload.get("transcript_files", [])
+    if not transcript_ids:
         raise HTTPException(400, "Provide 'transcript_files' list")
 
+    # Load transcripts from Firestore (production) with local JSON fallback
+    tm = TranscriptManager()
     transcripts = []
-    for fname in transcript_files:
-        fpath = TRANSCRIPTS_DIR / fname
-        if fpath.exists():
-            try:
-                transcripts.append(json.loads(fpath.read_text(encoding="utf-8")))
-            except Exception:
-                pass
+    for tid in transcript_ids:
+        # Strip .json suffix if passed as filename
+        session_id = tid.replace(".json", "")
+        t = tm.load(session_id)
+        if t:
+            transcripts.append(t)
 
     if not transcripts:
         raise HTTPException(400, "No valid transcripts found")
@@ -471,6 +481,7 @@ async def api_generate_report(payload: dict = Body(...), _: str = Depends(option
     project_name = payload.get("project_name", "Research Study")
     research_type = payload.get("research_type", "cx")
     objective = payload.get("objective", "Understand customer experience")
+    audience = payload.get("audience", "General consumers")
     questions = None
 
     project_id = payload.get("project_id")
@@ -480,6 +491,7 @@ async def api_generate_report(payload: dict = Body(...), _: str = Depends(option
             project_name = proj.name
             research_type = proj._data.get("research_type", research_type)
             objective = proj._data.get("objective", objective)
+            audience = proj._data.get("audience", audience)
             questions = proj.questions
 
     try:
@@ -489,7 +501,9 @@ async def api_generate_report(payload: dict = Body(...), _: str = Depends(option
             project_name=project_name,
             research_type=research_type,
             objective=objective,
+            audience=audience,
             questions=questions,
+            project_id=project_id,
         )
         return {"report_id": report["report_id"], "report": report}
     except Exception as exc:
@@ -508,6 +522,57 @@ async def api_get_report(report_id: str):
     if not report:
         raise HTTPException(404, "Report not found")
     return report
+
+
+@app.post("/api/reports/{report_id}/query")
+async def api_report_query(report_id: str, payload: dict = Body(...)):
+    """
+    Research Agent — answer a natural-language question about a report.
+    Body: { "query": "...", "include_transcripts": true, "project_id": "optional" }
+    """
+    query = payload.get("query", "").strip()
+    if not query:
+        raise HTTPException(400, "Provide a 'query' field")
+    try:
+        result = await asyncio.to_thread(
+            query_report,
+            report_id=report_id,
+            query=query,
+            include_transcripts=payload.get("include_transcripts", True),
+            project_id=payload.get("project_id"),
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    except Exception as e:
+        logger.exception("Research Agent query failed")
+        raise HTTPException(500, str(e))
+
+
+@app.get("/api/reports/{report_id}/starter-queries")
+async def api_report_starter_queries(report_id: str):
+    """Return suggested starter queries for the Research Agent."""
+    return {"queries": STARTER_QUERIES}
+
+
+@app.get("/api/reports/{report_id}/export/pptx")
+async def api_export_pptx(report_id: str):
+    """Export report as a branded PowerPoint deck (.pptx)."""
+    from fastapi.responses import Response
+    report = load_report(report_id)
+    if not report:
+        raise HTTPException(404, "Report not found")
+    try:
+        pptx_bytes = await asyncio.to_thread(generate_pptx, report)
+        filename = f"getheard_report_{report_id}.pptx"
+        return Response(
+            content=pptx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    except Exception as e:
+        logger.exception("PPTX generation failed")
+        raise HTTPException(500, str(e))
 
 
 # ── WhatsApp webhook ─────────────────────────────────────────────────────────
@@ -564,6 +629,154 @@ async def send_whatsapp(to: str, message: str, _: str = Depends(optional_api_key
         )
         return {"status": "sent", "sid": msg.sid}
     except Exception as exc:
+        raise HTTPException(500, str(exc))
+
+
+# ── Quality / Fraud Detection ─────────────────────────────────────────────────
+
+@app.post("/api/sessions/{session_id}/score")
+async def api_score_session(session_id: str, payload: dict = Body(default={})):
+    """
+    Score a single transcript for quality / fraud.
+    Body: { "ai_evaluate": true }  — set true for deep AI analysis (slower)
+    """
+    data = transcript_manager.load(session_id)
+    if not data:
+        raise HTTPException(404, "Transcript not found")
+    try:
+        ai_eval = payload.get("ai_evaluate", False)
+        quality = await asyncio.to_thread(score_transcript, data, ai_eval)
+        await asyncio.to_thread(transcript_manager.update_quality, session_id, quality)
+        return quality
+    except Exception as exc:
+        logger.exception("Quality scoring failed")
+        raise HTTPException(500, str(exc))
+
+
+@app.post("/api/projects/{project_id}/score-all")
+async def api_score_all_sessions(project_id: str, payload: dict = Body(default={})):
+    """
+    Score all transcripts linked to a project (rule-based, fast).
+    Body: { "ai_evaluate": false }
+    Returns: list of {session_id, score, label}
+    """
+    proj = get_project(project_id)
+    if not proj:
+        raise HTTPException(404, "Project not found")
+
+    session_ids = proj._data.get("sessions", [])
+    if not session_ids:
+        return {"scored": [], "message": "No sessions linked to this project"}
+
+    ai_eval = payload.get("ai_evaluate", False)
+    results = []
+
+    for sid in session_ids:
+        data = transcript_manager.load(sid)
+        if not data:
+            continue
+        try:
+            quality = await asyncio.to_thread(score_transcript, data, ai_eval)
+            await asyncio.to_thread(transcript_manager.update_quality, sid, quality)
+            results.append({"session_id": sid, "score": quality["score"], "label": quality["label"],
+                            "emoji": quality["emoji"], "flags": quality["flags"]})
+        except Exception as exc:
+            logger.warning(f"Quality scoring failed for {sid}: {exc}")
+            results.append({"session_id": sid, "error": str(exc)})
+
+    return {"scored": results, "total": len(results)}
+
+
+# ── Screener ─────────────────────────────────────────────────────────────────
+
+@app.get("/screener/{project_id}", response_class=HTMLResponse)
+async def serve_screener(project_id: str):
+    """Respondent-facing screener page."""
+    f = TEMPLATES / "screener.html"
+    return HTMLResponse(f.read_text(encoding="utf-8") if f.exists() else "<h1>Screener not found</h1>")
+
+
+@app.get("/api/projects/{project_id}/screener")
+async def api_get_screener(project_id: str):
+    """Get the screener config for a project."""
+    proj = get_project(project_id)
+    if not proj:
+        raise HTTPException(404, "Project not found")
+    screener = proj._data.get("screener", {"enabled": False, "questions": []})
+    return screener
+
+
+@app.patch("/api/projects/{project_id}/screener")
+async def api_save_screener(project_id: str, payload: dict = Body(...), _: str = Depends(optional_api_key)):
+    """Save / update the screener config for a project."""
+    proj = get_project(project_id)
+    if not proj:
+        raise HTTPException(404, "Project not found")
+    from src.core.research_project import update_project_field
+    await asyncio.to_thread(update_project_field, project_id, "screener", payload)
+    return {"status": "saved"}
+
+
+@app.post("/api/projects/{project_id}/screener/generate")
+async def api_generate_screener(project_id: str, payload: dict = Body(default={}), _: str = Depends(optional_api_key)):
+    """AI-generate screener questions from the project brief."""
+    proj = get_project(project_id)
+    if not proj:
+        raise HTTPException(404, "Project not found")
+    try:
+        config = await asyncio.to_thread(
+            generate_screener_questions,
+            project_name=proj.name,
+            research_type=proj._data.get("research_type", "cx"),
+            audience=proj._data.get("audience", ""),
+            objective=proj._data.get("objective", ""),
+            count=int(payload.get("count", 4)),
+        )
+        return config
+    except Exception as exc:
+        logger.exception("Screener generation failed")
+        raise HTTPException(500, str(exc))
+
+
+@app.post("/api/screener/{project_id}/submit")
+async def api_screener_submit(project_id: str, payload: dict = Body(...)):
+    """
+    Evaluate screener answers.
+    Body: { "answers": { question_id: answer }, "lang": "en" }
+    Returns: { "qualified": bool, "message": str }
+    """
+    proj = get_project(project_id)
+    if not proj:
+        raise HTTPException(404, "Project not found")
+    screener = proj._data.get("screener")
+    if not screener or not screener.get("enabled"):
+        # No screener — everyone qualifies
+        return {"qualified": True, "message": "You're all set!"}
+
+    answers = payload.get("answers", {})
+    try:
+        result = await asyncio.to_thread(evaluate_screener, screener, answers)
+
+        # Quota enforcement: count qualified sessions so far
+        quota = screener.get("quota", 0)
+        if quota and quota > 0 and result["qualified"]:
+            qualified_count = proj._data.get("screener_qualified_count", 0)
+            if qualified_count >= quota:
+                result["qualified"] = False
+                result["message"] = (
+                    screener.get("disqualification_message") or
+                    "Thank you for your interest — we've reached our quota for this study."
+                )
+            else:
+                # Increment the counter
+                from src.core.research_project import update_project_field
+                await asyncio.to_thread(
+                    update_project_field, project_id, "screener_qualified_count", qualified_count + 1
+                )
+
+        return {"qualified": result["qualified"], "message": result["message"]}
+    except Exception as exc:
+        logger.exception("Screener evaluation failed")
         raise HTTPException(500, str(exc))
 
 

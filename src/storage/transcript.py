@@ -41,6 +41,17 @@ class TranscriptManager:
         doc = db.collection(TRANSCRIPTS).document(session_id).get()
         return doc.to_dict() if doc.exists else None
 
+    def update_quality(self, session_id: str, quality: dict) -> None:
+        """Persist quality score fields onto an existing transcript document."""
+        db.collection(TRANSCRIPTS).document(session_id).update({
+            "quality_score":  quality.get("score"),
+            "quality_label":  quality.get("label"),
+            "quality_flags":  quality.get("flags", []),
+            "quality_details": quality.get("details", {}),
+            "quality_ai_summary": quality.get("ai_summary"),
+        })
+        logger.info(f"Quality score saved for {session_id}: {quality.get('score')} ({quality.get('label')})")
+
     def list_transcripts(self) -> List[Dict]:
         """List all saved transcripts with summary metadata."""
         docs = db.collection(TRANSCRIPTS).order_by(
@@ -55,5 +66,7 @@ class TranscriptManager:
                 "ended_at":      d.get("ended_at"),
                 "turn_count":    d.get("turn_count", 0),
                 "project_id":    d.get("metadata", {}).get("project_id"),
+                "quality_score": d.get("quality_score"),
+                "quality_label": d.get("quality_label"),
             })
         return results
