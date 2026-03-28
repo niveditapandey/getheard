@@ -24,7 +24,7 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
-from src.storage.firestore_db import get_db
+from src.storage.firestore_db import db
 
 logger = logging.getLogger(__name__)
 
@@ -302,7 +302,6 @@ def generate_report(
 
     # Save to Firestore (production persistence, survives Cloud Run restarts)
     try:
-        db = get_db()
         db.collection("reports").document(report_id).set(report)
         logger.info(f"Report {report_id} saved to Firestore")
     except Exception as e:
@@ -315,7 +314,6 @@ def generate_report(
 def load_report(report_id: str) -> Optional[dict]:
     """Load report from Firestore first, fall back to local JSON."""
     try:
-        db = get_db()
         doc = db.collection("reports").document(report_id).get()
         if doc.exists:
             return doc.to_dict()
@@ -331,7 +329,6 @@ def load_report(report_id: str) -> Optional[dict]:
 def list_reports() -> List[dict]:
     """List all reports from Firestore first, fall back to local JSON."""
     try:
-        db = get_db()
         docs = db.collection("reports").order_by("generated_at", direction="DESCENDING").limit(50).stream()
         results = []
         for doc in docs:
