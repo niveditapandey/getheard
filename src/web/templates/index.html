@@ -4,47 +4,63 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GetHeard – Voice Interview Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --brand: #1e3c72;
-      --brand-dark: #152d56;
-      --danger: #ef4444;
-      --success: #22c55e;
-      --bg: #f0f4f8;
-      --surface: #ffffff;
-      --text: #1e1b4b;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --radius: 16px;
-      --shadow: 0 8px 32px rgba(30,60,114,.12);
+      --bg:#050d1f;--card:#0a1628;--card-border:rgba(255,255,255,0.08);
+      --muted:#1e2d45;--accent:#3b82f6;--accent-bright:#60a5fa;
+      --text:rgba(255,255,255,0.92);--text-muted:rgba(255,255,255,0.58);
+      --text-dim:rgba(255,255,255,0.35);--input-bg:#0f1f3a;
+      --input-border:rgba(255,255,255,0.1);--glow:rgba(59,130,246,0.15);
+      --danger:#f87171;--success:#10d48e;--warning:#f59e0b;--radius:16px;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
+      position: relative;
+    }
+    body::before {
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+      background-size:60px 60px;
+    }
+    body::after {
+      content:'';position:fixed;top:0;right:0;width:60vw;height:60vh;
+      pointer-events:none;z-index:0;
+      background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 60%);
     }
 
     .card {
-      background: var(--surface);
+      background: var(--card);
+      border: 1px solid var(--card-border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       width: 100%;
       max-width: 620px;
       padding: 40px;
+      position: relative;
+      z-index: 1;
     }
 
     /* ── Header ── */
     .header { text-align: center; margin-bottom: 32px; }
     .logo { font-size: 2.4rem; }
-    h1 { font-size: 1.75rem; color: var(--text); margin-bottom: 4px; }
-    .tagline { color: var(--muted); font-size: .9rem; }
+    h1 {
+      font-size: 1.75rem; font-weight: 800; margin-bottom: 4px;
+    }
+    .wordmark .accent { color: var(--accent-bright); }
+    .tagline { color: var(--text-muted); font-size: .9rem; }
 
     /* ── Language picker ── */
     .lang-grid {
@@ -54,22 +70,23 @@
       margin-bottom: 28px;
     }
     .lang-btn {
-      border: 2px solid var(--border);
-      background: var(--surface);
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
       border-radius: 12px;
       padding: 10px 8px;
       cursor: pointer;
       font-size: .82rem;
       font-weight: 500;
-      color: var(--text);
+      color: var(--text-muted);
       transition: all .2s;
       text-align: center;
+      font-family: 'Inter', sans-serif;
     }
-    .lang-btn:hover { border-color: var(--brand); background: #eaf0f9; }
+    .lang-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(59,130,246,0.08); }
     .lang-btn.active {
-      border-color: var(--brand);
-      background: #dce8f5;
-      color: var(--brand-dark);
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.15);
+      color: var(--accent-bright);
     }
 
     /* ── Status bar ── */
@@ -83,14 +100,15 @@
       font-weight: 500;
       font-size: .9rem;
       transition: background .3s, color .3s;
+      border: 1px solid transparent;
     }
-    .status-bar.idle    { background: #f3f4f6; color: var(--muted); }
-    .status-bar.ready   { background: #f0fdf4; color: #16a34a; }
-    .status-bar.listening{ background: #fff7ed; color: #ea580c; }
-    .status-bar.thinking{ background: #eff6ff; color: #2563eb; }
-    .status-bar.speaking{ background: #eaf0f9; color: #1e3c72; }
-    .status-bar.done    { background: #f0fdf4; color: #15803d; }
-    .status-bar.error   { background: #fef2f2; color: var(--danger); }
+    .status-bar.idle     { background: var(--muted); color: var(--text-muted); border-color: var(--card-border); }
+    .status-bar.ready    { background: rgba(16,212,142,0.12); color: var(--success); border-color: rgba(16,212,142,0.25); }
+    .status-bar.listening{ background: rgba(245,158,11,0.12); color: var(--warning); border-color: rgba(245,158,11,0.25); }
+    .status-bar.thinking { background: rgba(59,130,246,0.12); color: var(--accent-bright); border-color: var(--glow); }
+    .status-bar.speaking { background: rgba(59,130,246,0.12); color: var(--accent-bright); border-color: var(--glow); }
+    .status-bar.done     { background: rgba(16,212,142,0.12); color: var(--success); border-color: rgba(16,212,142,0.25); }
+    .status-bar.error    { background: rgba(248,113,113,0.12); color: var(--danger); border-color: rgba(248,113,113,0.25); }
 
     .dot {
       width: 10px; height: 10px;
@@ -112,16 +130,17 @@
       font-weight: 600;
       cursor: pointer;
       transition: all .2s;
+      font-family: 'Inter', sans-serif;
     }
     .btn:disabled { opacity: .4; cursor: not-allowed; }
-    .btn-primary { background: var(--brand); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: var(--brand-dark); transform: translateY(-1px); }
-    .btn-record  { background: #fee2e2; color: var(--danger); }
-    .btn-record:hover:not(:disabled) { background: #fca5a5; }
-    .btn-record.recording { background: var(--danger); color: #fff; animation: rec-pulse 1s infinite; }
-    @keyframes rec-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
-    .btn-stop { background: #f3f4f6; color: var(--muted); }
-    .btn-stop:hover:not(:disabled) { background: #e5e7eb; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-bright); transform: translateY(-1px); }
+    .btn-record  { background: rgba(248,113,113,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
+    .btn-record:hover:not(:disabled) { background: rgba(248,113,113,0.25); }
+    .btn-record.recording { background: var(--danger); color: #fff; border-color: var(--danger); animation: rec-pulse 1s infinite; }
+    @keyframes rec-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.4)} 50%{box-shadow:0 0 0 8px rgba(248,113,113,0)} }
+    .btn-stop { background: var(--muted); color: var(--text-muted); border: 1px solid var(--card-border); }
+    .btn-stop:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: var(--text); }
 
     /* ── Provider badge ── */
     .provider-badges {
@@ -129,17 +148,19 @@
     }
     .badge {
       font-size: .72rem; font-weight: 600; padding: 4px 10px;
-      border-radius: 999px; background: #dce8f5; color: var(--brand-dark);
+      border-radius: 999px; background: rgba(59,130,246,0.15);
+      color: var(--accent-bright); border: 1px solid rgba(59,130,246,0.25);
     }
 
     /* ── Transcript ── */
     .transcript-section { display: none; }
     .transcript-section h3 {
-      font-size: 1rem; color: var(--muted); font-weight: 600;
+      font-size: 1rem; color: var(--text-muted); font-weight: 600;
       margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
     }
     .messages {
-      background: #f9fafb;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 16px;
       max-height: 320px;
@@ -156,12 +177,13 @@
       max-width: 90%;
     }
     .msg.interviewer {
-      background: #dce8f5; color: var(--brand-dark);
+      background: var(--muted); color: var(--text);
+      border: 1px solid var(--card-border);
       align-self: flex-start;
       border-bottom-left-radius: 4px;
     }
     .msg.respondent {
-      background: #dcfce7; color: #15803d;
+      background: var(--accent); color: #fff;
       align-self: flex-end;
       border-bottom-right-radius: 4px;
     }
@@ -174,7 +196,34 @@
     /* Scrollbar */
     .messages::-webkit-scrollbar { width: 6px; }
     .messages::-webkit-scrollbar-track { background: transparent; }
-    .messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 999px; }
+
+    /* ── Stimulus panel ── */
+    .stimulus-panel {
+      display: none;
+      border: 1px solid rgba(96,165,250,0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      background: rgba(59,130,246,0.08);
+      animation: stimFadeIn .35s ease;
+    }
+    @keyframes stimFadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .stimulus-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 14px; background: rgba(59,130,246,0.15); font-size: 12px;
+      font-weight: 600; color: var(--accent-bright);
+    }
+    .stimulus-header button {
+      background: none; border: none; font-size: 16px; cursor: pointer;
+      color: var(--text-muted); line-height: 1;
+    }
+    .stimulus-header button:hover { color: var(--text); }
+    .stimulus-body { padding: 12px; }
+    .stimulus-body img { width: 100%; border-radius: 8px; display: block; }
+    .stimulus-body iframe {
+      width: 100%; border: none; border-radius: 8px; min-height: 300px;
+    }
   </style>
 </head>
 <body>
@@ -182,7 +231,7 @@
 
   <div class="header">
     <div class="logo">🎙️</div>
-    <h1>GetHeard</h1>
+    <h1 class="wordmark"><span class="accent">Get</span>Heard</h1>
     <p class="tagline">AI-powered voice research interviews · 9 Asian languages</p>
   </div>
 
@@ -215,6 +264,15 @@
     <button class="btn btn-stop"    id="btnStop"   onclick="resetSession()" disabled>✕ End</button>
   </div>
 
+  <!-- Stimulus panel (shown when current question has a stimulus_url) -->
+  <div class="stimulus-panel" id="stimulusPanel">
+    <div class="stimulus-header">
+      <span id="stimulusLabel">📎 Please review the following</span>
+      <button onclick="hideStimulus()" title="Dismiss">✕</button>
+    </div>
+    <div class="stimulus-body" id="stimulusBody"></div>
+  </div>
+
   <!-- Transcript -->
   <div class="transcript-section" id="transcriptSection">
     <h3>💬 Conversation</h3>
@@ -228,13 +286,15 @@
 
 <script>
   // ── State ──────────────────────────────────────────────────────────────────
-  let selectedLang = 'en';
-  let sessionId    = null;
-  let projectId    = null;
-  let mediaRecorder= null;
-  let audioChunks  = [];
-  let isRecording  = false;
-  let isProcessing = false;
+  let selectedLang       = 'en';
+  let sessionId          = null;
+  let projectId          = null;
+  let mediaRecorder      = null;
+  let audioChunks        = [];
+  let isRecording        = false;
+  let isProcessing       = false;
+  let projectQuestions   = [];   // loaded on start, may have stimulus_url per question
+  let currentQuestionIdx = 0;
 
   // ── Read URL params (project_id, language) ─────────────────────────────────
   (function initFromUrl() {
@@ -244,8 +304,8 @@
       projectId = p.get('project_id');
       // Show project banner
       const banner = document.createElement('div');
-      banner.style.cssText = 'background:#ebf8ff;border:1px solid #bee3f8;border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#2b6cb0;display:flex;align-items:center;gap:8px;';
-      banner.innerHTML = `📋 <strong>Project interview</strong> — custom questions loaded &nbsp;<a href="/projects/${projectId}" style="color:#2b6cb0;font-size:12px">← back to project</a>`;
+      banner.style.cssText = 'background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:var(--accent-bright);display:flex;align-items:center;gap:8px;';
+      banner.innerHTML = `📋 <strong>Project interview</strong> — custom questions loaded &nbsp;<a href="/projects/${projectId}" style="color:var(--accent-bright);font-size:12px">← back to project</a>`;
       document.querySelector('.card').insertBefore(banner, document.querySelector('.lang-grid'));
     }
   })();
@@ -327,6 +387,10 @@
       const data = await res.json();
 
       sessionId = data.session_id;
+      projectQuestions = data.project_questions || [];
+      currentQuestionIdx = 0;
+      // Show stimulus for Q0 if it has one
+      _maybeShowStimulus(0);
 
       // Show provider badges
       const badges = document.getElementById('providerBadges');
@@ -463,6 +527,12 @@
       // Show user transcript
       if (data.transcript) addMessage('respondent', data.transcript);
 
+      // Show stimulus if question changed
+      if (typeof data.current_question_idx === 'number' && data.current_question_idx !== currentQuestionIdx) {
+        currentQuestionIdx = data.current_question_idx;
+        _maybeShowStimulus(currentQuestionIdx);
+      }
+
       // Get and show AI response text (load fresh history)
       const history = await fetchHistory();
       const lastAI = [...history].reverse().find(m => m.speaker === 'interviewer');
@@ -492,6 +562,54 @@
     }
   }
 
+  // ── Stimulus ───────────────────────────────────────────────────────────────
+  function _maybeShowStimulus(idx) {
+    const q = projectQuestions[idx];
+    if (q && q.stimulus_url) {
+      showStimulus(q.stimulus_url, q.stimulus_label || 'Please review the following');
+    } else {
+      hideStimulus();
+    }
+  }
+
+  function showStimulus(url, label) {
+    const panel = document.getElementById('stimulusPanel');
+    const body  = document.getElementById('stimulusBody');
+    document.getElementById('stimulusLabel').textContent = '📎 ' + (label || 'Please review the following');
+    body.innerHTML = _stimulusEmbed(url);
+    panel.style.display = '';
+  }
+
+  function hideStimulus() {
+    document.getElementById('stimulusPanel').style.display = 'none';
+    document.getElementById('stimulusBody').innerHTML = '';
+  }
+
+  function _stimulusEmbed(url) {
+    if (!url) return '';
+    // Image
+    if (/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url)) {
+      return `<img src="${escHtml(url)}" alt="Stimulus" loading="lazy">`;
+    }
+    // YouTube
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (ytMatch) {
+      return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" height="320" allowfullscreen></iframe>`;
+    }
+    // Loom
+    const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+    if (loomMatch) {
+      return `<iframe src="https://www.loom.com/embed/${loomMatch[1]}" height="320" allowfullscreen></iframe>`;
+    }
+    // Figma — convert share URL to embed URL
+    if (url.includes('figma.com')) {
+      const embedUrl = url.includes('embed') ? url : `https://www.figma.com/embed?embed_host=getheard&url=${encodeURIComponent(url)}`;
+      return `<iframe src="${escHtml(embedUrl)}" height="420" allowfullscreen></iframe>`;
+    }
+    // Generic iframe fallback
+    return `<iframe src="${escHtml(url)}" height="360"></iframe>`;
+  }
+
   // ── Reset ──────────────────────────────────────────────────────────────────
   async function resetSession() {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
@@ -499,10 +617,13 @@
     if (sessionId) {
       try { await fetch(`/api/end/${sessionId}`, { method: 'POST' }); } catch(e) {}
     }
-    sessionId    = null;
-    isRecording  = false;
-    isProcessing = false;
-    audioChunks  = [];
+    sessionId          = null;
+    isRecording        = false;
+    isProcessing       = false;
+    audioChunks        = [];
+    projectQuestions   = [];
+    currentQuestionIdx = 0;
+    hideStimulus();
 
     document.getElementById('btnStart').disabled   = false;
     document.getElementById('btnRecord').disabled  = true;

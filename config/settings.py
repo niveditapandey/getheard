@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     )
     
     # Google Cloud / Vertex AI Configuration
-    gcp_project_id: str = Field(..., description="Google Cloud Project ID")
+    gcp_project_id: str = Field(default="getheard-484014", description="Google Cloud Project ID")
     gemini_model: str = Field(
         default="gemini-2.5-flash",
         description="Default Gemini model (fast — used for real-time voice and chat)"
@@ -75,9 +75,10 @@ class Settings(BaseSettings):
     resend_from_email: str = Field(default="hello@getheard.space", description="From address for outbound emails")
 
     # WhatsApp Business API (Meta)
-    whatsapp_phone_number_id: str = Field(default="", description="WhatsApp Business Phone Number ID from Meta Business Manager")
-    whatsapp_business_id: str = Field(default="", description="WhatsApp Business Account ID from Meta Business Manager")
+    whatsapp_phone_number_id: str = Field(default="985230514675305", description="WhatsApp Business Phone Number ID from Meta Business Manager")
+    whatsapp_business_id: str = Field(default="2332652903923836", description="WhatsApp Business Account ID from Meta Business Manager")
     whatsapp_access_token: str = Field(default="", description="WhatsApp Business API access token from Meta")
+    whatsapp_verify_token: str = Field(default="getheard-verify-2026", description="Meta webhook verification token — set same value in Meta Developer console")
     
     # Voice Provider Selection
     voice_provider: str = Field(

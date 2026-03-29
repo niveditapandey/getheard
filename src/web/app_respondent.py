@@ -31,7 +31,7 @@ from src.storage.points_store import (
     EXCHANGE_RATES,
     MIN_REDEMPTION_POINTS,
 )
-from src.storage.respondent_store import get_respondent, list_respondents
+from src.storage.respondent_store import get_respondent, list_respondents, _find_by_phone
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +84,23 @@ async def respondent_profile_page(phone: str):
 async def respondent_rewards_page(respondent_id: str):
     """Respondent rewards/points dashboard."""
     return _html("respondent_rewards.html")
+
+
+# ── Respondent Lookup ─────────────────────────────────────────────────────────
+
+@router.get("/api/respondents/by-phone/{phone}")
+async def api_respondent_by_phone(phone: str):
+    """Look up a respondent by phone number (used by the profile page)."""
+    r = _find_by_phone(phone)
+    if not r:
+        # Try stripping non-digits and retry
+        clean = "".join(c for c in phone if c.isdigit() or c == "+")
+        r = _find_by_phone(clean)
+    if not r:
+        raise HTTPException(404, "Respondent not found")
+    # Never return sensitive fields
+    r.pop("sensitive", None)
+    return r
 
 
 # ── Points API ────────────────────────────────────────────────────────────────

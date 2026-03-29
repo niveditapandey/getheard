@@ -43,10 +43,29 @@ def detect_language(text: str) -> str:
 class WhatsAppSession:
     """Tracks a single WhatsApp interview session."""
 
-    def __init__(self, phone_number: str, language: str = "en"):
+    def __init__(self, phone_number: str, language: str = "en", project_id: Optional[str] = None):
         self.phone_number = phone_number
         self.language = language
-        self.interviewer = GeminiInterviewer(language_code=language)
+        self.project_id = project_id
+
+        custom_questions = None
+        project_name = None
+        if project_id:
+            try:
+                from src.core.research_project import get_project
+                proj = get_project(project_id)
+                if proj:
+                    custom_questions = proj.questions
+                    project_name = proj.name
+                    logger.info(f"[WA] Loaded {len(custom_questions)} questions from project '{project_name}'")
+            except Exception as e:
+                logger.warning(f"[WA] Could not load project {project_id}: {e}")
+
+        self.interviewer = GeminiInterviewer(
+            language_code=language,
+            custom_questions=custom_questions,
+            project_name=project_name,
+        )
         self.started = False
 
     def start(self) -> str:
@@ -109,11 +128,21 @@ class WhatsAppInterviewManager:
 
         # ── New session ───────────────────────────────────────────
         if from_number not in self.sessions:
-            lang = detect_language(text)
-            session = WhatsAppSession(from_number, language=lang)
+            project_id = None
+            # Support "START <project_id>" to route into a specific study
+            if lower.startswith("start"):
+                parts = text.split(None, 1)
+                if len(parts) > 1:
+                    project_id = parts[1].strip()
+                    lang = "en"
+                else:
+                    lang = detect_language(text)
+            else:
+                lang = detect_language(text)
+            session = WhatsAppSession(from_number, language=lang, project_id=project_id)
             self.sessions[from_number] = session
             greeting = session.start()
-            logger.info(f"[WA] New session {from_number} lang={lang}")
+            logger.info(f"[WA] New session {from_number} lang={lang} project={project_id}")
             return greeting
 
         # ── Existing session ──────────────────────────────────────
@@ -149,15 +178,46 @@ class WhatsAppInterviewManager:
         session = self.sessions.pop(from_number, None)
         if not session:
             return
+        session_id = from_number.replace("whatsapp:", "").replace("+", "")
         try:
             self.transcript_manager.save(
-                session_id=from_number.replace("whatsapp:", "").replace("+", ""),
+                session_id=session_id,
                 language_code=session.language,
                 conversation=session.history(),
-                metadata={"channel": "whatsapp", "phone_number": from_number},
+                metadata={
+                    "channel": "whatsapp",
+                    "phone_number": from_number,
+                    "project_id": session.project_id,
+                },
             )
+            # Register session in the project record
+            if session.project_id:
+                try:
+                    from src.core.research_project import get_project
+                    proj = get_project(session.project_id)
+                    if proj:
+                        proj.add_session(session_id)
+                except Exception as e:
+                    logger.warning(f"[WA] add_session failed: {e}")
         except Exception as e:
             logger.error(f"[WA] Failed to save transcript: {e}")
+
+        # Auto-credit points if respondent is enrolled in the panel
+        try:
+            clean_phone = from_number.replace("whatsapp:", "")
+            from src.storage.respondent_store import _find_by_phone
+            respondent = _find_by_phone(clean_phone)
+            if respondent:
+                from src.storage.points_store import add_points
+                add_points(
+                    respondent_id=respondent["respondent_id"],
+                    amount=50,
+                    reason="WhatsApp interview completed",
+                    study_id=session.project_id or "",
+                )
+                logger.info(f"[WA] Credited 50 pts to respondent {respondent['respondent_id']}")
+        except Exception as e:
+            logger.warning(f"[WA] Points credit failed: {e}")
 
     # ── Stats ─────────────────────────────────────────────────────
     def active_count(self) -> int:

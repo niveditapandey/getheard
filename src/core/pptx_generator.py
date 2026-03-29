@@ -32,6 +32,24 @@ logger = logging.getLogger(__name__)
 # ── Brand colours ──────────────────────────────────────────────────────────────
 NAVY   = RGBColor(0x1e, 0x3c, 0x72)
 NAVY_D = RGBColor(0x0f, 0x22, 0x44)
+
+
+def _parse_hex(hex_str: str) -> RGBColor:
+    """Parse '#rrggbb' → RGBColor. Falls back to NAVY on any error."""
+    try:
+        h = hex_str.lstrip("#")
+        if len(h) == 6:
+            return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+    except Exception:
+        pass
+    return NAVY
+
+
+def _accent(branding: Optional[dict]) -> RGBColor:
+    """Return the primary brand accent colour (or default navy)."""
+    if branding and branding.get("brand_color"):
+        return _parse_hex(branding["brand_color"])
+    return NAVY
 WHITE  = RGBColor(0xFF, 0xFF, 0xFF)
 GRAY   = RGBColor(0x6b, 0x72, 0x80)
 LGRAY  = RGBColor(0xf0, 0xf4, 0xf8)
@@ -84,9 +102,10 @@ def _txt(slide, text: str, l, t, w, h, size: int, bold=False, color=WHITE,
     return txb
 
 
-def _header_band(slide, title: str, subtitle: str = ""):
-    """Dark navy band at top of slide with title."""
-    _rect(slide, 0, 0, SLIDE_W, Cm(3.6), NAVY_D)
+def _header_band(slide, title: str, subtitle: str = "", accent: RGBColor = None):
+    """Dark band at top of slide with title. Uses accent colour."""
+    band_color = accent or NAVY_D
+    _rect(slide, 0, 0, SLIDE_W, Cm(3.6), band_color)
     _txt(slide, title, Cm(1.2), Cm(0.5), Cm(28), Cm(1.8),
          size=22, bold=True, color=WHITE)
     if subtitle:
@@ -130,14 +149,17 @@ def _freq_bar(slide, label: str, pct: float, row: int, color: RGBColor):
 
 # ── Slides ──────────────────────────────────────────────────────────────────────
 
-def _slide_title(prs, report: dict):
+def _slide_title(prs, report: dict, branding: Optional[dict] = None):
     slide = _blank_slide(prs)
-    # Full-bleed navy background
+    brand_color = _accent(branding)
+    # Full-bleed background using brand colour (darkened via NAVY_D fallback)
     _rect(slide, 0, 0, SLIDE_W, SLIDE_H, NAVY_D)
-    # Accent stripe
-    _rect(slide, 0, Cm(12), SLIDE_W, Cm(0.25), GREEN)
-    # GetHeard logo text
-    _txt(slide, "🎙 GetHeard", Cm(1.5), Cm(1.2), Cm(12), Cm(1.5),
+    # Accent stripe using brand colour
+    _rect(slide, 0, Cm(12), SLIDE_W, Cm(0.25), brand_color)
+    # Brand/client name if provided
+    brand_name = branding.get("brand_name", "") if branding else ""
+    brand_label = f"🎙 GetHeard" + (f"  ·  {brand_name}" if brand_name else "")
+    _txt(slide, brand_label, Cm(1.5), Cm(1.2), Cm(20), Cm(1.5),
          size=16, bold=True, color=RGBColor(0x93, 0xc5, 0xfd))
     # Project name
     _txt(slide, report.get("project_name", "Research Report"),
@@ -158,13 +180,16 @@ def _slide_title(prs, report: dict):
     _txt(slide, "  |  ".join(meta), Cm(1.5), Cm(12.5), Cm(28), Cm(1.2),
          size=11, color=RGBColor(0x7d, 0xa0, 0xd0))
     # Confidential footer
-    _txt(slide, "Confidential — Prepared by GetHeard", Cm(1.5), Cm(17.5), Cm(28), Cm(1),
+    conf_text = "Confidential — Prepared by GetHeard"
+    if brand_name:
+        conf_text = f"Confidential — Prepared for {brand_name} by GetHeard"
+    _txt(slide, conf_text, Cm(1.5), Cm(17.5), Cm(28), Cm(1),
          size=9, color=RGBColor(0x4a, 0x6a, 0x9a), italic=True)
 
 
-def _slide_exec_summary(prs, report: dict):
+def _slide_exec_summary(prs, report: dict, branding: Optional[dict] = None):
     slide = _blank_slide(prs)
-    _header_band(slide, "Executive Summary")
+    _header_band(slide, "Executive Summary", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
     summary = report.get("executive_summary", "No summary available.")
     # Split into paragraphs — show first ~600 chars across 2 columns
@@ -185,9 +210,9 @@ def _slide_exec_summary(prs, report: dict):
              size=9, color=GRAY, italic=True, wrap=True)
 
 
-def _slide_at_a_glance(prs, report: dict):
+def _slide_at_a_glance(prs, report: dict, branding: Optional[dict] = None):
     slide = _blank_slide(prs)
-    _header_band(slide, "At a Glance", "Key metrics from this study")
+    _header_band(slide, "At a Glance", "Key metrics from this study", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     # Big key stat
@@ -236,12 +261,12 @@ def _slide_at_a_glance(prs, report: dict):
              size=11, color=RGBColor(0x1f, 0x29, 0x37), wrap=True, italic=True)
 
 
-def _slide_personas(prs, report: dict):
+def _slide_personas(prs, report: dict, branding: Optional[dict] = None):
     personas = report.get("personas", [])
     if not personas:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Respondent Personas", "Behavioral archetypes derived from the interview data")
+    _header_band(slide, "Respondent Personas", "Behavioral archetypes derived from the interview data", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     avatars = ["👤", "👥", "🧑‍💼", "👩‍💻"]
@@ -276,12 +301,12 @@ def _slide_personas(prs, report: dict):
                  card_w - Cm(0.8), Cm(4.1), size=9, color=NAVY, italic=True, wrap=True)
 
 
-def _slide_themes(prs, report: dict):
+def _slide_themes(prs, report: dict, branding: Optional[dict] = None):
     themes = report.get("key_themes", [])
     if not themes:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Key Themes", f"Top {len(themes)} themes identified across interviews")
+    _header_band(slide, "Key Themes", f"Top {len(themes)} themes identified across interviews", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     max_freq = max((t.get("frequency", 1) for t in themes), default=1)
@@ -304,12 +329,12 @@ def _slide_themes(prs, report: dict):
         _pill(slide, sent, Cm(29), y + Cm(0.1), color, size=8)
 
 
-def _slide_emotional_journey(prs, report: dict):
+def _slide_emotional_journey(prs, report: dict, branding: Optional[dict] = None):
     journey = report.get("emotional_journey", [])
     if not journey:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Emotional Journey", "How respondents felt across the interview stages")
+    _header_band(slide, "Emotional Journey", "How respondents felt across the interview stages", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     emotion_icons = {
@@ -341,12 +366,12 @@ def _slide_emotional_journey(prs, report: dict):
              size=10, color=RGBColor(0x37, 0x41, 0x51), wrap=True)
 
 
-def _slide_pain_points(prs, report: dict):
+def _slide_pain_points(prs, report: dict, branding: Optional[dict] = None):
     pains = report.get("pain_points", [])
     if not pains:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Pain Points", "Friction and frustrations identified across respondents")
+    _header_band(slide, "Pain Points", "Friction and frustrations identified across respondents", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     for i, p in enumerate(pains[:7]):
@@ -368,12 +393,12 @@ def _slide_pain_points(prs, report: dict):
                  Cm(28), Cm(0.7), size=9, color=GRAY, italic=True)
 
 
-def _slide_recommendations(prs, report: dict):
+def _slide_recommendations(prs, report: dict, branding: Optional[dict] = None):
     recs = report.get("recommendations", [])
     if not recs:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Recommendations", "Prioritised actions based on research findings")
+    _header_band(slide, "Recommendations", "Prioritised actions based on research findings", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     # Sort by priority
@@ -399,12 +424,12 @@ def _slide_recommendations(prs, report: dict):
                  Cm(28), Cm(0.65), size=9, color=NAVY)
 
 
-def _slide_opportunity_matrix(prs, report: dict):
+def _slide_opportunity_matrix(prs, report: dict, branding: Optional[dict] = None):
     opps = report.get("opportunity_matrix", [])
     if not opps:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Opportunity Matrix", "Impact vs effort — where to focus next")
+    _header_band(slide, "Opportunity Matrix", "Impact vs effort — where to focus next", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     cat_colors = {"quick_win": GREEN, "strategic": BLUE, "fill_in": GRAY, "backburner": AMBER}
@@ -431,12 +456,12 @@ def _slide_opportunity_matrix(prs, report: dict):
                  Cm(19), Cm(0.6), size=8, color=NAVY)
 
 
-def _slide_quotes(prs, report: dict):
+def _slide_quotes(prs, report: dict, branding: Optional[dict] = None):
     quotes = report.get("notable_quotes", [])
     if not quotes:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Notable Quotes", "Verbatim voices from respondents")
+    _header_band(slide, "Notable Quotes", "Verbatim voices from respondents", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
 
     sent_stripe = {"positive": GREEN, "negative": RED, "neutral": NAVY}
@@ -461,25 +486,28 @@ def _slide_quotes(prs, report: dict):
              card_w - Cm(0.8), Cm(0.6), size=8, color=GRAY)
 
 
-def _slide_gaps(prs, report: dict):
+def _slide_gaps(prs, report: dict, branding: Optional[dict] = None):
     gaps = report.get("research_gaps", [])
     if not gaps:
         return
     slide = _blank_slide(prs)
-    _header_band(slide, "Research Gaps & Next Steps", "Areas for follow-up investigation")
+    _header_band(slide, "Research Gaps & Next Steps", "Areas for follow-up investigation", accent=_accent(branding))
     _rect(slide, 0, Cm(3.6), SLIDE_W, SLIDE_H - Cm(3.6), LGRAY)
     _bullet_box(slide, [f"{g}" for g in gaps[:8]],
                 Cm(1.5), Cm(4.2), Cm(30), Cm(12),
                 size=13, color=RGBColor(0x92, 0x40, 0x0e))
 
 
-def _slide_thankyou(prs, report: dict):
+def _slide_thankyou(prs, report: dict, branding: Optional[dict] = None):
     slide = _blank_slide(prs)
+    brand_color = _accent(branding)
     _rect(slide, 0, 0, SLIDE_W, SLIDE_H, NAVY_D)
-    _rect(slide, 0, Cm(8.5), SLIDE_W, Cm(0.2), GREEN)
+    _rect(slide, 0, Cm(8.5), SLIDE_W, Cm(0.2), brand_color)
     _txt(slide, "Thank You", Cm(1.5), Cm(5.0), Cm(28), Cm(4),
          size=44, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    _txt(slide, "Prepared by GetHeard · getheard.space",
+    brand_name = branding.get("brand_name", "") if branding else ""
+    prepared_line = f"Prepared for {brand_name} by GetHeard · getheard.space" if brand_name else "Prepared by GetHeard · getheard.space"
+    _txt(slide, prepared_line,
          Cm(1.5), Cm(10.5), Cm(28), Cm(1.5),
          size=14, color=RGBColor(0x7d, 0xa0, 0xd0), align=PP_ALIGN.CENTER)
     _txt(slide, "Questions? Contact us to run follow-up research.",
@@ -489,26 +517,27 @@ def _slide_thankyou(prs, report: dict):
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
-def generate_pptx(report: dict) -> bytes:
+def generate_pptx(report: dict, branding: Optional[dict] = None) -> bytes:
     """
     Convert a report dict into a branded .pptx and return as bytes.
+    Pass `branding` dict with optional keys: brand_name, brand_color, logo_url.
     """
     prs = Presentation()
     prs.slide_width  = SLIDE_W
     prs.slide_height = SLIDE_H
 
-    _slide_title(prs, report)
-    _slide_exec_summary(prs, report)
-    _slide_at_a_glance(prs, report)
-    _slide_personas(prs, report)
-    _slide_themes(prs, report)
-    _slide_emotional_journey(prs, report)
-    _slide_pain_points(prs, report)
-    _slide_recommendations(prs, report)
-    _slide_opportunity_matrix(prs, report)
-    _slide_quotes(prs, report)
-    _slide_gaps(prs, report)
-    _slide_thankyou(prs, report)
+    _slide_title(prs, report, branding)
+    _slide_exec_summary(prs, report, branding)
+    _slide_at_a_glance(prs, report, branding)
+    _slide_personas(prs, report, branding)
+    _slide_themes(prs, report, branding)
+    _slide_emotional_journey(prs, report, branding)
+    _slide_pain_points(prs, report, branding)
+    _slide_recommendations(prs, report, branding)
+    _slide_opportunity_matrix(prs, report, branding)
+    _slide_quotes(prs, report, branding)
+    _slide_gaps(prs, report, branding)
+    _slide_thankyou(prs, report, branding)
 
     buf = io.BytesIO()
     prs.save(buf)

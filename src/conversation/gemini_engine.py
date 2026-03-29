@@ -29,6 +29,120 @@ LANGUAGE_NAMES = {
     "ko": "Korean", "ja": "Japanese", "zh": "Mandarin Chinese",
 }
 
+# ── Cultural prompting overlays ───────────────────────────────────────────────
+# Each entry adds language-specific interviewing intelligence to the system prompt.
+# These handle indirect communication norms that cause respondents to mask genuine
+# opinions — the core Asian market differentiator vs. Western research tools.
+
+CULTURAL_PROMPTS = {
+    "ja": """
+CULTURAL INTELLIGENCE — JAPANESE RESPONDENTS:
+Japanese respondents operate under strong face-saving (面子/mentsu) norms and will rarely criticise directly.
+Key signals to watch for:
+- "まあまあ" (maa maa / "so-so") — almost always means dissatisfied; probe gently
+- "大丈夫です" (daijoubu / "it's fine") — often masks a problem; never accept at face value
+- Silence or hesitation after a question — sign of a real concern being suppressed
+- Overly polite praise followed by a "but..." — the "but" contains the real insight
+
+Techniques to draw out honest opinions:
+- Use improvement framing: "もっと良くなるとしたら、何が変わると良いですか？" (What would make it even better?)
+- Hypothetical: "もし友人に勧めるとしたら、何と言いますか？" (If you recommended it to a friend, what would you say?)
+- Permission to criticise: "改善点を教えていただけると、とても助かります" (Your honest feedback helps us improve)
+- Never ask "Did you dislike it?" — ask "What could be more convenient?"
+After any "it was fine" response, always probe once more with an improvement-framed follow-up.""",
+
+    "ko": """
+CULTURAL INTELLIGENCE — KOREAN RESPONDENTS:
+Korean communication is shaped by kibun (기분 — emotional atmosphere) and nunchi (눈치 — social awareness).
+Respondents are unlikely to voice direct criticism, especially to someone perceived as an authority figure.
+Key signals:
+- "괜찮아요" (gwaenchanayo / "it's okay") — frequently masks dissatisfaction
+- Agreement early in the conversation doesn't mean genuine approval
+- Critical feedback often comes very indirectly, framed as suggestions
+
+Techniques:
+- Peer framing: "주변 친구들이 비슷한 경험을 했다면 뭐라고 할 것 같으세요?" (What would your friends say about a similar experience?)
+- Improvement ask: "어떻게 하면 더 좋아질 수 있을까요?" (How could this be improved?)
+- Third-person distancing: "다른 분들은 이런 부분을 불편해하시는 경우도 있는데, 혹시 비슷하게 느끼신 적 있으신가요?"
+After any vague positive answer, probe once for specifics or improvements.""",
+
+    "th": """
+CULTURAL INTELLIGENCE — THAI RESPONDENTS:
+Thai culture is deeply shaped by kreng jai (เกรงใจ — reluctance to impose, inconvenience, or criticise) and
+the "mai pen rai" (ไม่เป็นไร / "never mind, it's okay") attitude that minimises problems.
+Respondents will often smile and agree to avoid conflict or causing discomfort.
+Key signals:
+- "ก็โอเคนะ" / "ก็ดีนะ" ("it's okay" / "it's good") — almost always needs deeper probing
+- Short answers after long pauses — suppressed concern
+- Repeated "555" (Thai laughter text) to deflect discomfort
+
+Techniques:
+- Reassurance first: "ไม่มีคำตอบผิดหรือถูก ความคิดเห็นที่แท้จริงของคุณสำคัญที่สุด" (No wrong answers — your real opinion matters most)
+- Future framing: "ถ้าจะให้ดีขึ้นกว่านี้ คุณคิดว่าควรเปลี่ยนอะไร?" (If it were to improve, what would you change?)
+- Empathy bridge: "หลายคนบอกว่าบางส่วนไม่สะดวกนัก คุณรู้สึกแบบเดียวกันไหม?" (Many people say some parts are inconvenient — do you feel similarly?)
+Always probe once after a positive-sounding answer.""",
+
+    "vi": """
+CULTURAL INTELLIGENCE — VIETNAMESE RESPONDENTS:
+Vietnamese respondents value thể diện (face) and tend to give socially desirable answers, especially in early conversation.
+Direct criticism is uncommon; negative opinions emerge gradually if trust is established.
+Key signals:
+- "Bình thường" / "Cũng được" ("normal" / "okay") — probe deeper
+- Answers that focus heavily on positives while glossing over problems
+- Hedging phrases like "cũng có một số..." (there are some...) signal real concerns
+
+Techniques:
+- Trust-building: Acknowledge positives before probing negatives
+- Improvement ask: "Có điều gì bạn mong muốn được cải thiện không?" (Is there anything you'd like to see improved?)
+- Permission framing: "Ý kiến thật của bạn rất quý giá với chúng tôi, kể cả những điều chưa tốt" (Your honest opinion, including any negatives, is very valuable to us)
+- Hypothetical: "Nếu bạn có thể thay đổi một điều, đó sẽ là gì?" (If you could change one thing, what would it be?)""",
+
+    "hi": """
+CULTURAL INTELLIGENCE — HINDI/INDIAN RESPONDENTS:
+Indian respondents (especially in Hindi-speaking regions) often use "haan ji" (हाँ जी / yes) and "theek hai" (ठीक है / it's okay)
+as social lubricants rather than genuine agreement. Direct complaint to a service provider is culturally uncomfortable.
+Key signals:
+- "Theek tha" / "Acha tha" ("it was okay" / "it was good") after a negative experience
+- Over-enthusiasm or excessive politeness — may indicate social desirability bias
+- Deflection to fate/circumstances: "Aisa hi hota hai" (This is just how it is)
+
+Techniques:
+- Relatability: "Bahut log batate hain ki..." (Many people tell us that...) normalises complaints
+- Improvement ask: "Agar aap isko aur behtar banana chahte toh kya karte?" (If you wanted to make it even better, what would you do?)
+- Family framing: "Agar aapke ghar mein koi bimaar hota, toh aap kya chahte?" (If a family member were ill, what would you want?)
+- Validate frustration: "Bilkul samajh sakta hoon — agar koi takleef hui ho, batayein" (I completely understand — please share if there was any difficulty)""",
+
+    "id": """
+CULTURAL INTELLIGENCE — INDONESIAN RESPONDENTS:
+Indonesian communication style is halus (refined, indirect) and shaped by gotong royong (community harmony).
+Direct criticism feels rude (kasar); "tidak apa-apa" (it doesn't matter / it's fine) is used to smooth over problems.
+Key signals:
+- "Tidak apa-apa" / "Biasa saja" — almost always means something could be better
+- Respondents may agree with your reframings rather than volunteer their own view
+- Very positive initial answers often soften into the real experience with gentle follow-up
+
+Techniques:
+- Permission: "Tidak ada jawaban yang salah — pendapat jujur Anda sangat membantu kami" (No wrong answers — your honest opinion helps us most)
+- Improvement: "Kalau ada satu hal yang ingin Anda ubah, itu apa?" (If there's one thing you'd change, what would it be?)
+- Story invitation: "Ceritakan lebih lanjut tentang pengalaman itu" (Tell me more about that experience)
+- Normalise negatives: "Banyak orang mengalami situasi serupa, jadi tolong ceritakan dengan jujur" (Many people have similar situations, so please share openly)""",
+
+    "zh": """
+CULTURAL INTELLIGENCE — MANDARIN CHINESE RESPONDENTS:
+Mianzi (面子 / face) is central. Respondents avoid direct criticism, especially of institutions or authorities.
+Criticism comes through hedging, understatement, or framing as "suggestions".
+Key signals:
+- "还可以" / "还好" (hái kěyǐ / "still okay") — often masking real dissatisfaction
+- Focusing only on facts, not emotions — emotions are private; probe gently
+- "建议" (jiànyì / suggestion) = the real complaint framed politely
+
+Techniques:
+- Improvement framing: "如果有机会改进，您认为可以做哪些调整？" (If there were a chance to improve, what adjustments would you suggest?)
+- Hypothetical friend: "如果您的朋友有类似经历，您会给他们什么建议？" (What advice would you give a friend with a similar experience?)
+- Permission: "我们非常重视每一位用户的真实反馈，包括不满意的地方" (We value honest feedback, including areas of dissatisfaction)
+- Understatement probe: After "还可以", ask "有没有哪些地方您觉得还有提升空间？" (Were there any areas with room for improvement?)""",
+}
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -58,6 +172,11 @@ class GeminiInterviewer:
                 "After each user response, decide whether to probe deeper or move on. "
                 "You have a specific list of questions to cover — don't skip them."
             )
+
+        # Inject cultural intelligence overlay for indirect-communication languages
+        if language_code in CULTURAL_PROMPTS:
+            system += CULTURAL_PROMPTS[language_code]
+            logger.info(f"Cultural prompting active for language: {language_code}")
 
         # google-genai client — uses API key if set, else Vertex AI ADC
         if settings.gemini_api_key:

@@ -70,6 +70,8 @@ import sys
 from pathlib import Path
 from typing import Dict
 
+import httpx
+
 import uvicorn
 from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, Request, Security, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -83,10 +85,12 @@ from config.settings import settings
 from src.core.report_generator import generate_report, load_report, list_reports
 from src.core.research_agent import query_report, STARTER_QUERIES
 from src.core.pptx_generator import generate_pptx
+from src.core.pdf_generator import generate_pdf
 from src.core.screener import evaluate_screener, generate_screener_questions
 from src.core.quality_scorer import score_transcript
+from src.core.mission_control import query_mission_control, get_mission_overview, MISSION_STARTER_QUERIES
 from src.core.research_project import (
-    create_project, generate_questions, get_project, list_projects,
+    create_project, generate_questions, get_project, list_projects, update_project_field,
     RESEARCH_TYPES, INDUSTRIES, LANGUAGE_NAMES, VALID_QUESTION_COUNTS,
 )
 from src.storage.transcript import TranscriptManager
@@ -147,9 +151,15 @@ async def serve_landing():
     f = TEMPLATES / "landing.html"
     if f.exists():
         return HTMLResponse(f.read_text(encoding="utf-8"))
-    # Fallback to old interview UI if landing not built yet
     f = TEMPLATES / "index.html"
     return HTMLResponse(f.read_text(encoding="utf-8") if f.exists() else "<h1>GetHeard</h1>")
+
+
+@app.get("/landing", response_class=HTMLResponse)
+async def serve_landing_alias():
+    """Alias — /landing redirects to /"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/", status_code=301)
 
 
 @app.get("/join", response_class=HTMLResponse)
@@ -227,6 +237,13 @@ async def start_interview(
                 import asyncio
                 await asyncio.to_thread(proj.add_session, pipeline.session_id)
 
+        # Expose project questions (with stimulus_url) so UI can show stimuli
+        project_questions = []
+        if project_id:
+            proj = get_project(project_id)
+            if proj:
+                project_questions = proj.questions
+
         logger.info(f"Session {pipeline.session_id} started | lang={language} | project={project_id or 'none'}")
         return {
             "session_id": pipeline.session_id,
@@ -234,6 +251,8 @@ async def start_interview(
             "greeting_audio_b64": base64.b64encode(greeting_audio).decode(),
             "provider_info": pipeline.get_provider_info(),
             "project_id": project_id or None,
+            "project_questions": project_questions,
+            "current_question_idx": 0,
         }
     except Exception as exc:
         logger.exception("Failed to start interview")
@@ -267,7 +286,7 @@ async def respond(
     audio_bytes = await audio.read()
 
     try:
-        transcript, response_audio, is_complete = await pipeline.process_audio(
+        transcript, response_audio, is_complete, current_question_idx = await pipeline.process_audio(
             audio_bytes, audio_format=audio_format
         )
     except Exception as exc:
@@ -282,6 +301,7 @@ async def respond(
         "transcript": transcript,
         "response_audio_b64": base64.b64encode(response_audio).decode(),
         "is_complete": is_complete,
+        "current_question_idx": current_question_idx,
     }
 
 
@@ -338,6 +358,27 @@ async def get_transcript_file(filename: str):
 @app.get("/api/transcripts")
 async def list_transcripts():
     return {"transcripts": transcript_manager.list_transcripts()}
+
+
+@app.get("/join/home", response_class=HTMLResponse)
+async def join_home():
+    """Respondent panel home / signup page."""
+    f = TEMPLATES / "respondent_home.html"
+    return HTMLResponse(f.read_text(encoding="utf-8") if f.exists() else "<h1>Respondent home not found</h1>")
+
+
+@app.get("/join/{project_id}", response_class=HTMLResponse)
+async def join_page(project_id: str):
+    """Respondent landing page — join a study via WhatsApp or voice."""
+    f = TEMPLATES / "join.html"
+    return HTMLResponse(f.read_text(encoding="utf-8"))
+
+
+@app.get("/api/config/public")
+async def api_public_config():
+    """Non-sensitive config for the frontend (WhatsApp number etc.)."""
+    wa = settings.twilio_whatsapp_number or ""
+    return {"whatsapp_number": wa}
 
 
 @app.get("/api/stats")
@@ -511,6 +552,56 @@ async def api_generate_report(payload: dict = Body(...), _: str = Depends(option
         raise HTTPException(500, str(exc))
 
 
+@app.post("/api/reports/generate-multi")
+async def api_generate_multi_report(payload: dict = Body(...), _: str = Depends(optional_api_key)):
+    """
+    Generate a single cross-project report from multiple projects.
+    Body: { project_ids: [id, ...], report_name: str (optional) }
+    """
+    project_ids = payload.get("project_ids", [])
+    if not project_ids or len(project_ids) < 2:
+        raise HTTPException(400, "Provide at least 2 project_ids")
+
+    tm = TranscriptManager()
+    all_transcripts = []
+    project_names = []
+    all_questions = []
+
+    for pid in project_ids:
+        proj = get_project(pid)
+        if not proj:
+            continue
+        d = proj.to_dict()
+        project_names.append(d["name"])
+        if d.get("questions"):
+            all_questions.extend(d["questions"])
+        for sid in d.get("sessions", []):
+            t = tm.load(sid)
+            if t:
+                all_transcripts.append(t)
+
+    if not all_transcripts:
+        raise HTTPException(400, "No transcripts found across selected projects")
+
+    report_name = payload.get("report_name") or " + ".join(project_names)
+
+    try:
+        report = await asyncio.to_thread(
+            generate_report,
+            transcripts=all_transcripts,
+            project_name=report_name,
+            research_type="cx",
+            objective=f"Cross-study analysis across: {', '.join(project_names)}",
+            audience="Mixed respondents",
+            questions=all_questions or None,
+            project_id=None,
+        )
+        return {"report_id": report["report_id"], "report": report, "projects_included": project_names}
+    except Exception as exc:
+        logger.exception("Multi-project report generation failed")
+        raise HTTPException(500, str(exc))
+
+
 @app.get("/api/reports")
 async def api_list_reports():
     return {"reports": list_reports()}
@@ -555,6 +646,22 @@ async def api_report_starter_queries(report_id: str):
     return {"queries": STARTER_QUERIES}
 
 
+def _get_project_branding(report: dict) -> dict:
+    """Look up the project's branding config from the report's project_id."""
+    project_id = report.get("project_id")
+    if not project_id:
+        return {}
+    proj = get_project(project_id)
+    if not proj:
+        return {}
+    data = proj.to_dict()
+    return {
+        "brand_name":  data.get("brand_name", ""),
+        "brand_color": data.get("brand_color", "#1e3c72"),
+        "logo_url":    data.get("logo_url", ""),
+    }
+
+
 @app.get("/api/reports/{report_id}/export/pptx")
 async def api_export_pptx(report_id: str):
     """Export report as a branded PowerPoint deck (.pptx)."""
@@ -563,7 +670,8 @@ async def api_export_pptx(report_id: str):
     if not report:
         raise HTTPException(404, "Report not found")
     try:
-        pptx_bytes = await asyncio.to_thread(generate_pptx, report)
+        branding = await asyncio.to_thread(_get_project_branding, report)
+        pptx_bytes = await asyncio.to_thread(generate_pptx, report, branding)
         filename = f"getheard_report_{report_id}.pptx"
         return Response(
             content=pptx_bytes,
@@ -573,6 +681,38 @@ async def api_export_pptx(report_id: str):
     except Exception as e:
         logger.exception("PPTX generation failed")
         raise HTTPException(500, str(e))
+
+
+@app.get("/api/reports/{report_id}/export/pdf")
+async def api_export_pdf(report_id: str):
+    """Export report as a branded PDF."""
+    from fastapi.responses import Response
+    report = load_report(report_id)
+    if not report:
+        raise HTTPException(404, "Report not found")
+    try:
+        branding = await asyncio.to_thread(_get_project_branding, report)
+        pdf_bytes = await asyncio.to_thread(generate_pdf, report, branding)
+        filename = f"getheard_report_{report_id}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    except Exception as e:
+        logger.exception("PDF generation failed")
+        raise HTTPException(500, str(e))
+
+
+@app.patch("/api/projects/{project_id}/branding")
+async def api_update_branding(project_id: str, payload: dict = Body(...)):
+    """Save client branding fields (brand_name, brand_color, logo_url) to the project."""
+    if not get_project(project_id):
+        raise HTTPException(404, "Project not found")
+    for field in ("brand_name", "brand_color", "logo_url"):
+        if field in payload:
+            update_project_field(project_id, field, payload[field])
+    return {"status": "saved", "brand_name": payload.get("brand_name"), "brand_color": payload.get("brand_color")}
 
 
 # ── WhatsApp webhook ─────────────────────────────────────────────────────────
@@ -604,6 +744,93 @@ async def whatsapp_webhook(
     return Response(content=str(resp), media_type="application/xml")
 
 
+# ── Meta WhatsApp Business API webhook ───────────────────────────────────────
+
+@app.get("/webhook/meta-whatsapp")
+async def meta_whatsapp_verify(request: Request):
+    """Webhook verification handshake for Meta WhatsApp Business API."""
+    params = request.query_params
+    mode      = params.get("hub.mode", "")
+    challenge = params.get("hub.challenge", "")
+    token     = params.get("hub.verify_token", "")
+
+    if mode == "subscribe" and token == settings.whatsapp_verify_token:
+        logger.info("[Meta WA] Webhook verified")
+        from fastapi.responses import Response
+        return Response(content=challenge, media_type="text/plain")
+    logger.warning(f"[Meta WA] Verify failed: mode={mode} token={token!r}")
+    raise HTTPException(403, "Forbidden")
+
+
+@app.post("/webhook/meta-whatsapp")
+async def meta_whatsapp_webhook(request: Request):
+    """Inbound messages from Meta WhatsApp Business API."""
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON")
+
+    try:
+        for entry in data.get("entry", []):
+            for change in entry.get("changes", []):
+                value = change.get("value", {})
+                messages = value.get("messages", [])
+                for msg in messages:
+                    if msg.get("type") != "text":
+                        continue  # skip non-text (images, audio, etc.)
+                    raw_from = msg.get("from", "")          # e.g. "919876543210"
+                    body      = msg.get("text", {}).get("body", "").strip()
+                    if not raw_from or not body:
+                        continue
+
+                    # Normalise to +E.164 (Meta sends without +)
+                    from_number = "+" + raw_from if not raw_from.startswith("+") else raw_from
+
+                    logger.info(f"[Meta WA] {from_number}: {body[:80]}")
+
+                    from src.web.whatsapp_handler import get_whatsapp_manager
+                    manager = get_whatsapp_manager()
+                    reply = manager.handle_message(from_number=from_number, body=body)
+
+                    await _meta_send_text(raw_from, reply)
+    except Exception:
+        logger.exception("[Meta WA] Handler error")
+
+    # Meta requires 200 OK always — errors must NOT return non-200
+    return {"status": "ok"}
+
+
+async def _meta_send_text(to_number: str, text: str) -> None:
+    """Send a free-form text reply via Meta WhatsApp Cloud API."""
+    if not settings.whatsapp_access_token:
+        logger.warning("[Meta WA] No WHATSAPP_ACCESS_TOKEN — reply not sent")
+        return
+    url = f"https://graph.facebook.com/v19.0/{settings.whatsapp_phone_number_id}/messages"
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "text",
+        "text": {"body": text, "preview_url": False},
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {settings.whatsapp_access_token}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=10,
+            )
+            if resp.status_code != 200:
+                logger.error(f"[Meta WA] Send failed: {resp.status_code} {resp.text}")
+            else:
+                logger.info(f"[Meta WA] Sent reply to {to_number}")
+    except Exception as e:
+        logger.error(f"[Meta WA] Send error: {e}")
+
+
 @app.get("/api/whatsapp/stats")
 async def whatsapp_stats():
     try:
@@ -630,6 +857,117 @@ async def send_whatsapp(to: str, message: str, _: str = Depends(optional_api_key
         return {"status": "sent", "sid": msg.sid}
     except Exception as exc:
         raise HTTPException(500, str(exc))
+
+
+# ── Mission Control ───────────────────────────────────────────────────────────
+
+@app.get("/mission-control", response_class=HTMLResponse)
+async def serve_mission_control():
+    f = TEMPLATES / "mission_control.html"
+    return HTMLResponse(f.read_text(encoding="utf-8") if f.exists() else "<h1>Mission Control not found</h1>")
+
+
+@app.get("/api/mission-control/starter-queries")
+async def api_mc_starter_queries():
+    return {"queries": MISSION_STARTER_QUERIES}
+
+
+@app.get("/api/mission-control/overview")
+async def api_mc_overview():
+    """AI-generated strategic overview across all studies."""
+    try:
+        result = await asyncio.to_thread(get_mission_overview)
+        return result
+    except Exception as exc:
+        logger.exception("Mission Control overview failed")
+        raise HTTPException(500, str(exc))
+
+
+@app.post("/api/mission-control/query")
+async def api_mc_query(payload: dict = Body(...)):
+    """Cross-study NL query across all reports and transcripts."""
+    query = payload.get("query", "").strip()
+    if not query:
+        raise HTTPException(400, "Provide a 'query' field")
+    try:
+        result = await asyncio.to_thread(query_mission_control, query)
+        return result
+    except Exception as exc:
+        logger.exception("Mission Control query failed")
+        raise HTTPException(500, str(exc))
+
+
+# ── Project Status Dashboard ──────────────────────────────────────────────────
+
+@app.get("/api/projects/{project_id}/status")
+async def api_project_status(project_id: str):
+    """
+    Aggregated live status for a project:
+    total sessions, quality breakdown, language mix, screener pass rate, last activity.
+    """
+    proj = get_project(project_id)
+    if not proj:
+        raise HTTPException(404, "Project not found")
+
+    session_ids = proj._data.get("sessions", [])
+    screener = proj._data.get("screener", {})
+    quota = screener.get("quota", 0)
+    qualified_count = proj._data.get("screener_qualified_count", 0)
+
+    # Load transcript summaries for sessions linked to this project
+    all_transcripts = await asyncio.to_thread(transcript_manager.list_transcripts)
+    session_set = set(session_ids)
+    linked = [t for t in all_transcripts if t.get("session_id") in session_set]
+
+    # Quality breakdown
+    quality_counts = {"high_quality": 0, "medium_quality": 0, "low_quality": 0, "suspected_fraud": 0, "unscored": 0}
+    total_score = 0
+    scored_count = 0
+    for t in linked:
+        label = t.get("quality_label")
+        if label in quality_counts:
+            quality_counts[label] += 1
+        else:
+            quality_counts["unscored"] += 1
+        if t.get("quality_score") is not None:
+            total_score += t["quality_score"]
+            scored_count += 1
+
+    avg_quality = round(total_score / scored_count) if scored_count else None
+
+    # Language mix
+    lang_counts: dict = {}
+    for t in linked:
+        lang = t.get("language_code", "en")
+        lang_counts[lang] = lang_counts.get(lang, 0) + 1
+
+    # Completion rate (proxy: sessions with >= 4 turns = likely completed)
+    completed = sum(1 for t in linked if (t.get("turn_count") or 0) >= 4)
+    completion_rate = round(completed / len(linked) * 100) if linked else 0
+
+    # Last activity
+    last_activity = None
+    for t in linked:
+        ts = t.get("ended_at") or t.get("created_at")
+        if ts and (last_activity is None or ts > last_activity):
+            last_activity = ts
+
+    return {
+        "project_id": project_id,
+        "project_name": proj.name,
+        "total_sessions": len(session_ids),
+        "total_transcripts": len(linked),
+        "completed_sessions": completed,
+        "completion_rate": completion_rate,
+        "quality_breakdown": quality_counts,
+        "avg_quality_score": avg_quality,
+        "language_mix": lang_counts,
+        "screener_enabled": screener.get("enabled", False),
+        "screener_qualified": qualified_count,
+        "screener_quota": quota,
+        "last_activity": last_activity,
+        "question_count": len(proj.questions),
+    }
 
 
 # ── Quality / Fraud Detection ─────────────────────────────────────────────────

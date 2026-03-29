@@ -4,82 +4,329 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Research Projects – GetHeard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
+  :root {
+    --bg:           #050d1f;
+    --card:         #0a1628;
+    --card-border:  rgba(255,255,255,0.08);
+    --muted:        #1e2d45;
+    --accent:       #3b82f6;
+    --accent-bright:#60a5fa;
+    --text:         rgba(255,255,255,0.92);
+    --text-muted:   rgba(255,255,255,0.58);
+    --text-dim:     rgba(255,255,255,0.35);
+    --input-bg:     #0f1f3a;
+    --input-border: rgba(255,255,255,0.1);
+    --glow:         rgba(59,130,246,0.15);
+    --danger:       #f87171;
+    --success:      #10d48e;
+    --warning:      #f59e0b;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
   /* NAV */
-  nav { background: #1a202c; padding: 0 24px; display: flex; align-items: center; gap: 8px; height: 56px; }
-  nav a { color: #a0aec0; text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 6px; transition: background .2s; }
-  nav a:hover, nav a.active { background: #2d3748; color: #fff; }
-  .nav-brand { color: #fff; font-weight: 700; font-size: 16px; margin-right: 16px; }
+  nav {
+    background: rgba(5,13,31,0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 56px;
+    border-bottom: 1px solid var(--card-border);
+    position: relative;
+    z-index: 10;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background .2s, color .2s;
+  }
+  nav a:hover, nav a.active {
+    background: rgba(59,130,246,0.12);
+    color: var(--accent-bright);
+  }
+  .nav-brand {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 16px;
+    margin-right: 16px;
+  }
+  .nav-brand .accent { color: var(--accent-bright); }
 
   /* PAGE */
-  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; position: relative; z-index: 1; }
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-  .page-header h1 { font-size: 28px; font-weight: 700; }
-  .page-header p { color: #718096; margin-top: 4px; font-size: 14px; }
+  .page-header h1 { font-size: 28px; font-weight: 700; color: var(--text); }
+  .page-header p { color: var(--text-muted); margin-top: 4px; font-size: 14px; }
 
-  .btn-primary { background: #4299e1; color: #fff; border: none; padding: 10px 20px; border-radius: 8px;
-    font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex;
-    align-items: center; gap: 6px; transition: background .2s; }
-  .btn-primary:hover { background: #3182ce; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .2s, box-shadow .2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-primary:hover {
+    background: #2563eb;
+    box-shadow: 0 0 20px var(--glow);
+  }
 
   /* STATS ROW */
   .stats-row { display: flex; gap: 16px; margin-bottom: 28px; }
-  .stat-card { background: #fff; border-radius: 10px; padding: 20px 24px; flex: 1;
-    border: 1px solid #e2e8f0; }
-  .stat-card .val { font-size: 32px; font-weight: 700; color: #4299e1; }
-  .stat-card .lbl { font-size: 12px; color: #718096; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 20px 24px;
+    flex: 1;
+    border: 1px solid var(--card-border);
+  }
+  .stat-card .val { font-size: 32px; font-weight: 700; color: var(--accent-bright); }
+  .stat-card .lbl {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
 
   /* PROJECT GRID */
   .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-  .project-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 22px;
-    cursor: pointer; transition: box-shadow .2s, transform .15s; text-decoration: none; color: inherit; display: block; }
-  .project-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+  .project-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    padding: 22px;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .15s, border-color .2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .project-card:hover {
+    box-shadow: 0 4px 24px rgba(59,130,246,0.15);
+    transform: translateY(-2px);
+    border-color: rgba(59,130,246,0.3);
+  }
 
   .project-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-  .project-card .card-name { font-size: 17px; font-weight: 700; }
-  .project-card .badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
-    background: #ebf8ff; color: #2b6cb0; white-space: nowrap; }
-  .badge.type-cx    { background: #ebf8ff; color: #2b6cb0; }
-  .badge.type-ux    { background: #f0fff4; color: #276749; }
-  .badge.type-brand { background: #eaf0f9; color: #1e3c72; }
-  .badge.type-product { background: #fff5f0; color: #c05621; }
-  .badge.type-nps   { background: #fffaf0; color: #b7791f; }
-  .badge.type-employee { background: #fef0f0; color: #c53030; }
-  .badge.type-market { background: #e6fffa; color: #234e52; }
-  .badge.type-custom { background: #f7fafc; color: #4a5568; }
+  .project-card .card-name { font-size: 17px; font-weight: 700; color: var(--text); }
+  .project-card .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge.type-cx      { background: rgba(59,130,246,0.15); color: var(--accent-bright); }
+  .badge.type-ux      { background: rgba(16,212,142,0.15); color: #34d399; }
+  .badge.type-brand   { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .badge.type-product { background: rgba(248,113,113,0.15); color: #fca5a5; }
+  .badge.type-nps     { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .badge.type-employee{ background: rgba(236,72,153,0.15); color: #f9a8d4; }
+  .badge.type-market  { background: rgba(20,184,166,0.15); color: #5eead4; }
+  .badge.type-custom  { background: rgba(255,255,255,0.06); color: var(--text-muted); }
 
-  .project-card .meta { display: flex; gap: 16px; font-size: 13px; color: #718096; margin-bottom: 14px; }
+  .project-card .meta { display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
   .project-card .meta span { display: flex; align-items: center; gap: 4px; }
 
-  .project-card .card-footer { display: flex; justify-content: space-between; align-items: center;
-    padding-top: 12px; border-top: 1px solid #f0f4f8; }
-  .project-card .card-footer .date { font-size: 12px; color: #a0aec0; }
-  .project-card .sessions-pill { background: #ebf8ff; color: #2b6cb0; font-size: 12px; font-weight: 600;
-    padding: 3px 10px; border-radius: 12px; }
+  .project-card .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--card-border);
+  }
+  .project-card .card-footer .date { font-size: 12px; color: var(--text-dim); }
+  .project-card .sessions-pill {
+    background: rgba(59,130,246,0.15);
+    color: var(--accent-bright);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
 
   /* EMPTY STATE */
   .empty { text-align: center; padding: 80px 24px; }
-  .empty h2 { font-size: 22px; color: #4a5568; margin-bottom: 10px; }
-  .empty p { color: #a0aec0; margin-bottom: 24px; }
+  .empty h2 { font-size: 22px; color: var(--text-muted); margin-bottom: 10px; }
+  .empty p { color: var(--text-dim); margin-bottom: 24px; }
 
   /* LOADING */
-  .loading { text-align: center; padding: 60px; color: #a0aec0; }
+  .loading { text-align: center; padding: 60px; color: var(--text-dim); }
 
   @media (max-width: 600px) {
     .stats-row { flex-direction: column; }
   }
+
+  /* MULTI-REPORT BUTTON */
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1.5px solid var(--card-border);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent-bright);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    margin: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    overflow: hidden;
+  }
+  .modal-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-head h3 { font-size: 17px; font-weight: 700; color: var(--text); }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--text-dim);
+    line-height: 1;
+    padding: 0 4px;
+    transition: color .2s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 20px 24px; max-height: 60vh; overflow-y: auto; }
+  .modal-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    align-items: center;
+  }
+  .modal-body label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .modal-body input[type=text] {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    outline: none;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: border-color .2s;
+  }
+  .modal-body input[type=text]:focus { border-color: var(--accent); }
+  .proj-check-list { display: flex; flex-direction: column; gap: 8px; }
+  .proj-check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .proj-check-item:hover { border-color: var(--accent); }
+  .proj-check-item input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: var(--accent); }
+  .proj-check-item.checked {
+    border-color: var(--accent);
+    background: rgba(59,130,246,0.08);
+  }
+  .proj-check-item .pci-name { font-weight: 600; font-size: 14px; color: var(--text); }
+  .proj-check-item .pci-meta { font-size: 12px; color: var(--text-muted); }
+  #multiReportStatus { font-size: 13px; color: var(--text-muted); margin-top: 8px; text-align: center; min-height: 20px; }
 </style>
 </head>
 <body>
 
 <nav>
-  <span class="nav-brand">GetHeard</span>
+  <span class="nav-brand"><span class="accent">Get</span>Heard</span>
   <a href="/">Voice Interview</a>
   <a href="/dashboard">Dashboard</a>
   <a href="/projects" class="active">Projects</a>
+  <a href="/mission-control">🛰️ Mission Control</a>
 </nav>
 
 <div class="page">
@@ -88,10 +335,16 @@
       <h1>Research Projects</h1>
       <p>Create AI-powered interview studies with custom question sets</p>
     </div>
-    <a href="/projects/new" class="btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Project
-    </a>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-secondary" onclick="openMultiModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Cross-Project Report
+      </button>
+      <a href="/projects/new" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Project
+      </a>
+    </div>
   </div>
 
   <div class="stats-row" id="statsRow">
@@ -101,6 +354,29 @@
   </div>
 
   <div id="projectsContainer" class="loading">Loading projects…</div>
+</div>
+
+<!-- Multi-project report modal -->
+<div class="modal-overlay" id="multiModal" onclick="if(event.target===this)closeMultiModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Generate Cross-Project Report</h3>
+      <button class="modal-close" onclick="closeMultiModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label for="multiReportName">Report name</label>
+      <input type="text" id="multiReportName" placeholder="e.g. Q1 2025 Combined Insights">
+      <label>Select projects to include</label>
+      <div class="proj-check-list" id="projCheckList">
+        <div style="color:var(--text-dim);font-size:13px">Loading projects…</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div id="multiReportStatus"></div>
+      <button class="btn-secondary" onclick="closeMultiModal()">Cancel</button>
+      <button class="btn-primary" id="generateMultiBtn" onclick="generateMultiReport()">Generate Report</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -169,6 +445,82 @@ function escHtml(s) {
 load().catch(e => {
   document.getElementById('projectsContainer').innerHTML = `<div class="empty"><h2>Failed to load projects</h2><p>${e.message}</p></div>`;
 });
+
+// ── Multi-project report modal ─────────────────────────────────────────────
+let allProjects = [];
+
+async function openMultiModal() {
+  document.getElementById('multiModal').classList.add('open');
+  document.getElementById('multiReportStatus').textContent = '';
+  document.getElementById('multiReportName').value = '';
+
+  const list = document.getElementById('projCheckList');
+  list.innerHTML = '<div style="color:var(--text-dim);font-size:13px">Loading…</div>';
+
+  if (!allProjects.length) {
+    const res = await fetch('/api/projects');
+    const data = await res.json();
+    allProjects = data.projects || [];
+  }
+
+  if (!allProjects.length) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:13px">No projects found.</div>';
+    return;
+  }
+
+  list.innerHTML = allProjects.map(p => `
+    <label class="proj-check-item" id="pci-${p.project_id}">
+      <input type="checkbox" value="${p.project_id}" onchange="toggleCheck('${p.project_id}', this.checked)">
+      <div>
+        <div class="pci-name">${escHtml(p.name)}</div>
+        <div class="pci-meta">${p.sessions} interview${p.sessions!==1?'s':''} · ${RESEARCH_LABELS[p.research_type]||p.research_type}</div>
+      </div>
+    </label>
+  `).join('');
+}
+
+function toggleCheck(id, checked) {
+  document.getElementById('pci-' + id).classList.toggle('checked', checked);
+}
+
+function closeMultiModal() {
+  document.getElementById('multiModal').classList.remove('open');
+}
+
+async function generateMultiReport() {
+  const checked = [...document.querySelectorAll('#projCheckList input[type=checkbox]:checked')];
+  if (checked.length < 2) {
+    document.getElementById('multiReportStatus').textContent = 'Select at least 2 projects.';
+    return;
+  }
+  const project_ids = checked.map(c => c.value);
+  const report_name = document.getElementById('multiReportName').value.trim() ||
+    project_ids.map(id => (allProjects.find(p=>p.project_id===id)||{}).name||id).join(' + ');
+
+  const btn = document.getElementById('generateMultiBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  document.getElementById('multiReportStatus').textContent = 'This may take a minute…';
+
+  try {
+    const res = await fetch('/api/reports/generate-multi', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({project_ids, report_name}),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.detail || res.statusText);
+    }
+    const data = await res.json();
+    closeMultiModal();
+    window.location.href = `/report/${data.report_id}`;
+  } catch(e) {
+    document.getElementById('multiReportStatus').textContent = 'Error: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Generate Report';
+  }
+}
 </script>
 </body>
 </html>

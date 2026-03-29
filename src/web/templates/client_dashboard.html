@@ -4,38 +4,58 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — GetHeard</title>
-  <meta name="client-name" id="clientNameMeta" content="{{ client_name or 'Client' }}" />
-  <meta name="client-company" id="clientCompanyMeta" content="{{ client_company or '' }}" />
+  <meta name="client-name" id="clientNameMeta" content="" />
+  <meta name="client-company" id="clientCompanyMeta" content="" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --navy:       #1e3c72;
-      --navy-dark:  #152d56;
-      --blue:       #2a5298;
-      --blue-light: #4facfe;
-      --accent:     #60a5fa;
-      --off-white:  #e8edf5;
-      --white:      #ffffff;
-      --muted:      #8fa3c8;
-      --success:    #16a34a;
-      --warning:    #d97706;
-      --danger:     #dc2626;
-      --sidebar-w:  220px;
+      --bg:           #050d1f;
+      --bg-card:      #0a1628;
+      --bg-card-2:    #1e2d45;
+      --bg-input:     #0f1f3a;
+      --sidebar-bg:   #050d1f;
+      --border:       rgba(255,255,255,0.08);
+      --border-blue:  rgba(59,130,246,0.25);
+      --blue:         #3b82f6;
+      --blue-bright:  #60a5fa;
+      --blue-glow:    rgba(59,130,246,0.15);
+      --text:         rgba(255,255,255,0.92);
+      --text-secondary: rgba(255,255,255,0.58);
+      --text-muted:   rgba(255,255,255,0.35);
+      --success:      #10d48e;
+      --warning:      #f59e0b;
+      --danger:       #f87171;
+      --sidebar-w:    220px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { -webkit-font-smoothing: antialiased; }
     body {
       font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--off-white);
-      color: #1a2540;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      position: relative;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* ── SIDEBAR ── */
     .sidebar {
       width: var(--sidebar-w);
-      background: var(--navy-dark);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
       min-height: 100vh;
       position: fixed;
       top: 0; left: 0; bottom: 0;
@@ -44,69 +64,69 @@
       flex-direction: column;
       overflow-y: auto;
     }
+
     .sidebar-logo {
       padding: 22px 20px 18px;
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 800;
-      color: var(--white);
-      letter-spacing: -0.02em;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      letter-spacing: -0.03em;
+      border-bottom: 1px solid var(--border);
       text-decoration: none;
       display: block;
     }
-    .sidebar-logo span { color: var(--blue-light); }
+    .sidebar-logo .dot { color: var(--blue); }
 
-    .sidebar-nav {
-      flex: 1;
-      padding: 14px 0;
-    }
+    .sidebar-nav { flex: 1; padding: 12px 0; }
+
     .nav-section-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.3);
-      padding: 10px 20px 4px;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      padding: 12px 20px 4px;
     }
+
     .nav-item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 10px 20px;
-      color: rgba(255,255,255,0.65);
-      font-size: 0.88rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
       font-weight: 500;
       text-decoration: none;
-      border-left: 3px solid transparent;
+      border-left: 2px solid transparent;
       transition: background 0.15s, color 0.15s, border-color 0.15s;
       cursor: pointer;
     }
     .nav-item:hover {
-      background: rgba(255,255,255,0.07);
-      color: var(--white);
+      background: rgba(59,130,246,0.06);
+      color: var(--text);
       text-decoration: none;
     }
     .nav-item.active {
-      background: rgba(79,172,254,0.14);
-      color: var(--white);
-      border-left-color: var(--blue-light);
+      background: rgba(59,130,246,0.1);
+      color: var(--blue);
+      border-left-color: var(--blue);
       font-weight: 600;
     }
     .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
 
     .sidebar-footer {
       padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      border-top: 1px solid var(--border);
     }
     .sidebar-company {
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.4);
+      font-size: 0.72rem;
+      color: var(--text-muted);
       margin-bottom: 2px;
     }
     .sidebar-company strong {
       display: block;
-      color: rgba(255,255,255,0.8);
-      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -118,14 +138,18 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      position: relative;
+      z-index: 1;
     }
 
-    /* Top bar */
+    /* Topbar */
     .topbar {
-      background: var(--white);
-      border-bottom: 1px solid rgba(30,60,114,0.08);
+      background: rgba(5,13,31,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
       padding: 0 36px;
-      height: 64px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -135,90 +159,124 @@
       z-index: 50;
     }
     .topbar-greeting {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--navy);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
     }
-    .topbar-greeting span { font-weight: 400; color: var(--muted); font-size: 0.85rem; margin-left: 4px; }
+    .topbar-greeting .name { color: var(--blue); }
+    .refresh-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+      margin-left: 8px;
+      animation: pulse 2.5s ease-in-out infinite;
+      vertical-align: middle;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
     .btn-new-study {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--navy);
-      color: var(--white);
-      padding: 9px 20px;
+      background: var(--blue);
+      color: #fff;
+      padding: 8px 18px;
       border-radius: 8px;
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       font-weight: 700;
       text-decoration: none;
       border: none;
       cursor: pointer;
-      transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+      transition: opacity .18s, box-shadow .18s, transform .15s;
+      letter-spacing: 0.01em;
     }
     .btn-new-study:hover {
-      background: var(--navy-dark);
-      box-shadow: 0 4px 14px rgba(30,60,114,0.25);
+      opacity: 0.9;
+      box-shadow: 0 6px 20px rgba(59,130,246,0.35);
       transform: translateY(-1px);
       text-decoration: none;
-      color: var(--white);
+      color: #fff;
     }
 
     /* Page content */
     .page-content { padding: 32px 36px; flex: 1; }
 
+    /* Section label */
+    .section-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--blue);
+      margin-bottom: 20px;
+    }
+
     /* ── STATS ── */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      gap: 16px;
       margin-bottom: 32px;
     }
     .stat-card {
-      background: var(--white);
+      background: var(--bg-card);
       border-radius: 14px;
       padding: 22px 24px;
-      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
-      border-left: 4px solid var(--navy);
-      border: 1px solid rgba(30,60,114,0.07);
-      border-left: 4px solid var(--navy);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s;
     }
-    .stat-card:nth-child(2) { border-left-color: var(--blue-light); }
-    .stat-card:nth-child(3) { border-left-color: var(--accent); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .stat-card:nth-child(1)::before { background: var(--blue); }
+    .stat-card:nth-child(2)::before { background: var(--success); }
+    .stat-card:nth-child(3)::before { background: #a78bfa; }
+    .stat-card:hover { border-color: var(--border-blue); }
+
     .stat-val {
-      font-size: 2.25rem;
+      font-size: 2.4rem;
       font-weight: 800;
-      color: var(--navy);
+      color: var(--text);
       line-height: 1;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
+    .stat-card:nth-child(1) .stat-val { color: var(--blue); }
+    .stat-card:nth-child(2) .stat-val { color: var(--success); }
+    .stat-card:nth-child(3) .stat-val { color: #a78bfa; }
     .stat-lbl {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--muted);
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
     }
 
     /* ── TABLE CARD ── */
     .table-card {
-      background: var(--white);
-      border-radius: 14px;
-      box-shadow: 0 2px 12px rgba(30,60,114,0.08);
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
       overflow: hidden;
-      border: 1px solid rgba(30,60,114,0.07);
     }
     .table-card-header {
       padding: 18px 24px;
-      border-bottom: 1px solid rgba(30,60,114,0.07);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
     .table-card-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      color: var(--navy);
+      color: var(--text);
     }
     .table-wrap { overflow-x: auto; }
     table {
@@ -226,68 +284,65 @@
       border-collapse: collapse;
       font-size: 0.875rem;
     }
-    thead {
-      background: var(--off-white);
-    }
+    thead { background: rgba(255,255,255,0.03); }
     thead th {
-      padding: 11px 16px;
+      padding: 11px 20px;
       text-align: left;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      color: var(--muted);
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      border-bottom: 1px solid rgba(30,60,114,0.07);
+      letter-spacing: 0.09em;
+      border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
     tbody td {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(30,60,114,0.05);
-      color: #334155;
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text-secondary);
       vertical-align: middle;
     }
     tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: rgba(30,60,114,0.025); }
+    tbody tr:hover { background: rgba(59,130,246,0.04); }
 
     /* Status Badges */
     .badge {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 3px 10px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       white-space: nowrap;
     }
     .badge::before {
       content: '';
-      width: 5px;
-      height: 5px;
+      width: 5px; height: 5px;
       border-radius: 50%;
       background: currentColor;
       flex-shrink: 0;
     }
-    .badge-pending       { background: #f1f5f9; color: #64748b; }
-    .badge-briefing      { background: #dbeafe; color: var(--blue); }
-    .badge-pricing       { background: #dbeafe; color: var(--blue); }
-    .badge-panel_building{ background: #dbeafe; color: var(--blue); }
-    .badge-interviewing  { background: #dcfce7; color: var(--success); }
-    .badge-analysis      { background: #dbeafe; color: var(--blue); }
-    .badge-completed     { background: #dcfce7; color: var(--success); }
-    .badge-cancelled     { background: #fee2e2; color: var(--danger); }
+    .badge-pending        { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .badge-briefing       { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .badge-pricing        { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .badge-panel_building { background: rgba(167,139,250,0.1); color: #a78bfa; }
+    .badge-interviewing   { background: rgba(16,212,142,0.1);  color: var(--success); }
+    .badge-analysis       { background: rgba(245,158,11,0.1);  color: var(--warning); }
+    .badge-completed      { background: rgba(16,212,142,0.1);  color: var(--success); }
+    .badge-cancelled      { background: rgba(248,113,113,0.1); color: var(--danger); }
 
     .btn-view {
       display: inline-flex;
       align-items: center;
       gap: 4px;
       padding: 6px 14px;
-      background: rgba(30,60,114,0.07);
-      color: var(--navy);
-      border: 1px solid rgba(30,60,114,0.15);
-      border-radius: 6px;
+      background: rgba(59,130,246,0.1);
+      color: var(--blue);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 7px;
       font-size: 0.78rem;
       font-weight: 600;
       text-decoration: none;
@@ -295,66 +350,49 @@
       cursor: pointer;
     }
     .btn-view:hover {
-      background: var(--navy);
-      color: var(--white);
-      border-color: var(--navy);
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
       text-decoration: none;
     }
 
-    /* Empty state */
+    /* Empty / loading */
     .empty-state {
       text-align: center;
-      padding: 60px 32px;
+      padding: 64px 32px;
     }
-    .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.4; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 16px; opacity: 0.3; }
     .empty-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
-      color: var(--navy);
+      color: var(--text);
       margin-bottom: 8px;
     }
     .empty-sub {
       font-size: 0.875rem;
-      color: var(--muted);
+      color: var(--text-secondary);
       margin-bottom: 24px;
-      max-width: 360px;
+      max-width: 340px;
       margin-left: auto;
       margin-right: auto;
       line-height: 1.6;
     }
-
-    /* Spinner */
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner-cell {
-      padding: 48px;
+      padding: 52px;
       text-align: center;
-      color: var(--muted);
+      color: var(--text-muted);
       font-size: 0.85rem;
     }
     .spin-icon {
       width: 28px; height: 28px;
-      border: 3px solid rgba(30,60,114,0.15);
-      border-top-color: var(--navy);
+      border: 2px solid rgba(59,130,246,0.15);
+      border-top-color: var(--blue);
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin 0.8s linear infinite;
       margin: 0 auto 12px;
     }
 
-    /* Refresh indicator */
-    .refresh-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--success);
-      display: inline-block;
-      margin-left: 8px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    /* Mobile */
     @media (max-width: 900px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
       .app-main { margin-left: 0; }
@@ -362,7 +400,6 @@
       .sidebar.open { transform: translateX(0); }
       .topbar { padding: 0 20px; }
       .page-content { padding: 20px 16px; }
-      .topbar-greeting span { display: none; }
     }
     @media (max-width: 500px) {
       .stats-row { grid-template-columns: 1fr; }
@@ -372,32 +409,32 @@
 <body>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
-    <a href="/listen" class="sidebar-logo">Get<span>Heard</span></a>
+  <aside class="sidebar" id="sidebar">
+    <a href="/listen" class="sidebar-logo"><span style="color:var(--blue)">Get</span>Heard</a>
 
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
       <a href="/listen" class="nav-item active">
-        <span class="nav-icon">&#9783;</span> Dashboard
+        <span class="nav-icon">⊞</span> Dashboard
       </a>
       <a href="/listen/studies" class="nav-item">
-        <span class="nav-icon">&#128202;</span> My Studies
+        <span class="nav-icon">📊</span> My Studies
       </a>
       <a href="/listen/panel" class="nav-item">
-        <span class="nav-icon">&#128101;</span> Panel
+        <span class="nav-icon">👥</span> Panel
       </a>
       <a href="/listen/reports" class="nav-item">
-        <span class="nav-icon">&#128196;</span> Reports
+        <span class="nav-icon">📄</span> Reports
       </a>
       <div class="nav-section-label">Account</div>
       <a href="/listen/billing" class="nav-item">
-        <span class="nav-icon">&#128179;</span> Billing
+        <span class="nav-icon">💳</span> Billing
       </a>
       <a href="/listen/settings" class="nav-item">
-        <span class="nav-icon">&#9881;</span> Settings
+        <span class="nav-icon">⚙</span> Settings
       </a>
-      <a href="/listen/logout" class="nav-item" style="margin-top: 4px;">
-        <span class="nav-icon">&#8592;</span> Log Out
+      <a href="/listen/logout" class="nav-item" style="margin-top:4px">
+        <span class="nav-icon">←</span> Log Out
       </a>
     </nav>
 
@@ -414,16 +451,16 @@
 
     <header class="topbar">
       <div class="topbar-greeting">
-        <span id="greeting-text">Good morning</span>,
-        <span id="client-firstname" style="color:#1a2540;font-weight:700;">—</span>
+        <span id="greeting-text">Good morning</span>,&nbsp;
+        <span class="name" id="client-firstname">—</span>
         <span class="refresh-dot" title="Auto-refreshing"></span>
       </div>
-      <a href="/agent/brief" class="btn-new-study">
-        &#43; New Study
-      </a>
+      <a href="/agent/brief" class="btn-new-study">+ New Study</a>
     </header>
 
     <div class="page-content">
+
+      <div class="section-eyebrow">Overview</div>
 
       <!-- STATS -->
       <div class="stats-row" id="stats-row">
@@ -445,7 +482,7 @@
       <div class="table-card">
         <div class="table-card-header">
           <div class="table-card-title">Your Studies</div>
-          <a href="/agent/brief" class="btn-view">&#43; New Study</a>
+          <a href="/agent/brief" class="btn-view">+ New Study</a>
         </div>
         <div id="studies-container">
           <div class="spinner-cell">
@@ -459,69 +496,53 @@
   </div>
 
   <script>
-    // ── Greeting ──
     const hour = new Date().getHours();
     const greetWord = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
     document.getElementById('greeting-text').textContent = greetWord;
 
-    // ── Client name ──
-    const clientName    = document.getElementById('clientNameMeta').content;
-    const clientCompany = document.getElementById('clientCompanyMeta').content;
-    const firstName = clientName.split(' ')[0] || clientName;
-    document.getElementById('client-firstname').textContent    = firstName;
-    document.getElementById('sidebar-company-name').textContent = clientCompany || clientName;
+    // Name populated from /api/client/stats in loadDashboard()
 
-    // ── Helpers ──
     function esc(s) {
-      return String(s || '')
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-
     function fmtDate(iso) {
       if (!iso) return '—';
-      try {
-        return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-      } catch(e) { return iso; }
+      try { return new Date(iso).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }); }
+      catch(e) { return iso; }
     }
-
     const STATUS_LABELS = {
-      pending:        'Pending',
-      briefing:       'Briefing',
-      pricing:        'Pricing',
-      panel_building: 'Panel Building',
-      interviewing:   'Interviewing',
-      analysis:       'Analysis',
-      completed:      'Completed',
-      cancelled:      'Cancelled',
+      pending:'Pending', briefing:'Briefing', pricing:'Pricing',
+      panel_building:'Panel Building', interviewing:'Interviewing',
+      analysis:'Analysis', completed:'Completed', cancelled:'Cancelled',
     };
-
     function statusBadge(raw) {
-      const s = (raw || 'pending').toLowerCase().replace(/\s+/g, '_');
-      const label = STATUS_LABELS[s] || (s.charAt(0).toUpperCase() + s.slice(1));
+      const s = (raw||'pending').toLowerCase().replace(/\s+/g,'_');
+      const label = STATUS_LABELS[s] || (s.charAt(0).toUpperCase()+s.slice(1));
       return `<span class="badge badge-${esc(s)}">${esc(label)}</span>`;
     }
 
-    // ── Fetch & render ──
     async function loadDashboard() {
       try {
-        // Stats
         const statsRes = await fetch('/api/client/stats');
         if (statsRes.ok) {
           const stats = await statsRes.json();
-          document.getElementById('stat-active').textContent     = stats.active_studies     ?? '—';
-          document.getElementById('stat-completed').textContent  = stats.completed_studies  ?? '—';
-          document.getElementById('stat-respondents').textContent= stats.respondents_interviewed ?? '—';
+          document.getElementById('stat-active').textContent      = stats.active_studies ?? '—';
+          document.getElementById('stat-completed').textContent   = stats.completed_studies ?? '—';
+          document.getElementById('stat-respondents').textContent = stats.respondents_interviewed ?? '—';
+          // Populate name from API (not template vars)
+          const name    = stats.client_name || stats.client || 'Client';
+          const company = stats.company || name;
+          const firstName = name.split(' ')[0] || name;
+          document.getElementById('client-firstname').textContent     = firstName;
+          document.getElementById('sidebar-company-name').textContent = company;
         }
-      } catch(e) { /* silently fail stats */ }
+      } catch(e) {}
 
       try {
-        // Projects
         const projRes = await fetch('/api/client/projects');
         if (!projRes.ok) throw new Error('not ok');
         const data = await projRes.json();
-        const projects = data.projects || data || [];
-        renderStudies(projects);
+        renderStudies(data.projects || data || []);
       } catch(e) {
         renderStudiesError();
       }
@@ -532,16 +553,15 @@
       if (!projects.length) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">&#128202;</div>
+            <div class="empty-icon">📊</div>
             <div class="empty-title">No studies yet</div>
             <div class="empty-sub">Your research studies will appear here once you create one.</div>
-            <a href="/agent/brief" class="btn-new-study" style="display:inline-flex;gap:8px;padding:12px 24px;">
-              &#43; Start your first study
+            <a href="/agent/brief" class="btn-new-study" style="display:inline-flex;gap:8px;padding:12px 24px;margin-top:4px">
+              + Start your first study
             </a>
           </div>`;
         return;
       }
-
       const rows = projects.map(p => {
         const id          = p.id || p.project_id || '';
         const name        = esc(p.name || p.project_name || 'Untitled Study');
@@ -550,30 +570,21 @@
         const created     = fmtDate(p.created_at);
         const badge       = statusBadge(p.status);
         return `<tr>
-          <td><span style="font-weight:600;color:#1a2540;">${name}</span></td>
-          <td><span style="font-size:0.78rem;color:var(--muted);">${type}</span></td>
+          <td><span style="font-weight:600;color:var(--text);">${name}</span></td>
+          <td><span style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">${type}</span></td>
           <td>${badge}</td>
-          <td style="text-align:center;">${respondents}</td>
-          <td style="color:var(--muted);font-size:0.82rem;">${created}</td>
-          <td>
-            <a href="/listen/study/${encodeURIComponent(id)}" class="btn-view">View</a>
-          </td>
+          <td style="text-align:center;color:var(--text);font-weight:600;">${respondents}</td>
+          <td style="color:var(--text-muted);font-size:0.82rem;">${created}</td>
+          <td><a href="/listen/study/${encodeURIComponent(id)}" class="btn-view">View →</a></td>
         </tr>`;
       }).join('');
-
       container.innerHTML = `
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Study Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th style="text-align:center;">Respondents</th>
-                <th>Created</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Study Name</th><th>Type</th><th>Status</th>
+              <th style="text-align:center">Respondents</th><th>Created</th><th>Action</th>
+            </tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>`;
@@ -582,13 +593,12 @@
     function renderStudiesError() {
       document.getElementById('studies-container').innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">&#9888;</div>
+          <div class="empty-icon">⚠</div>
           <div class="empty-title">Could not load studies</div>
-          <div class="empty-sub">Please refresh the page or try again in a moment.</div>
+          <div class="empty-sub">Please refresh or try again in a moment.</div>
         </div>`;
     }
 
-    // Boot + auto-refresh every 10 seconds
     loadDashboard();
     setInterval(loadDashboard, 10000);
   </script>

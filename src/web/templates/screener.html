@@ -4,58 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quick Check – GetHeard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --brand: #1e3c72;
-    --brand-light: #4299e1;
-    --success: #22c55e;
-    --danger: #ef4444;
-    --bg: #f0f4f8;
-    --surface: #ffffff;
-    --text: #1a202c;
-    --muted: #718096;
-    --border: #e2e8f0;
-    --radius: 16px;
-    --shadow: 0 8px 32px rgba(30,60,114,.12);
+    --bg:           #050d1f;
+    --card:         #0a1628;
+    --card-border:  rgba(255,255,255,0.08);
+    --muted:        #1e2d45;
+    --accent:       #3b82f6;
+    --accent-bright:#60a5fa;
+    --text:         rgba(255,255,255,0.92);
+    --text-muted:   rgba(255,255,255,0.58);
+    --text-dim:     rgba(255,255,255,0.35);
+    --input-bg:     #0f1f3a;
+    --input-border: rgba(255,255,255,0.1);
+    --glow:         rgba(59,130,246,0.15);
+    --danger:       #f87171;
+    --success:      #10d48e;
+    --radius:       16px;
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 24px;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; top: 0; right: 0; width: 60%; height: 60%;
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
   }
 
   .card {
-    background: var(--surface);
+    background: var(--card);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
     width: 100%;
     max-width: 580px;
     padding: 40px;
     animation: fadeIn .35s ease;
+    position: relative; z-index: 1;
   }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   .logo { text-align: center; margin-bottom: 24px; }
-  .logo span { font-size: 1.5rem; font-weight: 800; color: var(--brand); letter-spacing: -.5px; }
-  .logo .dot { color: var(--brand-light); }
+  .logo a {
+    font-size: 1.5rem; font-weight: 800; color: var(--text);
+    letter-spacing: -.5px; text-decoration: none; display: inline-block;
+  }
+  .logo .accent { color: var(--accent-bright); }
 
   /* Progress */
   .progress-wrap { margin-bottom: 28px; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-  .progress-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand-light));
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .progress-bar { height: 5px; background: var(--muted); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-bright));
     border-radius: 99px; transition: width .4s ease; }
 
   /* Question area */
-  .question-num { font-size: 12px; font-weight: 700; color: var(--brand-light); text-transform: uppercase;
+  .question-num { font-size: 12px; font-weight: 700; color: var(--accent-bright); text-transform: uppercase;
     letter-spacing: 1px; margin-bottom: 10px; }
   .question-text { font-size: 1.2rem; font-weight: 600; color: var(--text); line-height: 1.55;
     margin-bottom: 24px; }
@@ -64,20 +90,20 @@
   .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
   .choice-btn {
     display: flex; align-items: center; gap: 12px;
-    padding: 13px 16px; border: 2px solid var(--border); border-radius: 10px;
-    background: var(--surface); cursor: pointer; font-size: 15px; color: var(--text);
-    transition: all .18s; text-align: left; width: 100%;
+    padding: 13px 16px; border: 1px solid var(--input-border); border-radius: 10px;
+    background: var(--input-bg); cursor: pointer; font-size: 15px; color: var(--text);
+    transition: all .18s; text-align: left; width: 100%; font-family: inherit;
   }
-  .choice-btn:hover { border-color: var(--brand-light); background: #ebf8ff; }
-  .choice-btn.selected { border-color: var(--brand); background: #dce8f5; color: var(--brand); font-weight: 600; }
-  .choice-icon { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%;
+  .choice-btn:hover { border-color: var(--accent-bright); background: rgba(59,130,246,0.08); }
+  .choice-btn.selected { border-color: var(--accent); background: rgba(59,130,246,0.15); color: var(--text); font-weight: 600; }
+  .choice-icon { width: 20px; height: 20px; border: 2px solid var(--input-border); border-radius: 50%;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .18s; }
-  .choice-btn.selected .choice-icon { background: var(--brand); border-color: var(--brand); }
+  .choice-btn.selected .choice-icon { background: var(--accent); border-color: var(--accent); }
   .choice-btn.selected .choice-icon::after { content: ''; width: 8px; height: 8px; background: #fff;
     border-radius: 50%; display: block; }
   /* Multi-select uses square checkboxes */
   .multi .choice-btn .choice-icon { border-radius: 5px; }
-  .multi .choice-btn.selected .choice-icon { background: var(--brand); border-color: var(--brand); }
+  .multi .choice-btn.selected .choice-icon { background: var(--accent); border-color: var(--accent); }
   .multi .choice-btn.selected .choice-icon::after { content: '✓'; color: #fff; font-size: 12px;
     font-weight: 700; border-radius: 0; width: auto; height: auto; background: none; }
 
@@ -86,24 +112,25 @@
   .yn-row .choice-btn { flex: 1; justify-content: center; font-size: 16px; font-weight: 600; }
 
   /* Text input */
-  .text-input { width: 100%; padding: 13px 16px; border: 2px solid var(--border); border-radius: 10px;
-    font-size: 15px; color: var(--text); resize: vertical; min-height: 100px; margin-bottom: 28px;
-    outline: none; font-family: inherit; }
-  .text-input:focus { border-color: var(--brand-light); }
+  .text-input { width: 100%; padding: 13px 16px; border: 1px solid var(--input-border); border-radius: 10px;
+    font-size: 15px; color: var(--text); background: var(--input-bg); resize: vertical; min-height: 100px;
+    margin-bottom: 28px; outline: none; font-family: inherit; }
+  .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  .text-input::placeholder { color: var(--text-dim); }
 
   /* Nav buttons */
   .nav-row { display: flex; gap: 10px; justify-content: flex-end; }
   .btn { padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600;
-    cursor: pointer; border: none; transition: all .18s; }
-  .btn-primary { background: var(--brand); color: #fff; }
-  .btn-primary:hover { background: #163060; }
+    cursor: pointer; border: none; transition: all .18s; font-family: inherit; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-bright); }
   .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
 
   /* Result screens */
   .result-screen { text-align: center; }
   .result-icon { font-size: 3.5rem; margin-bottom: 16px; }
   .result-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
-  .result-msg { font-size: 1rem; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+  .result-msg { font-size: 1rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 28px; }
   .result-screen .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; padding: 14px 28px; }
 
   /* Error */
@@ -111,18 +138,18 @@
 
   /* Loading overlay */
   #loadingScreen { display: none; flex-direction: column; align-items: center; gap: 14px; }
-  #loadingScreen p { color: var(--muted); font-size: 14px; }
-  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--brand);
+  #loadingScreen p { color: var(--text-muted); font-size: 14px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--card-border); border-top-color: var(--accent);
     border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .powered { text-align: center; margin-top: 20px; font-size: 12px; color: #a0aec0; }
+  .powered { text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-dim); position: relative; z-index: 1; }
 </style>
 </head>
 <body>
 
 <div class="card" id="mainCard">
-  <div class="logo"><span>Get<span class="dot">H</span>eard</span></div>
+  <div class="logo"><a href="/"><span class="accent">Get</span>Heard</a></div>
 
   <!-- Loading screen while fetching screener -->
   <div id="loadingScreen" style="display:flex">
@@ -156,7 +183,7 @@
   <div id="evaluatingScreen" style="display:none">
     <div style="text-align:center;padding:40px 0">
       <div class="spinner" style="margin:0 auto 16px"></div>
-      <p style="color:var(--muted)">Checking your answers…</p>
+      <p style="color:var(--text-muted)">Checking your answers…</p>
     </div>
   </div>
 

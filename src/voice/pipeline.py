@@ -92,7 +92,7 @@ class VoiceInterviewPipeline:
 
     async def process_audio(
         self, audio_content: bytes, audio_format: str = "webm"
-    ) -> Tuple[str, bytes, bool]:
+    ) -> Tuple[str, bytes, bool, int]:
         """
         Process user audio and return (transcript, response_audio, is_complete).
 
@@ -120,7 +120,8 @@ class VoiceInterviewPipeline:
         if is_complete:
             await asyncio.to_thread(self._save_transcript)
 
-        return transcript, response_audio, is_complete
+        current_question_idx = getattr(self.interviewer, "current_question_idx", 0)
+        return transcript, response_audio, is_complete, current_question_idx
 
     def is_interview_complete(self) -> bool:
         return self.interviewer.state == "completed"
