@@ -35,4 +35,4 @@ gcp-key*.json
 .idea/
 __pycache__/
 *.pyc
-documentation/
+# documentation/ — tracked (removed from ignore so handover docs are versioned)
