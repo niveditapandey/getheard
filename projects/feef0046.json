@@ -1,0 +1,107 @@
+{
+  "project_id": "feef0046",
+  "name": "KYC Drop-off Study",
+  "research_type": "ux",
+  "industry": "Fintech",
+  "objective": "To understand the specific causes (e.g., confusion with document upload, trust issues, technical friction) of user drop-off during the KYC process in your lending app, with the goal of improving KYC completion rates.",
+  "audience": "Salaried professionals aged 23-35 in Tier 1 and 2 Indian cities, who have started but not completed the KYC process in your app.",
+  "language": "en",
+  "topics": [
+    "document upload friction",
+    "trust and data privacy concerns",
+    "understanding of the process",
+    "technical issues encountered",
+    "overall user expectations"
+  ],
+  "question_count": 10,
+  "questions": [
+    {
+      "intent": "To build rapport and understand the user's general tech-savviness and financial habits.",
+      "main": "To get started, could you tell me a bit about your experience using mobile apps to manage your finances?",
+      "type": "opening",
+      "number": 1,
+      "probe": "What kinds of apps do you use most often?"
+    },
+    {
+      "intent": "To get a detailed, step-by-step recall of the user's KYC journey in their own words.",
+      "main": "Thank you. Now, thinking about our app, could you walk me through your recent experience of trying to complete the identity verification, right from the beginning?",
+      "type": "experience",
+      "number": 2,
+      "probe": "Where were you and what was happening around you when you started the process?"
+    },
+    {
+      "probe": "What was the very last thing you did or tried to do before you exited?",
+      "number": 3,
+      "intent": "To pinpoint the exact moment and cause of user drop-off.",
+      "type": "experience",
+      "main": "At what specific point did you stop the process? Can you describe what was on the screen and what you were thinking at that moment?"
+    },
+    {
+      "probe": "What device were you using? Were the documents saved on it already?",
+      "number": 4,
+      "intent": "To uncover specific friction points related to the document handling and upload steps.",
+      "main": "Tell me about the process of getting your documents ready and uploading them. What was that like?",
+      "type": "experience"
+    },
+    {
+      "probe": "How did the actual time it took compare with what you expected?",
+      "number": 5,
+      "main": "Walk me through your thoughts on the number of steps and the time it took to complete the process.",
+      "type": "emotional",
+      "intent": "To gauge the user's perception of the process's length and complexity without leading them."
+    },
+    {
+      "probe": "What, if anything, would have made you feel more comfortable about sharing your data?",
+      "number": 6,
+      "intent": "To explore trust and data privacy concerns specific to the app experience, without asking a yes/no question.",
+      "main": "When it came to providing your personal information and documents, what thoughts or feelings came to mind?",
+      "type": "emotional"
+    },
+    {
+      "probe": "Can you recall a specific instruction that was particularly helpful or unhelpful?",
+      "type": "satisfaction",
+      "main": "Thinking about the guidance provided on each screen, how well did it help you understand what you needed to do next?",
+      "intent": "To assess the effectiveness of the in-app guidance in a more specific and open-ended way.",
+      "number": 7
+    },
+    {
+      "probe": "Why that particular change?",
+      "number": 8,
+      "main": "If you had a magic wand, what's the one thing you would change to make this verification process better?",
+      "type": "improvement",
+      "intent": "To generate user-centric ideas for improvement by removing constraints."
+    },
+    {
+      "probe": "What were those expectations based on? (e.g., other apps, past experiences)",
+      "intent": "To understand the user's initial expectations for the KYC process, which helps reveal their mental model.",
+      "main": "Before you started the verification, what were your expectations for how it would work?",
+      "type": "improvement",
+      "number": 9
+    },
+    {
+      "number": 10,
+      "type": "closing",
+      "main": "Is there anything else at all that you'd like to share with us that might help us improve the experience?",
+      "intent": "To provide a final opportunity for the user to share any thoughts or feelings not covered by previous questions.",
+      "probe": "We really appreciate your honest feedback. Is there any final thought you have for the team?"
+    }
+  ],
+  "sessions": [
+    "f3f45775",
+    "b4164c6b",
+    "18a8022c",
+    "901fa039",
+    "c6e03d1b",
+    "968bef42",
+    "784b18b4",
+    "279213df"
+  ],
+  "created_at": "2026-03-27T05:41:33.803479+00:00",
+  "created_by": "DesignerAgent",
+  "design_metadata": {
+    "review_passes": 2,
+    "issues_found": 4,
+    "quality_summary": "The final interview guide is robust and aligns with the research objectives. It follows a logical flow, beginning with rapport-building, moving into detailed behavioral recall of the KYC experience, and then exploring emotions, satisfaction, and areas for improvement. All questions have been reviewed and revised to be open-ended, non-leading, and specific, ensuring they are optimized to generate actionable insights from the target audience. The guide is ready for field use."
+  },
+  "updated_at": "2026-03-27T12:56:49.969434"
+}

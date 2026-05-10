@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Interview – GetHeard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:           #050d1f;
+    --bg-card:      #0a1628;
+    --bg-surface:   #1e2d45;
+    --border:       rgba(255,255,255,0.08);
+    --border-blue:  rgba(59,130,246,0.3);
+    --blue:         #3b82f6;
+    --blue-dim:     rgba(59,130,246,0.12);
+    --blue-glow:    rgba(59,130,246,0.18);
+    --green:        #10d48e;
+    --text:         rgba(255,255,255,0.92);
+    --text-secondary: rgba(255,255,255,0.58);
+    --text-muted:   rgba(255,255,255,0.35);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    color: var(--text);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events: none;
+  }
+
+  /* Glow blobs */
+  .blob-1 {
+    position: fixed;
+    top: -200px; right: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .blob-2 {
+    position: fixed;
+    bottom: -150px; left: -150px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(16,212,142,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    max-width: 440px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.05);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 32px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(160deg, #050d1f 0%, #0a1628 60%, #0d1f3c 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 200px;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .brand {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .project-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .project-obj {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 0.03em;
+  }
+
+  /* Body */
+  .body { padding: 24px 28px; }
+
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  /* Language grid */
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .lang-btn {
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 6px;
+    background: var(--bg-surface);
+    cursor: pointer;
+    text-align: center;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .lang-btn .flag { font-size: 20px; }
+  .lang-btn .name { font-size: 10px; color: var(--text-secondary); font-weight: 500; }
+  .lang-btn.selected {
+    border-color: var(--blue);
+    background: var(--blue-dim);
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
+  }
+  .lang-btn:hover { border-color: rgba(59,130,246,0.5); }
+
+  /* CTAs */
+  .cta-wa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #25d366;
+    color: #fff;
+    text-decoration: none;
+    padding: 15px 24px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    transition: all .2s;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    letter-spacing: 0.01em;
+  }
+  .cta-wa:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(37,211,102,0.3); }
+  .cta-wa svg { width: 20px; height: 20px; fill: #fff; flex-shrink: 0; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 10px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .divider::before,.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .cta-voice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--blue-dim);
+    color: var(--blue);
+    text-decoration: none;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    border: 1.5px solid rgba(59,130,246,0.25);
+    transition: all .2s;
+    cursor: pointer;
+    width: 100%;
+  }
+  .cta-voice:hover {
+    background: rgba(59,130,246,0.18);
+    border-color: var(--blue);
+    transform: translateY(-1px);
+  }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .step { display: flex; align-items: flex-start; gap: 12px; }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--blue-dim);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--blue);
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+  .step-text strong { color: var(--text); }
+
+  /* Incentive bar */
+  .incentive-bar {
+    background: rgba(16,212,142,0.08);
+    border: 1px solid rgba(16,212,142,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--green);
+    font-weight: 500;
+  }
+  .incentive-bar strong { font-size: 0.95rem; font-weight: 700; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 0 28px 22px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Loading / error */
+  .loading {
+    text-align: center;
+    padding: 60px 28px;
+    color: var(--text-muted);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid rgba(59,130,246,0.15);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  .error {
+    text-align: center;
+    padding: 48px 28px;
+    color: var(--text-secondary);
+  }
+</style>
+</head>
+<body>
+
+<div class="blob-1"></div>
+<div class="blob-2"></div>
+
+<div class="card">
+  <div id="loadingView" class="loading">
+    <div class="spinner"></div>
+    <p style="font-size:0.85rem">Loading study details…</p>
+  </div>
+
+  <div id="mainView" style="display:none">
+    <div class="hero">
+      <div class="brand">🎙 GetHeard Research</div>
+      <div class="project-name" id="projectName">Study</div>
+      <div class="project-obj" id="projectObj"></div>
+      <div class="meta-row" id="metaRow"></div>
+    </div>
+
+    <div class="body">
+      <div class="section-label">Choose your language</div>
+      <div class="lang-grid" id="langGrid"></div>
+
+      <a id="btnWA" class="cta-wa" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Start on WhatsApp
+      </a>
+
+      <div class="divider">or</div>
+
+      <a id="btnVoice" class="cta-voice" href="#">
+        🎙 Start Voice Interview in Browser
+      </a>
+
+      <div class="section-label">How it works</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Tap "Start on WhatsApp"</strong> — opens a chat with our AI interviewer</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Answer a few questions</strong> in your own words — no right or wrong answers</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Done!</strong> Takes about <span id="estTime">10</span> minutes</div>
+        </div>
+      </div>
+
+      <div class="incentive-bar" id="incentiveBar" style="display:none;margin-top:20px">
+        🎁 Earn <strong id="incentiveAmt">&nbsp;50 points&nbsp;</strong> for completing this study
+      </div>
+    </div>
+
+    <div class="footer">
+      Your responses are confidential and used only for research purposes.
+    </div>
+  </div>
+
+  <div id="errorView" class="error" style="display:none">
+    <p style="font-size:2rem;margin-bottom:8px">🔍</p>
+    <p style="font-weight:700;margin-bottom:4px;color:var(--text)">Study not found</p>
+    <p style="font-size:0.82rem">Check the link you received and try again.</p>
+  </div>
+</div>
+
+<script>
+const LANG_FLAGS = {en:'🇬🇧',hi:'🇮🇳',id:'🇮🇩',fil:'🇵🇭',th:'🇹🇭',vi:'🇻🇳',ko:'🇰🇷',ja:'🇯🇵',zh:'🇨🇳'};
+const LANG_NAMES = {en:'English',hi:'हिन्दी',id:'Bahasa',fil:'Filipino',th:'ภาษาไทย',vi:'Tiếng Việt',ko:'한국어',ja:'日本語',zh:'中文'};
+const RESEARCH_LABELS = {cx:'CX Study',ux:'UX Study',brand:'Brand Study',product:'Product Study',
+  nps:'NPS Study',employee:'Employee Study',market:'Market Research',custom:'Research Study'};
+
+const projectId = location.pathname.split('/').pop();
+let selectedLang = 'en';
+let waNumber = '';
+
+async function init() {
+  try {
+    const [projRes, configRes] = await Promise.all([
+      fetch(`/api/projects/${projectId}`),
+      fetch('/api/config/public'),
+    ]);
+    if (!projRes.ok) throw new Error('not found');
+    const proj = await projRes.json();
+    const cfg  = configRes.ok ? await configRes.json() : {};
+    waNumber = (cfg.whatsapp_number || '').replace('whatsapp:', '');
+    selectedLang = proj.language || 'en';
+
+    document.getElementById('projectName').textContent = proj.name || 'Research Study';
+    document.getElementById('projectObj').textContent  = proj.objective || '';
+
+    const metaEl = document.getElementById('metaRow');
+    const pills = [
+      `⏱ ~${(proj.questions || []).length * 2 || 10} min`,
+      `🔬 ${RESEARCH_LABELS[proj.research_type] || 'Study'}`,
+    ];
+    if (proj.brand_name) pills.push(`🏢 ${proj.brand_name}`);
+    metaEl.innerHTML = pills.map(p => `<span class="meta-pill">${p}</span>`).join('');
+    document.getElementById('estTime').textContent = `${(proj.questions || []).length * 2 || 10}`;
+
+    renderLangs(proj.language || 'en');
+    document.getElementById('incentiveBar').style.display = '';
+    updateLinks();
+
+    document.getElementById('loadingView').style.display = 'none';
+    document.getElementById('mainView').style.display = '';
+  } catch(e) {
+    document.getElementById('loadingView').style.display = 'none';
+    document.getElementById('errorView').style.display = '';
+  }
+}
+
+function renderLangs(defaultLang) {
+  const langs = ['en','hi','id','fil','th','vi','ko','ja','zh'];
+  const grid = document.getElementById('langGrid');
+  grid.innerHTML = langs.map(l => `
+    <button class="lang-btn${l === defaultLang ? ' selected' : ''}" onclick="selectLang('${l}')">
+      <span class="flag">${LANG_FLAGS[l]}</span>
+      <span class="name">${LANG_NAMES[l]}</span>
+    </button>
+  `).join('');
+  selectedLang = defaultLang;
+}
+
+function selectLang(lang) {
+  selectedLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  updateLinks();
+}
+
+function updateLinks() {
+  const btnWA    = document.getElementById('btnWA');
+  const btnVoice = document.getElementById('btnVoice');
+  if (waNumber) {
+    const msg = encodeURIComponent(`START ${projectId}`);
+    btnWA.href = `https://wa.me/${waNumber.replace(/\D/g,'')}?text=${msg}`;
+    btnWA.style.display = '';
+  } else {
+    btnWA.style.display = 'none';
+  }
+  btnVoice.href = `/?project_id=${projectId}&language=${selectedLang}`;
+}
+
+init();
+</script>
+</body>
+</html>

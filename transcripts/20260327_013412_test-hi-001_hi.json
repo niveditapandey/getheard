@@ -1,0 +1,49 @@
+{
+  "session_id": "test-hi-001",
+  "language_code": "hi",
+  "started_at": null,
+  "ended_at": "2026-03-27T01:34:12.144982",
+  "metadata": {
+    "channel": "voice",
+    "stt_provider": "sarvam",
+    "tts_provider": "sarvam"
+  },
+  "conversation": [
+    {
+      "speaker": "interviewer",
+      "text": "नमस्ते! आपसे बात करके अच्छा लगा।",
+      "timestamp": "2026-03-27T11:00:00",
+      "state": "greeting",
+      "language": "hi"
+    },
+    {
+      "speaker": "respondent",
+      "text": "नमस्ते एलेक्स!",
+      "timestamp": "2026-03-27T11:00:05",
+      "state": "greeting",
+      "language": "hi"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "क्या आप अपनी हाल की अस्पताल यात्रा के बारे में बता सकते हैं?",
+      "timestamp": "2026-03-27T11:00:10",
+      "state": "question_1",
+      "language": "hi"
+    },
+    {
+      "speaker": "respondent",
+      "text": "मैं पिछले महीने डॉक्टर के पास गया था।",
+      "timestamp": "2026-03-27T11:00:30",
+      "state": "question_1",
+      "language": "hi"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "बहुत बहुत धन्यवाद!",
+      "timestamp": "2026-03-27T11:01:15",
+      "state": "completed",
+      "language": "hi"
+    }
+  ],
+  "turn_count": 5
+}

@@ -1,0 +1,179 @@
+{
+  "session_id": "synthetic-id-001",
+  "language_code": "id",
+  "started_at": "2026-03-27T09:00:00",
+  "ended_at": "2026-03-27T09:18:00",
+  "metadata": {
+    "channel": "voice",
+    "project_id": "feef0046",
+    "started_at": "2026-03-27T09:00:00",
+    "stt_provider": "google",
+    "tts_provider": "google",
+    "synthetic": true,
+    "respondent_profile": "Budi, 29, Jakarta, karyawan swasta, pengguna aktif GoPay & OVO"
+  },
+  "conversation": [
+    {
+      "speaker": "interviewer",
+      "text": "Halo! Terima kasih sudah meluangkan waktu. Saya Alex dari GetHeard. Kita akan bicara tentang pengalaman verifikasi identitas di aplikasi keuangan. Siap mulai?",
+      "timestamp": "2026-03-27T09:00:00",
+      "state": "greeting",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Siap, silakan.",
+      "timestamp": "2026-03-27T09:00:08",
+      "state": "greeting",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Ceritakan sedikit tentang pengalaman kamu menggunakan aplikasi keuangan di HP?",
+      "timestamp": "2026-03-27T09:00:15",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Saya pakai GoPay sama OVO setiap hari buat bayar-bayar dan transfer. Kadang pakai mobile banking BCA juga. Udah terbiasa sih, hampir semua transaksi lewat HP sekarang, jarang pakai kartu fisik.",
+      "timestamp": "2026-03-27T09:01:10",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Waktu coba verifikasi identitas di aplikasi kami, bisa ceritain prosesnya dari awal?",
+      "timestamp": "2026-03-27T09:01:20",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Jadi waktu itu saya buka aplikasinya, terus diminta upload KTP. Oke lah, saya foto KTP. Tapi habis itu diminta selfie sambil pegang KTP, dan fotonya harus pas banget — cahayanya, posisinya. Saya coba tiga kali gagal terus karena katanya gambar kurang jelas. Frustrasi banget. Akhirnya nyerah.",
+      "timestamp": "2026-03-27T09:02:45",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Di titik mana kamu berhenti? Apa yang ada di layar waktu itu?",
+      "timestamp": "2026-03-27T09:02:55",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Pas bagian selfie itu. Di layar ada kotak buat posisi wajah, tapi kotaknya kecil banget dan tulisannya bilang 'Pastikan wajah terlihat jelas dan KTP terbaca'. Saya udah coba di ruangan terang, tetap gagal. Pesannya cuma bilang 'Gagal, coba lagi' — nggak ada penjelasan kenapa gagal.",
+      "timestamp": "2026-03-27T09:04:00",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Gimana pengalaman siapkan dan upload dokumen-dokumennya?",
+      "timestamp": "2026-03-27T09:04:10",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "KTP gampang, tinggal foto. Tapi nggak tau harus foto dari sudut mana supaya diterima sistemnya. Nggak ada contoh foto yang baik itu seperti apa. Di GoPay dulu ada contohnya, jadi lebih gampang. Di sini nggak ada, jadi nebak-nebak sendiri.",
+      "timestamp": "2026-03-27T09:05:20",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Berapa langkah dan berapa lama proses verifikasinya?",
+      "timestamp": "2026-03-27T09:05:30",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Sekitar 6-7 langkah kayaknya. Isi data, foto KTP, selfie, konfirmasi data, terus ada verifikasi nomor HP lagi. Lama banget, hampir 15 menit dan itu belum berhasil. GoPay dulu cuma 5 menit beres.",
+      "timestamp": "2026-03-27T09:06:30",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Gimana perasaan kamu waktu diminta kasih data pribadi dan dokumen?",
+      "timestamp": "2026-03-27T09:06:40",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Sedikit khawatir sih, terutama pas selfie pegang KTP — itu kan semua data ada di sana. Nggak ada penjelasan data bakal disimpan gimana atau untuk apa. Kalau ada tulisan 'Data kamu aman, diproteksi dengan enkripsi' mungkin lebih tenang.",
+      "timestamp": "2026-03-27T09:07:50",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Panduan di setiap layar cukup membantu nggak?",
+      "timestamp": "2026-03-27T09:08:00",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Kurang banget. Teks instruksinya kecil dan teknis. Nggak ada animasi atau contoh visual. Pokoknya kalau gagal, pesannya generik — nggak kasih tau salahnya di mana.",
+      "timestamp": "2026-03-27T09:09:00",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Kalau bisa ubah satu hal dari proses ini, apa yang kamu ubah?",
+      "timestamp": "2026-03-27T09:09:10",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Pesan error yang lebih jelas! Bukan cuma 'gagal', tapi kasih tau kenapa dan cara benerin. Atau lebih bagus lagi — ada foto panduan seperti apa yang diterima sistem.",
+      "timestamp": "2026-03-27T09:10:00",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Sebelum mulai verifikasi, ekspektasinya gimana?",
+      "timestamp": "2026-03-27T09:10:10",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Nggak nyangka serumit itu. Ekspektasi saya 5 menit selesai kayak aplikasi lain. Ternyata jauh lebih rumit dan makan waktu.",
+      "timestamp": "2026-03-27T09:11:00",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Ada hal lain yang ingin kamu sampaikan?",
+      "timestamp": "2026-03-27T09:11:10",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Mungkin tambahkan opsi verifikasi alternatif — misalnya bisa lewat video call singkat sama agen. Atau kalau mau tetap pakai foto, pastiin kamera panduan lebih bagus. Saya nggak keberatan kalau prosesnya aman, tapi harus lebih jelas dan cepat.",
+      "timestamp": "2026-03-27T09:12:00",
+      "state": "questioning",
+      "language": "id"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Terima kasih banyak Budi atas waktunya. Masukan kamu sangat berarti untuk kami tingkatkan pengalaman verifikasi ini.",
+      "timestamp": "2026-03-27T09:12:10",
+      "state": "completed",
+      "language": "id"
+    }
+  ],
+  "turn_count": 22
+}

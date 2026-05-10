@@ -1,0 +1,78 @@
+{
+  "session_id": "test-en-001",
+  "language_code": "en",
+  "started_at": "2026-03-27T10:00:00",
+  "ended_at": "2026-03-27T01:34:12.144494",
+  "metadata": {
+    "channel": "voice",
+    "started_at": "2026-03-27T10:00:00",
+    "stt_provider": "google",
+    "tts_provider": "google"
+  },
+  "conversation": [
+    {
+      "speaker": "interviewer",
+      "text": "Hello! Thank you for speaking with me.",
+      "timestamp": "2026-03-27T10:00:00",
+      "state": "greeting",
+      "language": "en"
+    },
+    {
+      "speaker": "respondent",
+      "text": "Hi Alex, happy to help!",
+      "timestamp": "2026-03-27T10:00:05",
+      "state": "greeting",
+      "language": "en"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Can you tell me about your most recent healthcare visit?",
+      "timestamp": "2026-03-27T10:00:10",
+      "state": "question_1",
+      "language": "en"
+    },
+    {
+      "speaker": "respondent",
+      "text": "I went to the clinic last week for a routine checkup. The doctor was great.",
+      "timestamp": "2026-03-27T10:00:30",
+      "state": "question_1",
+      "language": "en"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "What aspects went well?",
+      "timestamp": "2026-03-27T10:00:35",
+      "state": "question_2",
+      "language": "en"
+    },
+    {
+      "speaker": "respondent",
+      "text": "The waiting time was short and the staff were very friendly.",
+      "timestamp": "2026-03-27T10:00:50",
+      "state": "question_2",
+      "language": "en"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "What could have been improved?",
+      "timestamp": "2026-03-27T10:00:55",
+      "state": "question_3",
+      "language": "en"
+    },
+    {
+      "speaker": "respondent",
+      "text": "The parking was difficult to find.",
+      "timestamp": "2026-03-27T10:01:10",
+      "state": "question_3",
+      "language": "en"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "Thank you so much for your feedback!",
+      "timestamp": "2026-03-27T10:01:15",
+      "state": "completed",
+      "language": "en"
+    }
+  ],
+  "turn_count": 9
+}

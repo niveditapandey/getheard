@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel — GetHeard Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050d1f;
+      --card: #0a1628;
+      --card-border: rgba(255,255,255,0.08);
+      --accent: #3b82f6;
+      --accent-bright: #60a5fa;
+      --text: rgba(255,255,255,0.92);
+      --text-muted: rgba(255,255,255,0.58);
+      --text-dim: rgba(255,255,255,0.35);
+      --input-bg: #0f1f3a;
+      --glow: rgba(59,130,246,0.15);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 200px;
+      min-width: 200px;
+      background: var(--card);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0 16px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 0 20px 24px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .sidebar-logo a { text-decoration: none; color: var(--text); }
+    .sidebar-logo .accent { color: var(--accent-bright); }
+
+    .nav-section-label {
+      padding: 16px 20px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s, background 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .nav-item.active {
+      color: var(--accent-bright);
+      border-left-color: var(--accent-bright);
+      background: var(--glow);
+      font-weight: 500;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px 0;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 200px;
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 36px 40px;
+    }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── Coming Soon ── */
+    .coming-soon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 160px);
+    }
+
+    .coming-soon-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 56px 64px;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .coming-soon-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      opacity: 0.6;
+    }
+
+    .coming-soon-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .coming-soon-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .coming-soon-badge {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 4px 12px;
+      background: var(--glow);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-bright);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo"><a href="/admin"><span class="accent">Get</span>Heard</a></div>
+    <div class="nav-section-label">ADMIN</div>
+    <a href="/admin" class="nav-item">≡ Overview</a>
+    <a href="/admin/studies" class="nav-item">▦ Studies</a>
+    <a href="/admin/respondents" class="nav-item active">👥 Panel</a>
+    <div class="nav-section-label">SALES</div>
+    <a href="/admin/pipeline" class="nav-item">&#127919; Pipeline</a>
+    <div class="nav-section-label">FINANCE</div>
+    <a href="/admin/pricing" class="nav-item">💰 Pricing</a>
+    <a href="/admin/payouts" class="nav-item">⟳ Payouts</a>
+    <a href="/admin/reports" class="nav-item">▣ Reports</a>
+    <div class="nav-section-label">SYSTEM</div>
+    <a href="/admin/clients" class="nav-item">👤 Clients</a>
+    <a href="/admin/settings" class="nav-item">⚙ Settings</a>
+    <a href="/admin/logout" class="nav-item">← Log Out</a>
+    <div class="sidebar-footer">GetHeard Admin v1.0</div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Panel</h1>
+    </div>
+
+    <div class="coming-soon-wrap">
+      <div class="coming-soon-card">
+        <div class="coming-soon-icon">👥</div>
+        <div class="coming-soon-title">Coming Soon</div>
+        <p class="coming-soon-text">
+          Respondent panel management is currently in development.
+        </p>
+        <span class="coming-soon-badge">In Progress</span>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

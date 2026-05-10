@@ -1,0 +1,179 @@
+{
+  "session_id": "synthetic-zh-001",
+  "language_code": "zh",
+  "started_at": "2026-03-27T10:00:00",
+  "ended_at": "2026-03-27T10:19:00",
+  "metadata": {
+    "channel": "voice",
+    "project_id": "feef0046",
+    "started_at": "2026-03-27T10:00:00",
+    "stt_provider": "google",
+    "tts_provider": "google",
+    "synthetic": true,
+    "respondent_profile": "Wei, 26, Singapore, software engineer, 使用支付宝、微信支付和DBS digibank"
+  },
+  "conversation": [
+    {
+      "speaker": "interviewer",
+      "text": "您好！感谢您抽出时间。我是来自GetHeard的Alex。今天我们将聊聊您在金融应用上进行身份验证的体验。准备好开始了吗？",
+      "timestamp": "2026-03-27T10:00:00",
+      "state": "greeting",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "好的，开始吧。",
+      "timestamp": "2026-03-27T10:00:07",
+      "state": "greeting",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "您平时怎么用手机管理财务的？",
+      "timestamp": "2026-03-27T10:00:15",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "我用支付宝和微信支付比较多，主要用来扫码付款。银行这边用DBS的digibank，转账和看余额都在里面。基本上不怎么用现金了，所有支付都靠手机。",
+      "timestamp": "2026-03-27T10:01:10",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "您能从头讲讲，在我们的应用里做身份验证时发生了什么吗？",
+      "timestamp": "2026-03-27T10:01:20",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "打开应用后，系统要求我上传身份证照片，然后进行人脸识别。人脸识别部分我做了五六次都没通过，一直提示我「光线不足」或者「请正对摄像头」。我在室内、室外都试了，就是不行。最后我放弃了，去找了在线客服，结果等了四十分钟没人回复，就直接离开了。",
+      "timestamp": "2026-03-27T10:03:00",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "您是在哪个步骤停下来的？当时屏幕上显示什么？",
+      "timestamp": "2026-03-27T10:03:10",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "就是人脸扫描那步。屏幕上有个椭圆框让我把脸放进去，但提示信息只有「验证失败，请重试」，完全没说哪里出了问题。我用过支付宝的人脸识别，失败的时候会提示「光线不够强，请移到明亮处」——非常具体，很容易照着做。这个应用完全没有这种反馈。",
+      "timestamp": "2026-03-27T10:04:30",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "准备和上传文件是什么感受？",
+      "timestamp": "2026-03-27T10:04:40",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "身份证拍照还算顺利，但没有示例图片告诉我正确格式是什么样的。支付宝和微信都有很直观的提示，比如图片要求、拍摄角度。这个应用没有，所以我不确定我上传的照片是否符合要求，每次都在猜。",
+      "timestamp": "2026-03-27T10:05:50",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "整个过程大概几个步骤，花了多少时间？",
+      "timestamp": "2026-03-27T10:06:00",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "大概八到十步。填写个人信息、上传证件、人脸识别、手机号验证、邮箱验证……整个过程加上等客服，超过一个小时了还没搞定。支付宝当年注册加验证也就五分钟。差距太大了。",
+      "timestamp": "2026-03-27T10:07:10",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "提交个人信息和文件时，您当时是什么感觉？",
+      "timestamp": "2026-03-27T10:07:20",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "有些担心，尤其是人脸加证件同框的那张照片。这张图包含太多敏感信息了。应用里完全没有隐私政策说明，没有告诉我这些数据怎么存储、会不会分享给第三方。如果有一行字说明数据的处理方式，我会安心很多。",
+      "timestamp": "2026-03-27T10:08:30",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "每个页面的指引对您有帮助吗？",
+      "timestamp": "2026-03-27T10:08:40",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "帮助很有限。文字很少，字体也小，没有动图或者视频教程。失败提示完全没有诊断作用。我是做技术的，看到这种错误提示都觉得迷茫，普通用户肯定更头大。",
+      "timestamp": "2026-03-27T10:09:40",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "如果可以改变一件事，您会改什么？",
+      "timestamp": "2026-03-27T10:09:50",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "改进错误反馈机制。不只是说「失败」，要告诉用户具体原因和解决办法。比如「光线不足，请到更亮的地方」或「证件模糊，请重新对焦再拍」。这样用户才知道怎么做，不会白白浪费时间重试。",
+      "timestamp": "2026-03-27T10:10:40",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "在开始验证之前，您对整个过程有什么预期吗？",
+      "timestamp": "2026-03-27T10:10:50",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "我以为跟支付宝或者DBS差不多，五到十分钟搞定，第一次就能通过。结果完全出乎意料——繁琐、耗时，而且最终没有成功。这种体验会让人不想再尝试。",
+      "timestamp": "2026-03-27T10:11:40",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "还有什么想补充的吗？",
+      "timestamp": "2026-03-27T10:11:50",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "respondent",
+      "text": "可以考虑用活体检测替代静态人脸加证件的方式，或者提供视频客服核身的备用方案。另外应用需要做本地化测试——不同肤色、不同光线环境下的识别率很重要。我周围有同事也有类似问题，感觉这是个系统性的缺陷，不是个别情况。",
+      "timestamp": "2026-03-27T10:12:40",
+      "state": "questioning",
+      "language": "zh"
+    },
+    {
+      "speaker": "interviewer",
+      "text": "非常感谢您，Wei。您分享的内容非常宝贵，将帮助我们大幅改善验证体验。",
+      "timestamp": "2026-03-27T10:12:50",
+      "state": "completed",
+      "language": "zh"
+    }
+  ],
+  "turn_count": 24
+}

@@ -1,6 +1,48 @@
+<<<<<<< HEAD
 .claude/
 .env
 .DS_Store
 __pycache__/
 *.pyc
 .claude/
+=======
+# ── Secrets — NEVER commit these ──────────────────────────────────
+.env
+.env.local
+.env.production
+*.env
+
+# ── Python ────────────────────────────────────────────────────────
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# ── Data directories (local JSON files) ──────────────────────────
+projects/
+transcripts/
+reports/
+respondents/
+clients/
+panels/
+redemptions/
+
+# ── Google Cloud credential files ─────────────────────────────────
+service-account*.json
+gcp-key*.json
+
+# ── macOS ─────────────────────────────────────────────────────────
+.DS_Store
+
+# ── IDE ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+# documentation/ — tracked (removed from ignore so handover docs are versioned)
+.env
+>>>>>>> origin/fix/questions-and-link

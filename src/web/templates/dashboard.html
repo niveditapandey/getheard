@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GetHeard – Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#050d1f;--card:#0a1628;--card-border:rgba(255,255,255,0.08);
+      --muted:#1e2d45;--accent:#3b82f6;--accent-bright:#60a5fa;
+      --text:rgba(255,255,255,0.92);--text-muted:rgba(255,255,255,0.58);
+      --text-dim:rgba(255,255,255,0.35);--input-bg:#0f1f3a;
+      --input-border:rgba(255,255,255,0.1);--glow:rgba(59,130,246,0.15);
+      --danger:#f87171;--success:#10d48e;--warning:#f59e0b;--radius:14px;
+    }
+    body{
+      font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
+      min-height:100vh;padding:24px;position:relative;
+    }
+    body::before{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+      background-size:60px 60px;
+    }
+    body::after{
+      content:'';position:fixed;top:0;right:0;width:60vw;height:60vh;
+      pointer-events:none;z-index:0;
+      background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 60%);
+    }
+    body > *{position:relative;z-index:1;}
+
+    /* ── Nav ── */
+    nav{
+      display:flex;align-items:center;justify-content:space-between;
+      background:rgba(5,13,31,0.9);backdrop-filter:blur(12px);
+      border:1px solid var(--card-border);border-radius:var(--radius);
+      padding:16px 24px;margin-bottom:24px;
+    }
+    .nav-brand{
+      font-size:1.2rem;font-weight:800;color:var(--text);
+      text-decoration:none;display:inline-block;
+    }
+    .nav-brand .accent{color:var(--accent-bright);}
+    .nav-links a{
+      margin-left:20px;text-decoration:none;color:var(--text-muted);
+      font-size:.9rem;font-weight:500;transition:color .2s;
+    }
+    .nav-links a:hover{color:var(--accent-bright);}
+    .nav-links a.active{
+      color:var(--accent-bright);border-bottom:2px solid var(--accent);
+      padding-bottom:2px;
+    }
+
+    /* ── Grid ── */
+    .grid{display:grid;gap:20px;}
+    .grid-4{grid-template-columns:repeat(4,1fr);}
+    .grid-2{grid-template-columns:repeat(2,1fr);}
+    @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.grid-4,.grid-2{grid-template-columns:1fr}}
+
+    /* ── Card ── */
+    .card{
+      background:var(--card);border:1px solid var(--card-border);
+      border-radius:var(--radius);padding:24px;
+    }
+    .card h3{
+      font-size:.85rem;font-weight:600;color:var(--text-muted);
+      text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;
+    }
+
+    /* ── Stat cards ── */
+    .stat-value{font-size:2.2rem;font-weight:700;color:var(--accent-bright);}
+    .stat-sub{font-size:.8rem;color:var(--text-dim);margin-top:4px;}
+
+    /* ── Section headers ── */
+    h2{font-size:1.1rem;font-weight:700;margin-bottom:16px;color:var(--text);}
+
+    /* ── Table ── */
+    table{width:100%;border-collapse:collapse;font-size:.875rem;}
+    th{
+      text-align:left;padding:10px 12px;font-size:.75rem;font-weight:600;
+      color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;
+      border-bottom:2px solid var(--card-border);
+    }
+    td{padding:10px 12px;border-bottom:1px solid var(--card-border);color:var(--text);}
+    tr:hover td{background:rgba(59,130,246,0.05);}
+    .badge{
+      display:inline-block;padding:2px 8px;border-radius:999px;
+      font-size:.72rem;font-weight:600;
+    }
+    .badge-en {background:rgba(59,130,246,0.18);color:#93c5fd;}
+    .badge-hi {background:rgba(245,158,11,0.18);color:#fcd34d;}
+    .badge-id {background:rgba(16,212,142,0.18);color:#6ee7b7;}
+    .badge-fil{background:rgba(248,113,113,0.18);color:#fca5a5;}
+    .badge-th {background:rgba(96,165,250,0.18);color:#93c5fd;}
+    .badge-vi {background:rgba(249,115,22,0.18);color:#fdba74;}
+    .badge-ko {background:rgba(20,184,166,0.18);color:#5eead4;}
+    .badge-ja {background:rgba(192,132,252,0.18);color:#d8b4fe;}
+    .badge-zh {background:rgba(14,165,233,0.18);color:#7dd3fc;}
+    .badge-voice{background:rgba(59,130,246,0.18);color:#93c5fd;}
+    .badge-wa  {background:rgba(16,212,142,0.18);color:#6ee7b7;}
+    .btn-sm{
+      padding:5px 12px;border:1px solid var(--card-border);border-radius:8px;
+      cursor:pointer;font-size:.78rem;font-weight:600;
+      background:var(--muted);color:var(--accent-bright);
+      transition:background .2s,border-color .2s;font-family:'Inter',sans-serif;
+    }
+    .btn-sm:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+    /* ── Transcript modal ── */
+    .modal-overlay{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+      z-index:1000;align-items:center;justify-content:center;
+    }
+    .modal-overlay.open{display:flex;}
+    .modal{
+      background:var(--card);border:1px solid var(--card-border);
+      border-radius:var(--radius);max-width:680px;width:90%;
+      max-height:85vh;overflow:hidden;display:flex;flex-direction:column;
+    }
+    .modal-header{
+      padding:20px 24px;border-bottom:1px solid var(--card-border);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .modal-body{overflow-y:auto;padding:20px 24px;flex:1;}
+    .close-btn{
+      background:none;border:none;font-size:1.4rem;cursor:pointer;
+      color:var(--text-muted);line-height:1;
+    }
+    .close-btn:hover{color:var(--text);}
+    .msg{
+      padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:.88rem;
+      line-height:1.5;max-width:85%;
+    }
+    .msg.interviewer{
+      background:var(--muted);color:var(--text);border:1px solid var(--card-border);
+      border-bottom-left-radius:4px;align-self:flex-start;
+    }
+    .msg.respondent{
+      background:var(--accent);color:#fff;
+      border-bottom-right-radius:4px;align-self:flex-end;margin-left:auto;
+    }
+    .msg-label{font-size:.7rem;font-weight:700;opacity:.6;margin-bottom:3px;}
+    .msgs-wrap{display:flex;flex-direction:column;}
+
+    /* ── Channel indicator ── */
+    .channel-icon{margin-right:4px;}
+
+    /* ── Empty state ── */
+    .empty{text-align:center;padding:40px;color:var(--text-muted);font-size:.9rem;}
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand"><span class="accent">Get</span>Heard</div>
+  <div class="nav-links">
+    <a href="/">Interview</a>
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/projects">Projects</a>
+  </div>
+</nav>
+
+<!-- Stat cards -->
+<div class="grid grid-4" id="statsGrid" style="margin-bottom:20px">
+  <div class="card"><h3>Total Interviews</h3><div class="stat-value" id="statTotal">—</div><div class="stat-sub">all time</div></div>
+  <div class="card"><h3>Completed</h3><div class="stat-value" id="statCompleted">—</div><div class="stat-sub" id="statPct">—</div></div>
+  <div class="card"><h3>Languages Used</h3><div class="stat-value" id="statLangs">—</div><div class="stat-sub">unique</div></div>
+  <div class="card"><h3>WhatsApp Sessions</h3><div class="stat-value" id="statWA">—</div><div class="stat-sub">active now</div></div>
+</div>
+
+<!-- Charts + recent -->
+<div class="grid grid-2" style="margin-bottom:20px">
+  <div class="card">
+    <h2>Interviews by Language</h2>
+    <canvas id="langChart" height="200"></canvas>
+  </div>
+  <div class="card">
+    <h2>Channel Mix</h2>
+    <canvas id="channelChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Transcript list -->
+<div class="card">
+  <h2>Recent Transcripts</h2>
+  <div id="transcriptTable"><div class="empty">Loading…</div></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <strong id="modalTitle">Transcript</strong>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="msgs-wrap" id="modalMsgs"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANG_LABELS = {
+  en:'🇬🇧 English',hi:'🇮🇳 Hindi',id:'🇮🇩 Indonesian',
+  fil:'🇵🇭 Filipino',th:'🇹🇭 Thai',vi:'🇻🇳 Vietnamese',
+  ko:'🇰🇷 Korean',ja:'🇯🇵 Japanese',zh:'🇨🇳 Mandarin',
+};
+const LANG_COLORS = {
+  en:'#3b82f6',hi:'#f59e0b',id:'#10d48e',fil:'#f87171',
+  th:'#60a5fa',vi:'#f97316',ko:'#14b8a6',ja:'#c084fc',zh:'#0ea5e9',
+};
+
+let langChart, channelChart;
+
+async function load() {
+  const [statsRes, listRes, healthRes] = await Promise.all([
+    fetch('/api/stats').then(r=>r.json()).catch(()=>({})),
+    fetch('/api/transcripts').then(r=>r.json()).catch(()=>({transcripts:[]})),
+    fetch('/health').then(r=>r.json()).catch(()=>({active_sessions:0})),
+  ]);
+
+  const transcripts = listRes.transcripts || [];
+  renderStats(transcripts, statsRes, healthRes);
+  renderCharts(transcripts);
+  renderTable(transcripts);
+}
+
+function renderStats(transcripts, stats, health) {
+  document.getElementById('statTotal').textContent = transcripts.length;
+
+  // "completed" = transcripts that exist (they're saved on completion)
+  const completed = transcripts.length;
+  document.getElementById('statCompleted').textContent = completed;
+  document.getElementById('statPct').textContent = completed
+    ? `${Math.round(completed/transcripts.length*100)}% completion`
+    : '—';
+
+  const langs = new Set(transcripts.map(t=>t.language_code));
+  document.getElementById('statLangs').textContent = langs.size || 0;
+  document.getElementById('statWA').textContent = stats.whatsapp_active ?? 0;
+}
+
+function renderCharts(transcripts) {
+  // Language distribution
+  const langCounts = {};
+  transcripts.forEach(t => {
+    const l = t.language_code || 'en';
+    langCounts[l] = (langCounts[l]||0)+1;
+  });
+  const langLabels = Object.keys(langCounts).map(k=>LANG_LABELS[k]||k);
+  const langData   = Object.values(langCounts);
+  const langColors = Object.keys(langCounts).map(k=>LANG_COLORS[k]||'#1e2d45');
+
+  if (langChart) langChart.destroy();
+  langChart = new Chart(document.getElementById('langChart'), {
+    type: 'doughnut',
+    data: { labels: langLabels, datasets:[{ data: langData, backgroundColor: langColors, borderWidth:2, borderColor:'#0a1628' }] },
+    options: {
+      plugins:{
+        legend:{
+          position:'right',
+          labels:{font:{size:11},color:'rgba(255,255,255,0.58)'}
+        }
+      },
+      cutout:'65%'
+    }
+  });
+
+  // Channel mix
+  const voiceCount = transcripts.filter(t=>!t.file?.startsWith('whatsapp')).length;
+  const waCount    = transcripts.filter(t=> t.file?.includes('whatsapp') || (t.metadata?.channel==='whatsapp')).length;
+
+  if (channelChart) channelChart.destroy();
+  channelChart = new Chart(document.getElementById('channelChart'), {
+    type: 'bar',
+    data: {
+      labels: ['🎤 Voice', '💬 WhatsApp'],
+      datasets:[{ data:[voiceCount||0, waCount||0],
+        backgroundColor:['#3b82f6','#10d48e'], borderRadius:8 }]
+    },
+    options: {
+      plugins:{ legend:{ display:false } },
+      scales:{
+        y:{
+          beginAtZero:true, ticks:{stepSize:1,color:'rgba(255,255,255,0.58)'},
+          grid:{color:'rgba(255,255,255,0.06)'}
+        },
+        x:{
+          ticks:{color:'rgba(255,255,255,0.58)'},
+          grid:{color:'rgba(255,255,255,0.06)'}
+        }
+      }
+    }
+  });
+}
+
+function renderTable(transcripts) {
+  const container = document.getElementById('transcriptTable');
+  if (!transcripts.length) {
+    container.innerHTML = '<div class="empty">No transcripts yet — run an interview first!</div>';
+    return;
+  }
+
+  const rows = transcripts.slice(0,30).map(t => {
+    const lang = t.language_code || 'en';
+    const channel = (t.file||'').includes('whatsapp') ? 'wa' : 'voice';
+    const channelLabel = channel==='wa' ? '💬 WhatsApp' : '🎤 Voice';
+    const badgeClass = `badge badge-${lang}`;
+    const date = t.ended_at ? new Date(t.ended_at).toLocaleString() : '—';
+    return `<tr>
+      <td>${date}</td>
+      <td><span class="${badgeClass}">${LANG_LABELS[lang]||lang}</span></td>
+      <td><span class="badge badge-${channel}">${channelLabel}</span></td>
+      <td>${t.turn_count||'—'} turns</td>
+      <td><button class="btn-sm" onclick="openTranscript('${t.file}','${lang}','${date}')">View</button></td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Language</th><th>Channel</th><th>Turns</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function openTranscript(filename, lang, date) {
+  document.getElementById('modalTitle').textContent =
+    `${LANG_LABELS[lang]||lang} · ${date}`;
+  document.getElementById('modalMsgs').innerHTML = '<div class="empty">Loading…</div>';
+  document.getElementById('modal').classList.add('open');
+
+  try {
+    const data = await fetch(`/api/transcript-file/${encodeURIComponent(filename)}`).then(r=>r.json());
+    const conv = data.conversation || [];
+    if (!conv.length) {
+      document.getElementById('modalMsgs').innerHTML = '<div class="empty">Empty transcript</div>';
+      return;
+    }
+    document.getElementById('modalMsgs').innerHTML = conv.map(m => `
+      <div class="msg ${m.speaker==='interviewer'?'interviewer':'respondent'}">
+        <div class="msg-label">${m.speaker==='interviewer'?'🤖 Alex':'👤 You'}</div>
+        <div>${escHtml(m.text||m.content||'')}</div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('modalMsgs').innerHTML = '<div class="empty">Failed to load</div>';
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target===document.getElementById('modal')) closeModal();
+});
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+load();
+setInterval(load, 30000); // refresh every 30s
+</script>
+</body>
+</html>

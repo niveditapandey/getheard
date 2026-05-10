@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — GetHeard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Exact palette from LeadConvert / Deccan AI */
+      --bg:        #050d1f;
+      --card:      #0a1628;
+      --card-border: rgba(255,255,255,0.08);
+      --muted:     #1e2d45;
+      --accent:    #3b82f6;
+      --accent-bright: #60a5fa;
+      --text:      rgba(255,255,255,0.92);
+      --text-muted: rgba(255,255,255,0.58);
+      --text-dim:  rgba(255,255,255,0.35);
+      --danger:    #f87171;
+      --input-bg:  #0f1f3a;
+      --input-border: rgba(255,255,255,0.1);
+      --glow:      rgba(59,130,246,0.15);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle background grid — like Deccan AI */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* Blue glow — top right */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Logo */
+    .wordmark {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .wordmark-logo {
+      display: inline-block;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .wordmark-logo .accent { color: var(--accent-bright); }
+    .wordmark p {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Card */
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 36px 40px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+    @media (max-width: 480px) {
+      .login-card { padding: 28px 20px; }
+    }
+
+    .card-header { margin-bottom: 28px; }
+    .card-header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .card-header h1 .accent { color: var(--accent-bright); }
+    .card-header p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Error banner */
+    .alert-error {
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      color: #fca5a5;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      display: none;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .alert-error.show { display: flex; }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .label-row label { margin-bottom: 0; }
+    .forgot-link {
+      font-size: 0.78rem;
+      color: var(--accent-bright);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .forgot-link:hover { opacity: 0.8; }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--glow);
+    }
+    input::placeholder { color: var(--text-dim); }
+    input.invalid { border-color: rgba(248,113,113,0.5); }
+
+    .password-wrapper { position: relative; }
+    .password-wrapper input { padding-right: 44px; }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      font-size: 0.85rem;
+      transition: color 0.15s;
+    }
+    .password-toggle:hover { color: var(--accent-bright); }
+
+    .field-error {
+      font-size: 0.76rem;
+      color: var(--danger);
+      margin-top: 5px;
+      display: none;
+    }
+    .field-error.visible { display: block; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.18s, box-shadow 0.18s, transform 0.15s;
+      letter-spacing: 0.01em;
+    }
+    .btn-submit:hover {
+      opacity: 0.9;
+      box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 24px 0;
+    }
+
+    .signup-link {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .signup-link a {
+      color: var(--accent-bright);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .signup-link a:hover { opacity: 0.8; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+
+    <div class="wordmark">
+      <div style="margin-bottom:6px">
+        <a href="/" class="wordmark-logo"><span class="accent">Get</span>Heard</a>
+      </div>
+      <p>Research Client Portal</p>
+    </div>
+
+    <div class="login-card">
+      <div class="card-header">
+        <h1>Welcome <span class="accent">back</span></h1>
+        <p>Log in to your GetHeard account to continue.</p>
+      </div>
+
+      <div id="error-banner" class="alert-error">
+        <span>⚠</span>
+        <span id="error-message">Invalid email or password. Please try again.</span>
+      </div>
+
+      <form id="login-form" method="POST" action="/listen/login" novalidate>
+
+        <div class="form-group">
+          <label for="email">Username or Email</label>
+          <input type="text" id="email" name="email"
+                 placeholder="demo"
+                 required autocomplete="username" autofocus />
+          <div class="field-error" id="err-email">Please enter your username or email.</div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="password">Password</label>
+            <a href="/listen/forgot-password" class="forgot-link">Forgot password?</a>
+          </div>
+          <div class="password-wrapper">
+            <input type="password" id="password" name="password"
+                   placeholder="Enter your password"
+                   required autocomplete="current-password" />
+            <button type="button" class="password-toggle"
+                    aria-label="Toggle password visibility"
+                    onclick="togglePwd()">&#128065;</button>
+          </div>
+          <div class="field-error" id="err-pwd">Please enter your password.</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">Log In</button>
+
+      </form>
+
+      <hr class="divider" />
+      <p class="signup-link">New here? <a href="/listen/signup">Create an account &rarr;</a></p>
+    </div>
+
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === '1') {
+      document.getElementById('error-banner').classList.add('show');
+    }
+
+    function togglePwd() {
+      const inp = document.getElementById('password');
+      const btn = document.querySelector('.password-toggle');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '&#128584;';
+      } else {
+        inp.type = 'password';
+        btn.innerHTML = '&#128065;';
+      }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      let valid = true;
+      const email = document.getElementById('email');
+      const errEmail = document.getElementById('err-email');
+      if (email.value.trim().length < 1) {
+        email.classList.add('invalid');
+        errEmail.classList.add('visible');
+        valid = false;
+        e.preventDefault();
+      } else {
+        email.classList.remove('invalid');
+        errEmail.classList.remove('visible');
+      }
+      const pwd = document.getElementById('password');
+      const errPwd = document.getElementById('err-pwd');
+      if (pwd.value.length < 1) {
+        pwd.classList.add('invalid');
+        errPwd.classList.add('visible');
+        valid = false;
+        e.preventDefault();
+      } else {
+        pwd.classList.remove('invalid');
+        errPwd.classList.remove('visible');
+      }
+      if (valid) {
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Logging in&hellip;';
+      }
+    });
+
+    ['email', 'password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        this.classList.remove('invalid');
+        document.getElementById('error-banner').classList.remove('show');
+      });
+    });
+  </script>
+</body>
+</html>
