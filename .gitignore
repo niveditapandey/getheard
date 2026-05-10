@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-.claude/
-.env
-.DS_Store
-__pycache__/
-*.pyc
-.claude/
-=======
 # ── Secrets — NEVER commit these ──────────────────────────────────
 .env
 .env.local
@@ -45,4 +37,3 @@ __pycache__/
 *.pyc
 # documentation/ — tracked (removed from ignore so handover docs are versioned)
 .env
->>>>>>> origin/fix/questions-and-link
