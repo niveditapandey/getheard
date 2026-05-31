@@ -66,9 +66,18 @@ import asyncio
 import base64
 import json
 import logging
+import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Dict
+
+# Railway / Heroku: write inline JSON credentials to a temp file so GCP SDKs find them
+if _creds_json := os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON"):
+    _tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+    _tmp.write(_creds_json)
+    _tmp.close()
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = _tmp.name
 
 import httpx
 

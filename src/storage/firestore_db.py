@@ -2,12 +2,11 @@
 Firestore database client — single shared instance for the whole app.
 All storage modules import db from here.
 """
+import os
 from google.cloud import firestore
 
-# Single shared Firestore client
-# On Cloud Run: authenticates automatically via the service account
-# Locally: uses application default credentials (gcloud auth application-default login)
-db = firestore.Client(project="getheard-484014", database="(default)")
+_project = os.environ.get("GCP_PROJECT_ID", "getheard-484014")
+db = firestore.Client(project=_project, database="(default)")
 
 # Collection names
 PROJECTS     = "projects"
