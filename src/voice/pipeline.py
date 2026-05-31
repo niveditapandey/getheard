@@ -76,11 +76,11 @@ class VoiceInterviewPipeline:
                 proj = get_project(project_id)
                 if proj:
                     custom_questions = proj.questions
-     0               project_name = proj.name
+                    project_name = proj.name
             self.interviewer = GeminiInterviewer(
                 language_code=language_code,
                 custom_questions=custom_questions,
-     0            project_name=project_name,
+                project_name=project_name,
             )
 
         self.transcript_manager = TranscriptManager()
