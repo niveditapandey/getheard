@@ -36,3 +36,4 @@ gcp-key*.json
 __pycache__/
 *.pyc
 # documentation/ — tracked (removed from ignore so handover docs are versioned)
+.env

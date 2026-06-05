@@ -315,8 +315,8 @@
         <div class="study-header">
           <div class="study-header-info">
             <div class="study-header-name" id="studyName">Loading&hellip;</div>
-            <span class="badge" id="typeBadge" style="background:rgba(59,130,246,0.15);color:var(--accent-bright);">—</span>
-            <span class="badge" id="statusBadge">—</span>
+            <span class="badge" id="typeBadge" style="background:rgba(59,130,246,0.15);color:var(--accent-bright);">&#8212;</span>
+            <span class="badge" id="statusBadge">&#8212;</span>
           </div>
           <div class="study-header-actions">
             <button class="btn-outline" id="downloadReportBtn" style="display:none;" onclick="downloadReport()">
@@ -338,6 +338,18 @@
           </div>
         </div>
 
+        <!-- Interview Questions (collapsible) -->
+        <div class="pipeline-card" id="questionsCard" style="display:none;">
+          <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;"
+               onclick="toggleQuestions()">
+            <span class="pipeline-title" style="margin-bottom:0;">Interview Questions</span>
+            <span id="questionsChevron" style="font-size:0.85rem;color:var(--text-muted);transition:transform 0.2s;">&#9660;</span>
+          </div>
+          <div id="questionsBody" style="display:none;margin-top:16px;">
+            <div id="questionsList"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -347,6 +359,37 @@
     const projectId = pathParts[pathParts.indexOf('study') + 1] || '';
     let lastStatus = null;
     let studyData = {};
+    let questionsData = [];
+
+    // ── Questions collapsible ──
+    async function loadQuestions() {
+      try {
+        const res = await fetch(`/agent/api/projects/${projectId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        questionsData = data.questions || [];
+        if (questionsData.length === 0) return;
+        const list = document.getElementById('questionsList');
+        list.innerHTML = questionsData.map((q, i) => {
+          const text = typeof q === 'string' ? q : (q.main || q.question || q.text || JSON.stringify(q));
+          const probe = typeof q === 'object' && q.probe ? `<div style="margin-top:4px;font-size:0.8rem;color:var(--text-muted);">&#8627; ${esc(q.probe)}</div>` : '';
+          return `<div style="padding:10px 0;border-bottom:1px solid var(--card-border);font-size:0.88rem;">
+            <span style="color:var(--accent-bright);font-weight:600;margin-right:8px;">${i + 1}.</span>${esc(text)}${probe}
+          </div>`;
+        }).join('');
+        document.getElementById('questionsCard').style.display = '';
+      } catch(e) {
+        console.warn('Could not load questions:', e);
+      }
+    }
+
+    function toggleQuestions() {
+      const body = document.getElementById('questionsBody');
+      const chevron = document.getElementById('questionsChevron');
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : '';
+      chevron.style.transform = open ? '' : 'rotate(180deg)';
+    }
 
     function openSidebar() {
       document.getElementById('sidebar').classList.add('open');
@@ -430,7 +473,7 @@
       { icon:'💳', name:'Payment', desc:'Payment received and confirmed.' },
       { icon:'👥', name:'Panel Building', desc:'Recruiting and screening respondents for your study.' },
       { icon:'✅', name:'Panel Approval', desc:'Review and approve the shortlisted respondents.' },
-      { icon:'🎙', name:'Interviews', desc:'AI-powered interviews are being conducted.' },
+      { icon:'🎤', name:'Interviews', desc:'AI-powered interviews are being conducted.' },
       { icon:'📊', name:'Analysis', desc:'Extracting insights and themes from interviews.' },
       { icon:'📄', name:'Report', desc:'Your research report is ready.' },
     ];
@@ -596,7 +639,6 @@
     }
 
     function downloadPDF(reportId) {
-      // Placeholder: show coming soon
       showToast('PDF download coming soon! Contact hello@getheard.space for now.');
     }
 
@@ -647,6 +689,7 @@
     // Boot
     pollStatus();
     setInterval(pollStatus, 10000);
+    loadQuestions();
   </script>
 </body>
 </html>

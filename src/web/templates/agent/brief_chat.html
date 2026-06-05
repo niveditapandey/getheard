@@ -290,7 +290,6 @@ function addBubble(role, text, emoji) {
     <div class="avatar">${emoji}</div>
     <div class="bubble">${escHtml(text).replace(/\n/g, '<br>')}</div>`;
   msgs.appendChild(div);
-  // Use requestAnimationFrame to scroll after DOM reflow
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 }
 
@@ -370,10 +369,16 @@ async function designStudy() {
     btn.innerHTML = '✓ Study designed!';
     btn.style.background = 'var(--success)';
 
-    // Link the project to the logged-in client's account
-    try {
-      await fetch(`/api/client/studies/${project.project_id}/link`, { method: 'POST' });
-    } catch(_) {}
+    // Link with retry — don't silently swallow failures
+    let linked = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const linkRes = await fetch(`/api/client/studies/${project.project_id}/link`, { method: 'POST' });
+        if (linkRes.ok) { linked = true; break; }
+      } catch(_) {}
+      await new Promise(r => setTimeout(r, 500));
+    }
+    if (!linked) console.warn('Project link failed after 3 attempts:', project.project_id);
 
     addBubble('agent',
       `Your study "${project.name || project.project_id}" has been designed — ` +
@@ -385,7 +390,7 @@ async function designStudy() {
     // Redirect to client-facing pricing page
     setTimeout(() => {
       window.location.href = `/listen/study/${project.project_id}/pricing`;
-    }, 2500);
+    }, 3500);
 
   } catch (e) {
     btn.disabled = false;
