@@ -315,8 +315,8 @@
         <div class="study-header">
           <div class="study-header-info">
             <div class="study-header-name" id="studyName">Loading&hellip;</div>
-            <span class="badge" id="typeBadge" style="background:rgba(59,130,246,0.15);color:var(--accent-bright);">—</span>
-            <span class="badge" id="statusBadge">—</span>
+            <span class="badge" id="typeBadge" style="background:rgba(59,130,246,0.15);color:var(--accent-bright);">&#8212;</span>
+            <span class="badge" id="statusBadge">&#8212;</span>
           </div>
           <div class="study-header-actions">
             <button class="btn-outline" id="downloadReportBtn" style="display:none;" onclick="downloadReport()">
@@ -372,7 +372,7 @@
         const list = document.getElementById('questionsList');
         list.innerHTML = questionsData.map((q, i) => {
           const text = typeof q === 'string' ? q : (q.main || q.question || q.text || JSON.stringify(q));
-          const probe = typeof q === 'object' && q.probe ? `<div style="margin-top:4px;font-size:0.8rem;color:var(--text-muted);">↳ ${esc(q.probe)}</div>` : '';
+          const probe = typeof q === 'object' && q.probe ? `<div style="margin-top:4px;font-size:0.8rem;color:var(--text-muted);">&#8627; ${esc(q.probe)}</div>` : '';
           return `<div style="padding:10px 0;border-bottom:1px solid var(--card-border);font-size:0.88rem;">
             <span style="color:var(--accent-bright);font-weight:600;margin-right:8px;">${i + 1}.</span>${esc(text)}${probe}
           </div>`;
@@ -473,7 +473,7 @@
       { icon:'💳', name:'Payment', desc:'Payment received and confirmed.' },
       { icon:'👥', name:'Panel Building', desc:'Recruiting and screening respondents for your study.' },
       { icon:'✅', name:'Panel Approval', desc:'Review and approve the shortlisted respondents.' },
-      { icon:'🎙', name:'Interviews', desc:'AI-powered interviews are being conducted.' },
+      { icon:'🎤', name:'Interviews', desc:'AI-powered interviews are being conducted.' },
       { icon:'📊', name:'Analysis', desc:'Extracting insights and themes from interviews.' },
       { icon:'📄', name:'Report', desc:'Your research report is ready.' },
     ];
@@ -639,7 +639,6 @@
     }
 
     function downloadPDF(reportId) {
-      // Placeholder: show coming soon
       showToast('PDF download coming soon! Contact hello@getheard.space for now.');
     }
 
