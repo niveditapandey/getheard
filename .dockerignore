@@ -1,0 +1,10 @@
+.env
+.git
+__pycache__/
+*.pyc
+venv/
+projects/
+transcripts/
+reports/
+.DS_Store
+apply_changes.py
