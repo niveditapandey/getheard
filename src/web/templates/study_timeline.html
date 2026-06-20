@@ -401,6 +401,8 @@
     let timelineData = null;
     let quoteData = null;
     let pollTimer = null;
+    let pollAttempts = 0;
+    const MAX_POLL_ATTEMPTS = 10;
     let selectedMethod = 'razorpay';
 
     function openSidebar() {
@@ -446,11 +448,21 @@
 
     // ── Load / poll timeline ──
     async function loadTimeline() {
+      pollAttempts++;
+      if (pollAttempts > MAX_POLL_ATTEMPTS) {
+        clearInterval(pollTimer);
+        document.getElementById('timelineLoading').innerHTML =
+          '<div style="color:var(--text-muted);font-size:0.875rem;padding:8px 0;">⚠️ Timeline estimation is taking longer than expected. You can still proceed with payment — the timeline will be available on your study page.</div>';
+        document.getElementById('payBtn').disabled = false;
+        return;
+      }
       try {
         const res = await fetch(`/api/client/timeline/${encodeURIComponent(projectId)}`);
-        if (!res.ok) throw new Error('not ready');
         const data = await res.json();
-        if (!data || (!data.min_days && !data.phases)) throw new Error('empty');
+        // 202 = still computing, or response has status:'computing' — keep polling
+        if (res.status === 202 || data.status === 'computing') return;
+        if (!res.ok) throw new Error('not ready');
+        if (!data || (!data.min_days && !data.phases && !data.total_min_days)) throw new Error('empty');
         clearInterval(pollTimer);
         timelineData = data;
         renderTimeline(data);

@@ -432,6 +432,18 @@
           </div>
         </div>
 
+        <!-- Interview Questions Review -->
+        <div class="card" id="questionsReviewCard" style="margin-top:20px;display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleQReview()">
+            <div class="card-title" style="margin-bottom:0;">&#128203; Interview Questions <span id="qCountBadge" style="font-size:0.75rem;font-weight:600;color:var(--text-muted);"></span></div>
+            <span id="qChevron" style="font-size:0.85rem;color:var(--text-muted);transition:transform 0.2s;">&#9660;</span>
+          </div>
+          <div id="questionsReviewBody" style="display:none;margin-top:16px;">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;">These are the AI-generated questions for your study. If you'd like changes, contact us after confirming.</p>
+            <div id="questionsList"></div>
+          </div>
+        </div>
+
         <!-- Confirm Section -->
         <div class="confirm-section">
           <button class="btn-confirm" id="confirmBtn" onclick="confirmQuote()" disabled>
@@ -655,8 +667,38 @@
       }
     }
 
+    // ── Questions review ──
+    async function loadQuestions() {
+      try {
+        const res = await fetch(`/agent/api/projects/${encodeURIComponent(projectId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const questions = data.questions || [];
+        if (!questions.length) return;
+        const list = document.getElementById('questionsList');
+        list.innerHTML = questions.map((q, i) => {
+          const text = typeof q === 'string' ? q : (q.main || q.question || q.text || JSON.stringify(q));
+          const probe = typeof q === 'object' && q.probe ? `<div style="margin-top:4px;font-size:0.78rem;color:var(--text-muted);">&#8627; ${esc(q.probe)}</div>` : '';
+          return `<div style="padding:10px 0;border-bottom:1px solid var(--card-border);font-size:0.875rem;">
+            <span style="color:var(--accent-bright);font-weight:700;margin-right:8px;">${i + 1}.</span>${esc(text)}${probe}
+          </div>`;
+        }).join('');
+        document.getElementById('qCountBadge').textContent = `(${questions.length} questions)`;
+        document.getElementById('questionsReviewCard').style.display = '';
+      } catch(e) {}
+    }
+
+    function toggleQReview() {
+      const body = document.getElementById('questionsReviewBody');
+      const chevron = document.getElementById('qChevron');
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : '';
+      chevron.style.transform = open ? '' : 'rotate(180deg)';
+    }
+
     // Boot
     loadQuote();
+    loadQuestions();
   </script>
 </body>
 </html>
