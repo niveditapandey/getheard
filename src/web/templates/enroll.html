@@ -659,7 +659,7 @@
 
         <div class="form-group">
           <label class="check-group" style="cursor:pointer;">
-            <input type="checkbox" id="f-consent" name="consent" required />
+            <input type="checkbox" id="f-consent" name="consent_contact" required />
             <span class="check-label" id="t-consent-text">
               I agree to be contacted for market research studies and understand I will be compensated for my participation. <span class="req">*</span>
             </span>
@@ -947,6 +947,8 @@
         }
       });
       data.ui_language = currentLang;
+      // Checkboxes come in as "on" string — convert to boolean for the API
+      if ('consent_contact' in data) data.consent_contact = true;
 
       try {
         const res = await fetch('/api/respondents/enroll', {
