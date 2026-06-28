@@ -972,25 +972,39 @@ async function generateReport() {
   btn.innerHTML = '<span class="spinner"></span> Generating…';
 
   try {
-    const r = await fetch('/api/reports/generate', {
+    // Queue generation as a background job (no HTTP timeout on long analysis)
+    const r = await fetch('/api/reports/generate-async', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         project_id: projectId,
         transcript_files: relevant.map(t => t.session_id).filter(Boolean),
-        project_name: project.name,
-        research_type: project.research_type,
-        objective: project.objective,
       })
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || 'Report generation failed');
-    window.location.href = `/report/${data.report_id}`;
+
+    // Poll the job until it's done (or errored)
+    const jobId = data.job_id;
+    const reportId = await pollJob(jobId);
+    window.location.href = `/report/${reportId}`;
   } catch (e) {
     alert('Error: ' + e.message);
     btn.disabled = false;
     btn.innerHTML = '📊 Generate Report';
   }
+}
+
+async function pollJob(jobId, { intervalMs = 3000, timeoutMs = 600000 } = {}) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const res = await fetch(`/api/jobs/${jobId}`);
+    const job = await res.json();
+    if (job.status === 'done') return job.result.report_id;
+    if (job.status === 'error') throw new Error(job.error || 'Report generation failed');
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  throw new Error('Report generation timed out');
 }
 
 async function viewTranscript(filename) {

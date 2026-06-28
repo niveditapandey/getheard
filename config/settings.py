@@ -120,6 +120,18 @@ class Settings(BaseSettings):
     # Server Configuration
     host: str = Field(default="0.0.0.0", description="Server host")
     port: int = Field(default=8000, description="Server port")
+
+    # Cloud Tasks (async report generation)
+    service_url: str = Field(
+        default="https://getheard-151428781052.asia-south1.run.app",
+        description="Public base URL of this service — Cloud Tasks calls back here"
+    )
+    tasks_location: str = Field(default="asia-south1", description="Cloud Tasks queue location")
+    tasks_queue: str = Field(default="report-generation", description="Cloud Tasks queue name")
+    tasks_secret: str = Field(
+        default="getheard-tasks-secret-2026",
+        description="Shared secret protecting the internal task worker endpoint"
+    )
     
     @property
     def client_credentials_dict(self) -> dict:

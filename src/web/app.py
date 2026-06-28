@@ -555,6 +555,85 @@ async def api_update_questions(project_id: str, payload: dict = Body(...), _: st
 
 # ── Reports API ───────────────────────────────────────────────────────────────
 
+@app.post("/api/reports/generate-async")
+async def api_generate_report_async(payload: dict = Body(...), _: str = Depends(optional_api_key)):
+    """
+    Queue report generation as a background job (avoids HTTP timeouts on long
+    4-pass analysis). Returns a job_id to poll at GET /api/jobs/{job_id}.
+    Body: { project_id, transcript_files: [optional] }
+    Falls back to running inline if Cloud Tasks is unavailable.
+    """
+    project_id = payload.get("project_id")
+    if not project_id:
+        raise HTTPException(400, "Provide 'project_id'")
+
+    from src.storage import job_store
+    from src.storage.tasks_client import enqueue_job
+
+    job_id = await asyncio.to_thread(
+        job_store.create_job, "report",
+        {"project_id": project_id, "transcript_files": payload.get("transcript_files")},
+    )
+
+    enqueued = await asyncio.to_thread(enqueue_job, job_id)
+    if not enqueued:
+        # No Cloud Tasks — run inline so the result is still produced
+        from src.core.jobs import process_job
+        try:
+            await process_job(job_id)
+        except Exception as exc:
+            logger.exception("Inline job fallback failed")
+            raise HTTPException(500, str(exc))
+
+    return {"job_id": job_id, "status": "queued" if enqueued else "done"}
+
+
+@app.post("/internal/tasks/run-job")
+async def internal_run_job(payload: dict = Body(...), request: Request = None):
+    """Cloud Tasks worker — runs a queued job. Protected by a shared secret."""
+    secret = request.headers.get("X-Tasks-Secret") if request else None
+    if secret != settings.tasks_secret:
+        raise HTTPException(403, "Forbidden")
+    job_id = payload.get("job_id")
+    if not job_id:
+        raise HTTPException(400, "Missing job_id")
+    from src.core.jobs import process_job
+    try:
+        result = await process_job(job_id)
+        return {"status": "done", "result": result}
+    except Exception as exc:
+        # Return 500 so Cloud Tasks retries per the queue's retry policy
+        logger.exception(f"Job {job_id} failed in worker")
+        raise HTTPException(500, str(exc))
+
+
+@app.get("/api/jobs/{job_id}")
+async def api_get_job(job_id: str):
+    """Poll a background job's status."""
+    from src.storage import job_store
+    job = await asyncio.to_thread(job_store.get_job, job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
+    return {
+        "job_id": job["job_id"],
+        "type": job.get("type"),
+        "status": job.get("status"),
+        "result": job.get("result"),
+        "error": job.get("error"),
+    }
+
+
+@app.post("/internal/mission-index/backfill")
+async def internal_mission_backfill(request: Request):
+    """Re-index all reports + transcripts into Mission Control's vector store.
+    Protected by the shared tasks secret."""
+    if request.headers.get("X-Tasks-Secret") != settings.tasks_secret:
+        raise HTTPException(403, "Forbidden")
+    from src.core.mission_index import backfill
+    counts = await asyncio.to_thread(backfill)
+    return {"status": "ok", "indexed": counts}
+
+
 @app.post("/api/reports/generate")
 async def api_generate_report(payload: dict = Body(...), _: str = Depends(optional_api_key)):
     """
