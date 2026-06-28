@@ -209,20 +209,66 @@ def _build_transcripts_block(turns: list) -> str:
     return "\n".join(lines)
 
 
+def _build_retrieved_block(chunks: list) -> str:
+    """Format vector-retrieved chunks (reports + transcripts) into context."""
+    lines = []
+    for c in chunks:
+        proj = c.get("project_name") or c.get("project_id") or "Unknown"
+        kind = c.get("source_type", "")
+        lines.append(f"[{proj} | {kind}] {c.get('text', '')}")
+    return "\n".join(lines)
+
+
 # ── Main query ────────────────────────────────────────────────────────────────
 
 def query_mission_control(query: str) -> dict:
     """
     Answer a cross-study NL query.
 
+    Uses Firestore vector retrieval to pull the most relevant chunks across all
+    studies (scales past the context window). Falls back to loading all reports +
+    a transcript sample when the vector index is empty or unavailable.
+
     Returns:
-        {
-            "answer": str,
-            "query": str,
-            "projects_consulted": int,
-            "transcripts_sampled": int,
-        }
+        { "answer", "query", "projects_consulted", "transcripts_sampled", "retrieval" }
     """
+    # ── Retrieval-augmented path ─────────────────────────────────────────────
+    try:
+        from src.core.mission_index import search as _vsearch
+        chunks = _vsearch(query, k=24)
+    except Exception:
+        chunks = []
+
+    if chunks:
+        projects = {c.get("project_id") for c in chunks if c.get("project_id")}
+        retrieved_block = _build_retrieved_block(chunks)
+        if len(retrieved_block) > 60000:
+            retrieved_block = retrieved_block[:60000] + "\n...[truncated]"
+        prompt = MISSION_PROMPT.format(
+            projects_block=retrieved_block,
+            transcripts_block="(See retrieved evidence above — most relevant across all studies.)",
+            query=query,
+        )
+        client = get_genai_client()
+        logger.info(f"Mission Control (RAG): '{query[:80]}' | {len(chunks)} chunks, {len(projects)} projects")
+        response = client.models.generate_content(
+            model=settings.gemini_model_pro,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=MISSION_SYSTEM,
+                temperature=0.2,
+                max_output_tokens=4096,
+            ),
+        )
+        return {
+            "answer": response.text.strip(),
+            "query": query,
+            "projects_consulted": len(projects),
+            "transcripts_sampled": sum(1 for c in chunks if c.get("source_type") == "transcript"),
+            "retrieval": "vector",
+        }
+
+    # ── Fallback: load everything (original behaviour) ───────────────────────
     reports = _load_all_reports()
     project_ids = list({r.get("project_id") for r in reports if r.get("project_id")})
 
@@ -261,6 +307,7 @@ def query_mission_control(query: str) -> dict:
         "query": query,
         "projects_consulted": len(reports),
         "transcripts_sampled": len(turns),
+        "retrieval": "fallback",
     }
 
 

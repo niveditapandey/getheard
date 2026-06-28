@@ -36,6 +36,14 @@ class TranscriptManager:
         }
         db.collection(TRANSCRIPTS).document(session_id).set(data)
         logger.info(f"Transcript saved to Firestore: {session_id}")
+
+        # Index into Mission Control's vector store (best-effort)
+        try:
+            from src.core.mission_index import index_transcript
+            index_transcript(data)
+        except Exception as e:
+            logger.debug(f"Mission Control indexing skipped: {e}")
+
         return session_id
 
     def load(self, session_id: str) -> Optional[Dict]:

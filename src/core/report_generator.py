@@ -24,6 +24,7 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
+from src.core.genai_client import get_genai_client
 from src.storage.firestore_db import db
 
 logger = logging.getLogger(__name__)
@@ -240,11 +241,7 @@ def generate_report(
 
     transcripts_text = _format_transcripts(transcripts)
 
-    client = (
-        genai.Client(api_key=settings.gemini_api_key)
-        if settings.gemini_api_key
-        else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-    )
+    client = get_genai_client()
 
     prompt = ANALYSIS_PROMPT.format(
         project_name=project_name,
@@ -306,6 +303,13 @@ def generate_report(
         logger.info(f"Report {report_id} saved to Firestore")
     except Exception as e:
         logger.warning(f"Firestore save failed (falling back to local JSON): {e}")
+
+    # Index into Mission Control's vector store (best-effort)
+    try:
+        from src.core.mission_index import index_report
+        index_report(report)
+    except Exception as e:
+        logger.debug(f"Mission Control indexing skipped: {e}")
 
     logger.info(f"Report {report_id} generated for '{project_name}'")
     return report
