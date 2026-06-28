@@ -29,7 +29,7 @@ PROJECTS_DIR = Path(__file__).parent.parent.parent / "projects"
 PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Firestore-backed store (survives Cloud Run redeploys) with local fallback
-_store = DocStore(PROJECTS, PROJECTS_DIR)
+_store = DocStore(PROJECTS, PROJECTS_DIR, id_field="project_id")
 
 # Supported question counts
 VALID_QUESTION_COUNTS = [5, 7, 10, 12, 15, 20, 25, 30]

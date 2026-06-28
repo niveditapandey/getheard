@@ -102,7 +102,7 @@ def _require_admin(request: Request):
 
 
 # Firestore-backed project store (survives Cloud Run redeploys) with local fallback
-_projects = DocStore(PROJECTS, PROJECTS_DIR)
+_projects = DocStore(PROJECTS, PROJECTS_DIR, id_field="project_id")
 
 
 def _load_project_json(project_id: str) -> Optional[Dict]:

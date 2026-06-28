@@ -39,7 +39,7 @@ PANELS_DIR = BASE_DIR / "panels"
 PANELS_DIR.mkdir(exist_ok=True)
 
 # Firestore-backed panel store (survives Cloud Run redeploys) with local fallback
-panel_store = DocStore(PANELS, PANELS_DIR)
+panel_store = DocStore(PANELS, PANELS_DIR, id_field="panel_id")
 
 
 PANEL_SYSTEM_PROMPT = """You are a research panel coordinator at GetHeard.

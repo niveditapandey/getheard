@@ -29,10 +29,15 @@ logger = logging.getLogger(__name__)
 
 
 class DocStore:
-    def __init__(self, collection: str, local_dir: Path):
+    def __init__(self, collection: str, local_dir: Path, id_field: str = "id"):
         self.collection = collection
         self.local_dir = Path(local_dir)
+        self.id_field = id_field  # the dict key that holds this doc's id (e.g. project_id)
         self.local_dir.mkdir(parents=True, exist_ok=True)
+
+    def _doc_id(self, data: dict, fallback: str = "") -> str:
+        """Derive the document id from a record using this store's id field."""
+        return str(data.get(self.id_field) or fallback)
 
     # ── internals ──────────────────────────────────────────────────────────
     def _col(self):
@@ -99,8 +104,7 @@ class DocStore:
         for f in self.local_dir.glob("*.json"):
             try:
                 d = json.loads(f.read_text(encoding="utf-8"))
-                doc_id = d.get("project_id") or d.get("report_id") or d.get("panel_id") or f.stem
-                by_id[str(doc_id)] = d
+                by_id[self._doc_id(d, f.stem)] = d
             except Exception:
                 continue
 
@@ -134,7 +138,7 @@ class DocStore:
         for f in self.local_dir.glob("*.json"):
             try:
                 d = json.loads(f.read_text(encoding="utf-8"))
-                doc_id = str(d.get("project_id") or d.get("report_id") or d.get("panel_id") or f.stem)
+                doc_id = self._doc_id(d, f.stem)
                 snap = col.document(doc_id).get()
                 if not snap.exists:
                     col.document(doc_id).set(d)
