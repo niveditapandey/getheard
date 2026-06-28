@@ -81,6 +81,17 @@ class TranscriptManager:
             })
         return results
 
+    def load_by_project(self, project_id: str) -> List[Dict]:
+        """Load all full transcripts whose project_id matches (Firestore query)."""
+        if not project_id:
+            return []
+        try:
+            docs = db.collection(TRANSCRIPTS).where("project_id", "==", project_id).stream()
+            return [d.to_dict() for d in docs]
+        except Exception as e:
+            logger.warning(f"load_by_project failed for {project_id}: {e}")
+            return []
+
     def load_summaries(self, session_ids: List[str]) -> List[Dict]:
         """Load transcript summaries for a specific list of session IDs (no full scan)."""
         results = []

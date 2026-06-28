@@ -149,8 +149,8 @@ class Orchestrator:
             },
         }
 
-        path = PROJECTS_DIR / f"{project_id}.json"
-        path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
+        from src.core.research_project import _save_project
+        _save_project(project)
         logger.info(
             f"[Orchestrator] Project saved: {project_id} "
             f"({len(questions)} questions, {len(agent.review_history)} review passes)"
@@ -166,12 +166,13 @@ class Orchestrator:
         Create an InterviewAgent pre-loaded with a project's questions.
         The voice pipeline uses this to drive each interview session.
         """
-        path = PROJECTS_DIR / f"{project_id}.json"
-        if not path.exists():
+        from src.core.research_project import get_project
+        proj = get_project(project_id)
+        if not proj:
             logger.warning(f"[Orchestrator] Project not found: {project_id}")
             return None
 
-        project = json.loads(path.read_text())
+        project = proj.to_dict()
         agent = InterviewAgent(
             questions=project.get("questions", []),
             language=project.get("language", "en"),
@@ -203,36 +204,33 @@ class Orchestrator:
         Returns:
             Saved report dict with report_id included
         """
-        # Load project
-        proj_path = PROJECTS_DIR / f"{project_id}.json"
-        if not proj_path.exists():
+        # Load project (Firestore-backed)
+        from src.core.research_project import get_project
+        from src.storage.transcript import TranscriptManager
+        proj = get_project(project_id)
+        if not proj:
             raise ValueError(f"Project not found: {project_id}")
-        project = json.loads(proj_path.read_text())
+        project = proj.to_dict()
 
-        # Load transcripts
+        # Load transcripts from Firestore — by explicit session ids, plus any
+        # transcript tagged with this project_id (covers both linkage paths).
+        tm = TranscriptManager()
         if transcript_files:
-            transcript_paths = [TRANSCRIPTS_DIR / f for f in transcript_files]
+            session_ids = [f.replace(".json", "") for f in transcript_files]
         else:
-            # Find transcripts linked via project.sessions
-            session_ids = set(project.get("sessions", []))
-            transcript_paths = []
-            for p in TRANSCRIPTS_DIR.glob("*.json"):
-                try:
-                    t = json.loads(p.read_text())
-                    if t.get("session_id") in session_ids or t.get("metadata", {}).get("project_id") == project_id:
-                        transcript_paths.append(p)
-                except Exception:
-                    pass
+            session_ids = list(project.get("sessions", []))
 
-        if not transcript_paths:
+        by_id: Dict[str, dict] = {}
+        for sid in session_ids:
+            t = tm.load(sid)
+            if t:
+                by_id[t.get("session_id", sid)] = t
+        for t in tm.load_by_project(project_id):
+            by_id[t.get("session_id")] = t
+        transcripts = list(by_id.values())
+
+        if not transcripts:
             raise ValueError("No transcripts found for this project")
-
-        transcripts = []
-        for tp in transcript_paths:
-            try:
-                transcripts.append(json.loads(tp.read_text()))
-            except Exception as exc:
-                logger.warning(f"[Orchestrator] Could not load transcript {tp}: {exc}")
 
         logger.info(
             f"[Orchestrator] Analysing {len(transcripts)} transcripts "
@@ -259,14 +257,24 @@ class Orchestrator:
         report["generated_at"] = datetime.now(timezone.utc).isoformat()
         report["generated_by"] = "AnalysisAgent"
 
-        report_path = REPORTS_DIR / f"{report_id}.json"
-        report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False))
+        # Persist report to Firestore (survives redeploys) with local fallback
+        from src.storage.doc_store import DocStore
+        from src.storage.firestore_db import REPORTS
+        DocStore(REPORTS, REPORTS_DIR, id_field="report_id").save(report_id, report)
+
+        # Index into Mission Control's vector store (best-effort)
+        try:
+            from src.core.mission_index import index_report
+            index_report(report)
+        except Exception as e:
+            logger.debug(f"Mission Control indexing skipped: {e}")
 
         try:
+            from src.core.research_project import _save_project
             project["report_id"] = report_id
             project["status"] = "completed"
             project["report_generated_at"] = report["generated_at"]
-            proj_path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
+            _save_project(project)
         except Exception as e:
             logger.warning(f"[Orchestrator] Could not update project status: {e}")
 
