@@ -21,6 +21,7 @@
 12. [Low-Level: Environment Variables](#12-low-level-environment-variables)
 13. [How to Run Locally](#13-how-to-run-locally)
 14. [Deployment](#14-deployment)
+15. [Testing](#15-testing)
 
 ---
 
@@ -257,7 +258,9 @@ This mimics how a senior analyst actually works, rather than doing a one-shot su
 
 ## 5. The Voice Interview System
 
-Each browser interview session is managed by a `VoiceInterviewPipeline` instance (one per session, in-memory).
+Each browser interview session is managed by a `VoiceInterviewPipeline` instance (one per session, in-memory, keyed in the `sessions` dict in `app.py`).
+
+**Session lifetime:** A background task (started at app startup) runs every 10 minutes and evicts sessions that have been idle for more than 45 minutes, auto-saving the transcript to Firestore before removal. Explicit `/api/end/{session_id}` calls also clean up immediately.
 
 ### How a voice turn works:
 
@@ -465,6 +468,9 @@ getHeard/
 │               ├── index.html    # Agentic pipeline dashboard
 │               └── brief_chat.html
 │
+├── tests/
+│   └── test_suite.py             # Full test suite — 115 tests (unit + functional)
+│
 ├── projects/                     # Project JSON files (local, being migrated to Firestore)
 ├── reports/                      # Report JSON files (local)
 ├── panels/                       # Panel JSON files (local)
@@ -495,7 +501,7 @@ getHeard/
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/projects/generate-questions` | AI question preview (no save) |
-| POST | `/api/projects` | Create and save project |
+| POST | `/api/projects` | Create and save project (validates research_type, language, question_count 1–30) |
 | GET | `/api/projects` | List all projects |
 | GET | `/api/projects/{id}` | Get project JSON |
 | PATCH | `/api/projects/{id}/questions` | Update questions |
@@ -685,22 +691,28 @@ getHeard/
 {
   "session_id":    "sess_abc123",
   "language_code": "en",
+  "project_id":    "abc12345",
   "started_at":    "2026-06-15T14:00:00Z",
   "ended_at":      "2026-06-15T14:22:00Z",
+  "saved_at":      "2026-06-15T14:22:01Z",
   "turn_count":    12,
   "quality_score": 84,
   "quality_label": "high_quality",
   "quality_flags": [],
   "conversation": [
-    { "role": "assistant", "content": "Hi! Tell me about your experience..." },
-    { "role": "user",      "content": "I've been using the card for 3 months..." }
+    { "speaker": "interviewer", "text": "Hi! Tell me about your experience..." },
+    { "speaker": "respondent",  "text": "I've been using the card for 3 months..." }
   ],
   "metadata": {
-    "project_id":  "abc12345",
-    "respondent_phone": "+919876543210"
+    "project_id":    "abc12345",
+    "stt_provider":  "google",
+    "tts_provider":  "google",
+    "engine":        "InterviewAgent"
   }
 }
 ```
+
+> **Note:** `project_id` is stored at the top level (not only in `metadata`) to enable efficient Firestore queries by project. Use `TranscriptManager.load_summaries(session_ids)` to load only the transcripts you need — it takes a list of session IDs and does targeted reads, avoiding a full collection scan.
 
 ### Respondent JSON (Firestore `respondents`)
 
@@ -857,14 +869,78 @@ The app is containerised with Docker for deployment to Google Cloud Run or Railw
 
 ### Known Limitations & Technical Debt
 
-| Issue | Impact | Fix |
-|-------|--------|-----|
-| Dual storage (JSON files + Firestore) | Data inconsistency risk | Migrate project/panel/report writes to Firestore |
-| SHA-256 password hashing | Weak for production | Upgrade to bcrypt |
-| In-memory voice sessions (`sessions: Dict`) | Lost on restart | Persist to Redis or Firestore |
-| `config/pricing.json` on local disk | Lost on deploy without persistent disk | Move to Firestore |
-| No rate limiting | API abuse risk | Add slowapi middleware |
-| Simple/demo users in session only | Studies lost on session expiry | Require Firestore account for production |
+| Issue | Impact | Status |
+|-------|--------|--------|
+| Dual storage (JSON files + Firestore) | Data inconsistency risk | Open — migrate project/panel/report writes to Firestore |
+| SHA-256 password hashing | Weak for production | Open — upgrade to bcrypt |
+| In-memory voice sessions (`sessions: Dict`) lost on restart | Sessions drop if process restarts | Partially mitigated — 45-min TTL auto-saves and evicts idle sessions |
+| `config/pricing.json` on local disk | Lost on redeploy without persistent volume | Open — move to Firestore |
+| No rate limiting | API abuse risk | Open — add slowapi middleware |
+| Simple/demo users in session only | Studies lost when session cookie expires | Open — require Firestore account for production |
+| Screener quota race condition (read-modify-write) | Two simultaneous submits could both qualify | Partially mitigated — re-reads count immediately before write; full fix requires Firestore transactions |
+
+---
+
+## 15. Testing
+
+The test suite lives in `tests/test_suite.py` and covers 115 tests across two categories.
+
+### Running tests
+
+```bash
+# Against local server (start server first)
+source venv/bin/activate
+python -m uvicorn src.web.app:app --port 8000
+
+# In another terminal:
+pytest tests/test_suite.py -v
+
+# Against production
+TEST_BASE_URL=https://getheard-151428781052.asia-south1.run.app pytest tests/test_suite.py -v
+
+# Run a single class
+pytest tests/test_suite.py::TestVoiceAPI -v
+```
+
+### Unit tests (no server required)
+
+These test Python modules directly — no HTTP involved.
+
+| Class | What it covers |
+|-------|---------------|
+| `TestSettings` | Env var loading, language routing, Sarvam detection |
+| `TestPricingStore` | `compute_quote()` — urgency multiplier, panel size tiers, incentive markup |
+| `TestQualityScorer` | 0–100 scoring, label thresholds, fraud detection rules |
+| `TestPrompts` | Multi-language greeting/question/closing strings |
+| `TestResearchProject` | `create_project()` with live Gemini, `update_questions()`, persistence |
+| `TestGeminiInterviewer` | State machine (not_started → greeting → questioning → completed), history |
+| `TestVoicePipeline` | Pipeline init, provider routing (Hindi → Sarvam), provider info |
+
+### Functional tests (require running server)
+
+These make real HTTP calls to `http://localhost:8000` (or `TEST_BASE_URL`).
+
+| Class | What it covers |
+|-------|---------------|
+| `TestHealthAndPublicPages` | `/health`, landing page, join/enroll, agent, mission control |
+| `TestAuthRedirects` | Unauthenticated redirects, login success/failure for both client + admin |
+| `TestVoiceAPI` | Full STT→LLM→TTS round-trip: start, respond (with WAV), transcript, end |
+| `TestProjectsAPI` | CRUD, question update, project status, screener, branding; validation rejects invalid research_type/language/count |
+| `TestReportsAPI` | List, 404, PPTX/PDF export |
+| `TestPricingAPI` | Quote compute, urgency multiplier |
+| `TestClientPortal` | Dashboard, study pages, status API, study linking |
+| `TestAdminPortal` | All admin pages, stats API, pricing API, redemptions |
+| `TestRespondentPanel` | Enrollment (valid + missing consent + missing field), stats, points rates |
+| `TestAgenticPipeline` | Brief session start/message/state, project list |
+| `TestMissionControl` | Overview, starter queries, NL query, empty query rejection |
+| `TestWhatsApp` | Stats, Meta webhook token rejection, phone registration |
+
+### What is NOT tested
+
+- Payment flows (Razorpay/Stripe require real card or sandbox setup)
+- WhatsApp inbound message handling (requires webhook tunnel)
+- AI report generation end-to-end (covered by production smoke tests instead)
+- Admin write operations (pricing update, redemption status) — read paths are covered
 
 ---
 
