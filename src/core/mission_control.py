@@ -25,6 +25,7 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
+from src.core.genai_client import get_genai_client
 from src.storage.firestore_db import db, REPORTS, TRANSCRIPTS, PROJECTS
 
 logger = logging.getLogger(__name__)
@@ -160,6 +161,21 @@ def _load_cross_study_transcripts(project_ids: list, max_per_project: int = 5, m
     return all_turns
 
 
+def _as_text(item, *keys) -> str:
+    """Coerce a list item (str or dict with varying key names) to a display string."""
+    if isinstance(item, dict):
+        for k in keys:
+            v = item.get(k)
+            if v:
+                return str(v)
+        # Fall back to the first non-empty string value, else empty
+        for v in item.values():
+            if isinstance(v, str) and v.strip():
+                return v
+        return ""
+    return str(item)
+
+
 def _build_projects_block(reports: list) -> str:
     """Format all reports into a readable context block."""
     if not reports:
@@ -167,16 +183,13 @@ def _build_projects_block(reports: list) -> str:
     blocks = []
     for r in reports:
         themes = "; ".join(
-            (t.get("title") or t) if isinstance(t, dict) else str(t)
-            for t in (r.get("key_themes") or [])[:4]
+            t for t in (_as_text(x, "title", "theme", "name") for x in (r.get("key_themes") or [])[:4]) if t
         )
         pains = "; ".join(
-            (p.get("pain") or p) if isinstance(p, dict) else str(p)
-            for p in (r.get("pain_points") or [])[:3]
+            p for p in (_as_text(x, "pain", "title", "issue") for x in (r.get("pain_points") or [])[:3]) if p
         )
         recs = "; ".join(
-            (rec.get("action") or rec) if isinstance(rec, dict) else str(rec)
-            for rec in (r.get("recommendations") or [])[:3]
+            rec for rec in (_as_text(x, "action", "title", "recommendation") for x in (r.get("recommendations") or [])[:3]) if rec
         )
         blocks.append(
             f"PROJECT: {r.get('project_name', 'Unknown')} | Type: {r.get('research_type', '')}\n"
@@ -229,11 +242,7 @@ def query_mission_control(query: str) -> dict:
         query=query,
     )
 
-    client = (
-        genai.Client(api_key=settings.gemini_api_key)
-        if settings.gemini_api_key
-        else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-    )
+    client = get_genai_client()
 
     logger.info(f"Mission Control query: '{query[:80]}' | {len(reports)} reports, {len(turns)} transcript turns")
 
@@ -274,11 +283,7 @@ def get_mission_overview() -> dict:
     projects_block = _build_projects_block(reports)
     prompt = OVERVIEW_PROMPT.format(projects_block=projects_block)
 
-    client = (
-        genai.Client(api_key=settings.gemini_api_key)
-        if settings.gemini_api_key
-        else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-    )
+    client = get_genai_client()
 
     try:
         response = client.models.generate_content(

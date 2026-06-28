@@ -522,6 +522,9 @@ def generate_pdf(report: dict, branding: Optional[dict] = None) -> bytes:
     """
     Convert a report dict into a branded A4 PDF and return as bytes.
     """
+    from src.core.report_normalize import normalize_report
+    report = normalize_report(report)
+
     buf = io.BytesIO()
     accent = _brand_color(branding)
     styles = _make_styles(accent)

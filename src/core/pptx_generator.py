@@ -522,6 +522,9 @@ def generate_pptx(report: dict, branding: Optional[dict] = None) -> bytes:
     Convert a report dict into a branded .pptx and return as bytes.
     Pass `branding` dict with optional keys: brand_name, brand_color, logo_url.
     """
+    from src.core.report_normalize import normalize_report
+    report = normalize_report(report)
+
     prs = Presentation()
     prs.slide_width  = SLIDE_W
     prs.slide_height = SLIDE_H
