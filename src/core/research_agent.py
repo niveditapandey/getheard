@@ -20,6 +20,7 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
+from src.core.genai_client import get_genai_client
 from src.core.report_generator import load_report
 from src.storage.transcript import TranscriptManager
 
@@ -145,11 +146,7 @@ def query_report(
         query=query,
     )
 
-    client = (
-        genai.Client(api_key=settings.gemini_api_key)
-        if settings.gemini_api_key
-        else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-    )
+    client = get_genai_client()
 
     logger.info(f"Research Agent query: '{query[:80]}' on report {report_id}")
     response = client.models.generate_content(

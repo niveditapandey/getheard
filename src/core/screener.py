@@ -38,6 +38,7 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
+from src.core.genai_client import get_genai_client
 
 logger = logging.getLogger(__name__)
 
@@ -86,11 +87,7 @@ Does this answer meet the qualification criteria?
 Reply with ONLY "YES" or "NO" — nothing else."""
 
     try:
-        client = (
-            genai.Client(api_key=settings.gemini_api_key)
-            if settings.gemini_api_key
-            else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-        )
+        client = get_genai_client()
         response = client.models.generate_content(
             model=settings.gemini_model,  # flash — fast and cheap for this
             contents=prompt,
@@ -214,11 +211,7 @@ def generate_screener_questions(
         count=count,
     )
 
-    client = (
-        genai.Client(api_key=settings.gemini_api_key)
-        if settings.gemini_api_key
-        else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-    )
+    client = get_genai_client()
 
     response = client.models.generate_content(
         model=settings.gemini_model,

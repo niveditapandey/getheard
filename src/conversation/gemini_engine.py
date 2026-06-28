@@ -178,15 +178,9 @@ class GeminiInterviewer:
             system += CULTURAL_PROMPTS[language_code]
             logger.info(f"Cultural prompting active for language: {language_code}")
 
-        # google-genai client — uses API key if set, else Vertex AI ADC
-        if settings.gemini_api_key:
-            self._client = genai.Client(api_key=settings.gemini_api_key)
-        else:
-            self._client = genai.Client(
-                vertexai=True,
-                project=settings.gcp_project_id,
-                location=settings.gcp_location,
-            )
+        # google-genai client — Vertex AI (GCP credits) by default, API-key fallback
+        from src.core.genai_client import get_genai_client
+        self._client = get_genai_client()
 
         self._system = system
         self._chat_history: List[types.Content] = []

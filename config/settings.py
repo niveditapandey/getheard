@@ -33,9 +33,16 @@ class Settings(BaseSettings):
         description="GCP region for Vertex AI"
     )
 
-    # Google AI Studio API key (preferred — avoids Vertex AI quota issues)
+    # Google AI Studio API key (fallback when Vertex is unavailable / prefer_vertex off)
     # Get one free at https://aistudio.google.com/app/apikey
     gemini_api_key: str = Field(default="", description="Google AI Studio API key")
+
+    # When True, Gemini calls route through Vertex AI (bills to GCP credits) instead of
+    # the AI Studio key. Falls back to the API key automatically if Vertex init fails.
+    prefer_vertex: bool = Field(
+        default=True,
+        description="Route Gemini through Vertex AI (GCP credits) instead of AI Studio key"
+    )
     
     # Sarvam AI Configuration (Optional - for Indian languages)
     sarvam_api_key: str = Field(default="", description="Sarvam AI API key")

@@ -244,6 +244,7 @@ def _ai_evaluate(conversation: list) -> dict:
     from google import genai
     from google.genai import types
     from config.settings import settings
+    from src.core.genai_client import get_genai_client
 
     # Build readable transcript text
     lines = []
@@ -261,11 +262,7 @@ def _ai_evaluate(conversation: list) -> dict:
     prompt = AI_EVAL_PROMPT.format(transcript_text=transcript_text)
 
     try:
-        client = (
-            genai.Client(api_key=settings.gemini_api_key)
-            if settings.gemini_api_key
-            else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-        )
+        client = get_genai_client()
         response = client.models.generate_content(
             model="gemini-2.0-flash",  # flash — fast and cheap
             contents=prompt,

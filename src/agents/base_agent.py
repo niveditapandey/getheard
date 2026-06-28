@@ -42,17 +42,9 @@ class AgentResult:
 
 
 def _make_client() -> genai.Client:
-    """Create a google-genai client using API key or Vertex AI ADC."""
-    if settings.gemini_api_key:
-        logger.debug("Gemini: using Google AI Studio API key")
-        return genai.Client(api_key=settings.gemini_api_key)
-    else:
-        logger.debug("Gemini: using Vertex AI ADC")
-        return genai.Client(
-            vertexai=True,
-            project=settings.gcp_project_id,
-            location=settings.gcp_location,
-        )
+    """Create a google-genai client (Vertex AI / GCP credits by default)."""
+    from src.core.genai_client import get_genai_client
+    return get_genai_client()
 
 
 # Module-level shared client (created once, reset on auth failure)
