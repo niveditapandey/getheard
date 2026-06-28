@@ -249,8 +249,16 @@ def generate_questions(
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        logger.error(f"Gemini returned invalid JSON (first 300 chars): {raw[:300]}")
+        raise ValueError("Gemini returned malformed JSON for question generation. Please try again.")
+
     questions = data.get("questions", [])
+    if not questions:
+        logger.warning(f"Gemini returned zero questions — raw: {raw[:200]}")
+        raise ValueError("Gemini returned no questions. Please try again.")
     logger.info(f"Generated {len(questions)} questions")
     return questions
 

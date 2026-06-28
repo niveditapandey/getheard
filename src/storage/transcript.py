@@ -22,12 +22,14 @@ class TranscriptManager:
         metadata: Optional[Dict] = None,
     ) -> str:
         """Save interview transcript to Firestore. Returns session_id."""
+        meta = metadata or {}
         data = {
             "session_id":    session_id,
             "language_code": language_code,
-            "started_at":    metadata.get("started_at") if metadata else None,
+            "project_id":    meta.get("project_id"),  # top-level for Firestore queries
+            "started_at":    meta.get("started_at"),
             "ended_at":      datetime.now(timezone.utc).isoformat(),
-            "metadata":      metadata or {},
+            "metadata":      meta,
             "conversation":  conversation,
             "turn_count":    len(conversation),
             "saved_at":      datetime.now(timezone.utc).isoformat(),
@@ -65,8 +67,26 @@ class TranscriptManager:
                 "language_code": d.get("language_code"),
                 "ended_at":      d.get("ended_at"),
                 "turn_count":    d.get("turn_count", 0),
-                "project_id":    d.get("metadata", {}).get("project_id"),
+                "project_id":    d.get("project_id") or d.get("metadata", {}).get("project_id"),
                 "quality_score": d.get("quality_score"),
                 "quality_label": d.get("quality_label"),
             })
+        return results
+
+    def load_summaries(self, session_ids: List[str]) -> List[Dict]:
+        """Load transcript summaries for a specific list of session IDs (no full scan)."""
+        results = []
+        for sid in session_ids:
+            doc = db.collection(TRANSCRIPTS).document(sid).get()
+            if doc.exists:
+                d = doc.to_dict()
+                results.append({
+                    "session_id":    d.get("session_id", sid),
+                    "language_code": d.get("language_code"),
+                    "ended_at":      d.get("ended_at") or d.get("saved_at"),
+                    "turn_count":    d.get("turn_count", 0),
+                    "project_id":    d.get("project_id") or d.get("metadata", {}).get("project_id"),
+                    "quality_score": d.get("quality_score"),
+                    "quality_label": d.get("quality_label"),
+                })
         return results

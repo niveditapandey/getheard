@@ -69,6 +69,7 @@ import logging
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Dict
 
@@ -135,8 +136,30 @@ app.include_router(respondent_router)  # /join/profile/*, /join/rewards/*, /api/
 
 # ── Sessions & storage ───────────────────────────────────────────────────────
 sessions: Dict[str, VoiceInterviewPipeline] = {}
+session_started_at: Dict[str, float] = {}   # session_id -> unix timestamp
+SESSION_TTL_SECONDS = 45 * 60              # evict idle sessions after 45 min
 transcript_manager = TranscriptManager()
 TEMPLATES = Path(__file__).parent / "templates"
+
+
+@app.on_event("startup")
+async def _start_session_cleanup():
+    """Background task: evict voice sessions idle longer than SESSION_TTL_SECONDS."""
+    async def _loop():
+        while True:
+            await asyncio.sleep(10 * 60)   # check every 10 minutes
+            cutoff = time.time() - SESSION_TTL_SECONDS
+            stale = [sid for sid, ts in list(session_started_at.items()) if ts < cutoff]
+            for sid in stale:
+                pipeline = sessions.pop(sid, None)
+                session_started_at.pop(sid, None)
+                if pipeline:
+                    try:
+                        pipeline._save_transcript()
+                        logger.info(f"[TTL] Auto-saved and evicted stale session {sid}")
+                    except Exception as exc:
+                        logger.warning(f"[TTL] Transcript save failed for {sid}: {exc}")
+    asyncio.create_task(_loop())
 
 # ── API key auth (optional — only enforces if header present) ────────────────
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -238,6 +261,7 @@ async def start_interview(
         pipeline = VoiceInterviewPipeline(language_code=language, project_id=project_id or None)
         greeting_audio = await pipeline.start_interview()
         sessions[pipeline.session_id] = pipeline
+        session_started_at[pipeline.session_id] = time.time()
 
         # Link session to project if applicable
         if project_id:
@@ -325,6 +349,7 @@ async def end_session(session_id: str):
     except Exception as e:
         logger.warning(f"Force-save transcript failed for {session_id}: {e}")
     sessions.pop(session_id, None)
+    session_started_at.pop(session_id, None)
     return {"status": "saved", "session_id": session_id}
 
 
@@ -469,6 +494,19 @@ async def api_create_project(payload: dict = Body(...), _: str = Depends(optiona
     for field in required:
         if field not in payload:
             raise HTTPException(400, f"Missing field: {field}")
+
+    # Validate enum fields and numeric bounds
+    if payload["research_type"] not in RESEARCH_TYPES:
+        raise HTTPException(400, f"Invalid research_type '{payload['research_type']}'. Valid: {list(RESEARCH_TYPES.keys())}")
+    if payload["language"] not in settings.supported_languages:
+        raise HTTPException(400, f"Language '{payload['language']}' not supported. Supported: {settings.supported_languages}")
+    try:
+        qcount = int(payload["question_count"])
+    except (TypeError, ValueError):
+        raise HTTPException(400, "question_count must be an integer")
+    if not (1 <= qcount <= 30):
+        raise HTTPException(400, "question_count must be between 1 and 30")
+
     try:
         project = await asyncio.to_thread(
             create_project,
@@ -946,10 +984,8 @@ async def api_project_status(project_id: str):
     quota = screener.get("quota", 0)
     qualified_count = proj._data.get("screener_qualified_count", 0)
 
-    # Load transcript summaries for sessions linked to this project
-    all_transcripts = await asyncio.to_thread(transcript_manager.list_transcripts)
-    session_set = set(session_ids)
-    linked = [t for t in all_transcripts if t.get("session_id") in session_set]
+    # Load only the transcripts for this project's sessions (avoids full collection scan)
+    linked = await asyncio.to_thread(transcript_manager.load_summaries, session_ids)
 
     # Quality breakdown
     quality_counts = {"high_quality": 0, "medium_quality": 0, "low_quality": 0, "suspected_fraud": 0, "unscored": 0}
@@ -973,8 +1009,10 @@ async def api_project_status(project_id: str):
         lang = t.get("language_code", "en")
         lang_counts[lang] = lang_counts.get(lang, 0) + 1
 
-    # Completion rate (proxy: sessions with >= 4 turns = likely completed)
-    completed = sum(1 for t in linked if (t.get("turn_count") or 0) >= 4)
+    # Completion rate: session had enough turns to cover all questions
+    # Each question generates ~2 turns (interviewer + respondent) plus greeting/closing
+    min_turns = max(8, len(proj.questions) * 2)
+    completed = sum(1 for t in linked if (t.get("turn_count") or 0) >= min_turns)
     completion_rate = round(completed / len(linked) * 100) if linked else 0
 
     # Last activity
@@ -1127,10 +1165,11 @@ async def api_screener_submit(project_id: str, payload: dict = Body(...)):
     try:
         result = await asyncio.to_thread(evaluate_screener, screener, answers)
 
-        # Quota enforcement: count qualified sessions so far
+        # Quota enforcement: re-read the project to get the freshest count before incrementing
         quota = screener.get("quota", 0)
         if quota and quota > 0 and result["qualified"]:
-            qualified_count = proj._data.get("screener_qualified_count", 0)
+            fresh_proj = await asyncio.to_thread(get_project, project_id)
+            qualified_count = (fresh_proj._data if fresh_proj else proj._data).get("screener_qualified_count", 0)
             if qualified_count >= quota:
                 result["qualified"] = False
                 result["message"] = (
@@ -1138,7 +1177,6 @@ async def api_screener_submit(project_id: str, payload: dict = Body(...)):
                     "Thank you for your interest — we've reached our quota for this study."
                 )
             else:
-                # Increment the counter
                 from src.core.research_project import update_project_field
                 await asyncio.to_thread(
                     update_project_field, project_id, "screener_qualified_count", qualified_count + 1

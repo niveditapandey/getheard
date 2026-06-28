@@ -375,7 +375,15 @@ async function designStudy() {
       } catch(_) {}
       await new Promise(r => setTimeout(r, 500));
     }
-    if (!linked) console.warn('Project link failed after 3 attempts:', project.project_id);
+    if (!linked) {
+      console.warn('Project link failed after 3 attempts:', project.project_id);
+      addBubble('agent',
+        `⚠️ Your study was created but couldn't be linked to your dashboard automatically. ` +
+        `Please note your Study ID: <strong>${project.project_id}</strong> — ` +
+        `you can find it at <code>/listen/study/${project.project_id}/status</code> or contact support.`,
+        '⚠️'
+      );
+    }
 
     addBubble('agent',
       `Your study "${project.name || project.project_id}" has been designed — ` +
