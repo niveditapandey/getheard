@@ -34,7 +34,7 @@ from src.storage.respondent_store import (
     enroll_respondent, get_respondent, list_respondents,
     update_respondent_status, search_respondents, get_stats
 )
-from src.agents.panel_agent import PanelAgent
+from src.agents.panel_agent import PanelAgent, panel_store
 
 logger = logging.getLogger(__name__)
 
@@ -217,14 +217,10 @@ async def api_panel_query(req: PanelQueryRequest):
 @router.get("/panel/api/{project_id}")
 async def api_get_panel(project_id: str):
     """Get most recent panel for a project."""
-    panels = []
-    for p in PANELS_DIR.glob("*.json"):
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            if data.get("project_id") == project_id:
-                panels.append(data)
-        except Exception:
-            pass
+    panels = [
+        data for data in panel_store.list_all()
+        if data.get("project_id") == project_id
+    ]
     if not panels:
         raise HTTPException(404, "No panel found for this project")
     panels.sort(key=lambda x: x.get("created_at", ""), reverse=True)
@@ -234,10 +230,9 @@ async def api_get_panel(project_id: str):
 @router.post("/panel/api/{panel_id}/confirm")
 async def api_confirm_panel(panel_id: str):
     """Client confirms a panel — marks respondents as 'scheduled'."""
-    path = PANELS_DIR / f"{panel_id}.json"
-    if not path.exists():
+    panel = panel_store.load(panel_id)
+    if panel is None:
         raise HTTPException(404, "Panel not found")
-    panel = json.loads(path.read_text(encoding="utf-8"))
     # Find the project and create a PanelAgent to handle confirmation
     project = _load_project(panel.get("project_id", ""))
     agent = PanelAgent(project)

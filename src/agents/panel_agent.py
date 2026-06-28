@@ -28,6 +28,8 @@ from src.storage.respondent_store import (
     enroll_respondent, search_respondents, update_respondent_status,
     get_respondent, _clean_phone
 )
+from src.storage.doc_store import DocStore
+from src.storage.firestore_db import PANELS
 from .base_agent import BaseAgent, ToolSpec
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,9 @@ logger = logging.getLogger(__name__)
 BASE_DIR  = Path(__file__).parent.parent.parent
 PANELS_DIR = BASE_DIR / "panels"
 PANELS_DIR.mkdir(exist_ok=True)
+
+# Firestore-backed panel store (survives Cloud Run redeploys) with local fallback
+panel_store = DocStore(PANELS, PANELS_DIR)
 
 
 PANEL_SYSTEM_PROMPT = """You are a research panel coordinator at GetHeard.
@@ -155,8 +160,7 @@ class PanelAgent(BaseAgent):
             "created_at":     datetime.now(timezone.utc).isoformat(),
             "created_by":     "PanelAgent",
         }
-        path = PANELS_DIR / f"{panel_id}.json"
-        path.write_text(json.dumps(self.final_panel, indent=2, ensure_ascii=False))
+        panel_store.save(panel_id, self.final_panel)
         logger.info(f"[PanelAgent] Panel saved: {panel_id} ({total_selected} selected)")
         return {"status": "saved", "panel_id": panel_id}
 
@@ -224,17 +228,16 @@ class PanelAgent(BaseAgent):
 
     def confirm_panel(self, panel_id: str) -> bool:
         """Client confirmed — update respondent statuses to 'scheduled'."""
-        path = PANELS_DIR / f"{panel_id}.json"
-        if not path.exists():
+        panel = panel_store.load(panel_id)
+        if panel is None:
             return False
-        panel = json.loads(path.read_text(encoding="utf-8"))
         panel["status"] = "confirmed"
         panel["confirmed_at"] = datetime.now(timezone.utc).isoformat()
         for r in panel.get("respondents", []):
             rid = r.get("respondent_id")
             if rid:
                 update_respondent_status(rid, "scheduled")
-        path.write_text(json.dumps(panel, indent=2, ensure_ascii=False))
+        panel_store.save(panel_id, panel)
         logger.info(f"[PanelAgent] Panel confirmed: {panel_id}")
         return True
 

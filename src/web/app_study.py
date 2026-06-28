@@ -30,6 +30,8 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from config.settings import settings
 from src.storage.pricing_store import compute_quote
+from src.storage.doc_store import DocStore
+from src.storage.firestore_db import PROJECTS
 from src.core.research_project import get_project
 
 logger = logging.getLogger(__name__)
@@ -99,16 +101,16 @@ def _require_admin(request: Request):
         raise HTTPException(303, headers={"Location": "/admin/login"})
 
 
+# Firestore-backed project store (survives Cloud Run redeploys) with local fallback
+_projects = DocStore(PROJECTS, PROJECTS_DIR)
+
+
 def _load_project_json(project_id: str) -> Optional[Dict]:
-    path = PROJECTS_DIR / f"{project_id}.json"
-    if not path.exists():
-        return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    return _projects.load(project_id)
 
 
 def _save_project_json(project: Dict):
-    path = PROJECTS_DIR / f"{project['project_id']}.json"
-    path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
+    _projects.save(project["project_id"], project)
 
 
 def _update_pipeline(project: Dict, stage: str, status: str):
@@ -125,10 +127,9 @@ def _update_pipeline(project: Dict, stage: str, status: str):
 
 def _mark_payment_received(project_id: str, payment_id: str, gateway: str):
     """Update project JSON to mark payment received and advance pipeline."""
-    path = PROJECTS_DIR / f"{project_id}.json"
-    if not path.exists():
+    project = _load_project_json(project_id)
+    if project is None:
         return
-    project = json.loads(path.read_text(encoding="utf-8"))
     project["status"] = "panel_building"
     project["payment_received"] = True
     project["payment_id"] = payment_id
@@ -136,15 +137,14 @@ def _mark_payment_received(project_id: str, payment_id: str, gateway: str):
     project["payment_at"] = datetime.now(timezone.utc).isoformat()
     _update_pipeline(project, "payment", "completed")
     _update_pipeline(project, "panel_building", "active")
-    path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
+    _save_project_json(project)
 
 
 async def _trigger_panel_building(project_id: str):
     """Background task: run PanelAgent after payment confirmed."""
-    path = PROJECTS_DIR / f"{project_id}.json"
-    if not path.exists():
+    project = _load_project_json(project_id)
+    if project is None:
         return
-    project = json.loads(path.read_text(encoding="utf-8"))
     try:
         from src.agents.panel_agent import PanelAgent
         agent = PanelAgent(project)
@@ -152,12 +152,12 @@ async def _trigger_panel_building(project_id: str):
         panel = await agent.query_panel(criteria)
         if panel:
             # Re-read in case changed
-            project = json.loads(path.read_text(encoding="utf-8"))
+            project = _load_project_json(project_id) or project
             project["status"] = "panel_approval"
             project["panel_id"] = panel.get("panel_id")
             _update_pipeline(project, "panel_building", "completed")
             _update_pipeline(project, "panel_approval", "active")
-            path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
+            _save_project_json(project)
 
             # Notify client
             try:
@@ -398,20 +398,19 @@ async def api_get_timeline(project_id: str, request: Request):
 
 async def _compute_and_save_timeline(project_id: str):
     """Background task: estimate timeline using TimelineAgent and save to project."""
-    path = PROJECTS_DIR / f"{project_id}.json"
-    if not path.exists():
+    project = _load_project_json(project_id)
+    if project is None:
         return
-    project = json.loads(path.read_text(encoding="utf-8"))
     try:
         from src.agents.timeline_agent import TimelineAgent
         quote = project.get("quote", {})
         agent = TimelineAgent(project, quote)
         timeline = await agent.estimate()
         if timeline:
-            project = json.loads(path.read_text(encoding="utf-8"))  # re-read
+            project = _load_project_json(project_id) or project  # re-read
             project["timeline"] = timeline
             _update_pipeline(project, "timeline_estimate", "completed")
-            path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
+            _save_project_json(project)
             logger.info(f"Timeline computed for {project_id}: {timeline.get('total_min_days')}–{timeline.get('total_max_days')} days")
     except Exception as e:
         logger.error(f"Timeline estimation failed for {project_id}: {e}", exc_info=True)
@@ -580,12 +579,5 @@ async def api_verify_razorpay(request: Request):
 # ── Helper: update_project_field (utility for other modules) ─────────────────
 
 def update_project_field(project_id: str, field: str, value) -> bool:
-    """Read the project JSON, update one field, and write it back. Returns True on success."""
-    path = PROJECTS_DIR / f"{project_id}.json"
-    if not path.exists():
-        return False
-    project = json.loads(path.read_text(encoding="utf-8"))
-    project[field] = value
-    project["updated_at"] = datetime.now(timezone.utc).isoformat()
-    path.write_text(json.dumps(project, indent=2, ensure_ascii=False))
-    return True
+    """Update one field on the project and write it back. Returns True on success."""
+    return _projects.update_field(project_id, field, value)

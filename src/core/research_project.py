@@ -19,11 +19,17 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
+from src.core.genai_client import get_genai_client
+from src.storage.doc_store import DocStore
+from src.storage.firestore_db import PROJECTS
 
 logger = logging.getLogger(__name__)
 
 PROJECTS_DIR = Path(__file__).parent.parent.parent / "projects"
 PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Firestore-backed store (survives Cloud Run redeploys) with local fallback
+_store = DocStore(PROJECTS, PROJECTS_DIR)
 
 # Supported question counts
 VALID_QUESTION_COUNTS = [5, 7, 10, 12, 15, 20, 25, 30]
@@ -97,29 +103,21 @@ class ResearchProject:
             _save_project(self._data)
 
 
-# ── Persistence ────────────────────────────────────────────────────────────
-
-def _project_path(project_id: str) -> Path:
-    return PROJECTS_DIR / f"{project_id}.json"
-
+# ── Persistence (Firestore-backed via DocStore, local fallback) ──────────────
 
 def _save_project(data: dict):
-    path = _project_path(data["project_id"])
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    _store.save(data["project_id"], data)
 
 
 def get_project(project_id: str) -> Optional[ResearchProject]:
-    path = _project_path(project_id)
-    if not path.exists():
-        return None
-    return ResearchProject(json.loads(path.read_text(encoding="utf-8")))
+    data = _store.load(project_id)
+    return ResearchProject(data) if data else None
 
 
 def list_projects() -> List[dict]:
     results = []
-    for f in sorted(PROJECTS_DIR.glob("*.json"), reverse=True):
+    for data in _store.list_all():
         try:
-            data = json.loads(f.read_text(encoding="utf-8"))
             results.append({
                 "project_id": data["project_id"],
                 "name": data["name"],
@@ -132,22 +130,17 @@ def list_projects() -> List[dict]:
             })
         except Exception:
             pass
+    # Newest first
+    results.sort(key=lambda r: r.get("created_at", ""), reverse=True)
     return results
 
 
 def update_project_field(project_id: str, field: str, value) -> bool:
     """
-    Read the project JSON, update a single top-level field, and write it back.
-    Returns True on success, False if the project doesn't exist.
+    Update a single top-level field on a project. Returns True on success,
+    False if the project doesn't exist.
     """
-    path = _project_path(project_id)
-    if not path.exists():
-        return False
-    data = json.loads(path.read_text(encoding="utf-8"))
-    data[field] = value
-    data["updated_at"] = datetime.now().isoformat()
-    _save_project(data)
-    return True
+    return _store.update_field(project_id, field, value)
 
 
 # ── AI Question Generation ─────────────────────────────────────────────────
@@ -216,11 +209,7 @@ def generate_questions(
     if count not in VALID_QUESTION_COUNTS:
         count = min(VALID_QUESTION_COUNTS, key=lambda x: abs(x - count))
 
-    client = (
-        genai.Client(api_key=settings.gemini_api_key)
-        if settings.gemini_api_key
-        else genai.Client(vertexai=True, project=settings.gcp_project_id, location=settings.gcp_location)
-    )
+    client = get_genai_client()
 
     prompt = QUESTION_GEN_PROMPT.format(
         count=count,
