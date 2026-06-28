@@ -250,9 +250,49 @@ This mimics how a senior analyst actually works, rather than doing a one-shot su
 |---------|-------|-------------|
 | Screener generation | `src/core/screener.py` | AI generates qualifying questions from brief |
 | Quality scoring | `src/core/quality_scorer.py` | Scores each transcript 0–100, detects fraud |
-| Mission Control | `src/core/mission_control.py` | Cross-study NL query ("What are customers saying about X across all studies?") |
+| Mission Control | `src/core/mission_control.py` | Cross-study NL query, **vector-retrieval backed** (see 4.5) |
 | Research Agent | `src/core/research_agent.py` | Ask natural-language questions about a single report |
 | Report export | `src/core/pptx_generator.py`, `pdf_generator.py` | Download reports as PPTX or PDF |
+
+All Gemini calls route through a single factory, `src/core/genai_client.py` →
+`get_genai_client()`. By default (`PREFER_VERTEX=true`) it uses **Vertex AI** so
+usage bills to GCP credits, falling back to the AI Studio key if Vertex init fails.
+
+### 4.5 Mission Control retrieval (RAG)
+
+Mission Control used to load *all* reports + a transcript sample into the Gemini
+context, which breaks past ~50 studies. It now uses retrieval-augmented generation:
+
+```
+On report/transcript save → chunk → embed (Vertex text-embedding-004, 768-dim)
+                          → store in Firestore `mission_chunks` (Vector field)
+On query → embed query → Firestore find_nearest (COSINE, top-24)
+        → build context from retrieved chunks → Gemini Pro synthesis
+```
+
+- `src/core/embeddings.py` — embedding helper
+- `src/core/mission_index.py` — `index_report()`, `index_transcript()`, `search()`, `backfill()`
+- Uses **Firestore-native vector search** (no standing index-endpoint cost)
+- Falls back to the original load-all approach if the index is empty/unavailable
+- Re-index historical data: `POST /internal/mission-index/backfill` (shared-secret protected)
+
+### 4.6 Async report generation (Cloud Tasks)
+
+The 4-pass AnalysisAgent takes 30–90s, which risks HTTP timeouts. Report
+generation runs off the request path:
+
+```
+POST /api/reports/generate-async → create Firestore `jobs` record → enqueue Cloud Task
+                                 → return { job_id, status: "queued" }
+Cloud Task → POST /internal/tasks/run-job (shared-secret) → run job → update status
+Client → poll GET /api/jobs/{job_id} until done → redirect to report
+```
+
+- `src/storage/job_store.py` (job records), `src/storage/tasks_client.py` (enqueue),
+  `src/core/jobs.py` (dispatch)
+- Queue: `report-generation` in `asia-south1`
+- Falls back to inline execution when not on Cloud Run (`K_SERVICE` unset), so
+  local dev and the original synchronous `/api/reports/generate` keep working
 
 ---
 
@@ -313,6 +353,12 @@ The handler maps phone numbers to project IDs, maintains per-number conversation
 | `reports` | `report_id` | Generated analysis report |
 | `redemptions` | `request_id` | Respondent payout requests |
 | `points` | `respondent_id` | Points balance + transaction history |
+| `jobs` | `job_id` | Async job records (report generation) — status queued/running/done/error |
+| `mission_chunks` | hash | Embedded report/transcript chunks for Mission Control vector search (Vector field + metadata) |
+
+> **Projects, panels, and reports are now Firestore-backed** via `src/storage/doc_store.py`
+> (`DocStore`: Firestore-primary, local-file fallback, per-collection `id_field`). This
+> fixed the earlier data-loss-on-redeploy issue where they were local-JSON only.
 
 ### Local JSON (projects, reports, panels)
 
@@ -871,13 +917,28 @@ The app is containerised with Docker for deployment to Google Cloud Run or Railw
 
 | Issue | Impact | Status |
 |-------|--------|--------|
-| Dual storage (JSON files + Firestore) | Data inconsistency risk | Open — migrate project/panel/report writes to Firestore |
+| Dual storage (JSON files + Firestore) | Data inconsistency risk | **Resolved** — projects, panels, reports now Firestore-backed via `DocStore` (local fallback only) |
+| Long report generation blocks the request | HTTP timeout risk | **Resolved** — async via Cloud Tasks + job polling (see 4.6) |
+| Mission Control loads all data into context | Breaks past ~50 studies | **Resolved** — Firestore vector retrieval (see 4.5) |
+| Gemini billed to AI Studio key | Not using GCP credits | **Resolved** — routes through Vertex AI by default (`PREFER_VERTEX`) |
 | SHA-256 password hashing | Weak for production | Open — upgrade to bcrypt |
 | In-memory voice sessions (`sessions: Dict`) lost on restart | Sessions drop if process restarts | Partially mitigated — 45-min TTL auto-saves and evicts idle sessions |
 | `config/pricing.json` on local disk | Lost on redeploy without persistent volume | Open — move to Firestore |
 | No rate limiting | API abuse risk | Open — add slowapi middleware |
 | Simple/demo users in session only | Studies lost when session cookie expires | Open — require Firestore account for production |
 | Screener quota race condition (read-modify-write) | Two simultaneous submits could both qualify | Partially mitigated — re-reads count immediately before write; full fix requires Firestore transactions |
+
+### GCP infrastructure (provisioned)
+
+| Resource | Purpose |
+|----------|---------|
+| Cloud Tasks queue `report-generation` (asia-south1) | Async report jobs |
+| Firestore vector index on `mission_chunks.embedding` (768-dim) | Mission Control retrieval |
+| Uptime check on `/health` + email alert | Monitoring |
+| Runtime SA roles: `aiplatform.user`, `datastore.user`, `cloudtasks.enqueuer` | Vertex, Firestore, task enqueue |
+
+New env vars (have safe defaults in `config/settings.py`): `PREFER_VERTEX`,
+`SERVICE_URL`, `TASKS_LOCATION`, `TASKS_QUEUE`, `TASKS_SECRET`.
 
 ---
 
